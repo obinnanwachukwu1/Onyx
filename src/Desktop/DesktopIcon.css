@@ -1,0 +1,38 @@
+.icon-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    cursor: default;
+    transition: background-color 0.3s;
+    color: white;
+    width: 64pt;
+}
+
+.icon-button img {
+    width: 32pt;
+    height: 32pt;
+    padding: 8pt;
+    background-color: transparent;
+    -webkit-filter: drop-shadow(3px 3px 5px #222);
+    filter: drop-shadow(3px 3px 5px #222);
+    display: inline-block;
+}
+
+.icon-button span {
+    padding-top: 8pt;
+    padding-bottom: 8pt;
+    background-color: transparent;
+    -webkit-filter: drop-shadow(3px 3px 5px #222);
+    filter: drop-shadow(3px 3px 5px #222);
+    display: inline-block;
+}
+
+.icon-button:hover {
+    background-color: rgba(173, 216, 230, 0.5);
+}
+
+.icon-button:active {
+    background-color: rgba(0, 191, 255, 0.501);
+}

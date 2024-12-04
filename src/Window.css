@@ -1,0 +1,184 @@
+
+  @keyframes flipIn {
+    0% {
+      transform: perspective(1000px) rotateX(-20deg); /* Start flipped */
+      opacity: 0;
+      scale: 80%;
+    }
+    100% {
+      transform: perspective(1000px) rotateX(0); /* End normal position */
+      opacity: 1;
+      scale: 100%;
+    }
+  }
+
+  @keyframes flipOut {
+    0% {
+        transform: perspective(1000px) rotateX(0); /* End normal position */
+        opacity: 1;
+        scale: 100%;
+      }
+    
+    100% {
+      transform: perspective(1000px) rotateX(10deg); /* Start flipped */
+      opacity: 0;
+      scale: 80%;
+    }
+  }
+  
+  @keyframes minimizeToTaskbar {
+    from {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translate(var(--dx), var(--dy)) scale(0.1); /* Move towards the taskbar */
+        opacity: 0;
+    }
+  } 
+
+  @keyframes restoreFromTaskbar {
+    from {
+        transform: translate(var(--dx), var(--dy)) scale(0.1); /* Move towards the taskbar */
+        opacity: 0;
+    }
+    to {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+  } 
+
+  @keyframes maximize {
+    0% {
+      transform: scale(1);
+    }
+  
+    100% {
+      top: 0;
+      left: 0;
+      width: var(--width);
+      height: var(--height);
+      transform: scale(1);
+    }
+  }
+
+  @keyframes restore {
+    0% {
+      transform: scale(1);
+    }
+  
+    100% {
+      top: var(--dy);
+      left: var(--dx);
+      width: var(--width);
+      height: var(--height);
+      transform: scale(1);
+    }
+  }
+  
+  .window {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid black;
+    border-top-left-radius: 10pt;
+    border-top-right-radius: 10pt;
+    background-color: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    transform: perspective(1000px) rotateY(0); /* Normal position */
+    transition: transform 0.5s ease; /* Smooth transition for other transforms */
+    overflow: hidden;
+  }
+  .window.active {
+    border: 2px solid #333;
+  }
+
+  .window.inactive {
+    border: 2px solid #666666;
+  }
+
+  .window.maximized {
+    border-top-left-radius: 0pt;
+    border-top-right-radius: 0pt;
+  }
+  
+  .window-opening {
+    animation: flipIn 0.25s ease-out forwards; /* Apply the flip animation */
+  }
+
+  .window-minimizing {
+    animation: minimizeToTaskbar 0.25s ease-out forwards;
+    transform-origin: top left;
+  }
+
+  .window-maximizing {
+    animation: maximize 0.25s ease-in-out forwards;
+  }
+
+  .window-restoring {
+    animation: restore 0.25s ease-in-out forwards;
+  }
+
+  .window-restoring-from-taskbar {
+    animation: restoreFromTaskbar 0.25s ease-out forwards;
+    transform-origin: top left;
+  }
+
+  .window-closing {
+    animation: flipOut 0.25s ease-out forwards; /* Apply the flip animation */
+  }
+  
+  .window-header {
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    padding: 10px;
+    user-select: none;
+    color: white;
+  }
+
+  .window-header .window-title {
+    flex-grow: 1; /* Title will grow and take up remaining space */
+    margin-right: 10px; /* Optional margin between title and button */
+  }
+  
+  .window-header button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+  }
+  
+  .window-header.active {
+    background-color: #333;
+  }
+  
+  .window-header.inactive {
+    background-color: #666666;
+  }
+  
+  
+  .window-content {
+    display: flex;
+    flex: 1;
+  }
+  
+  .resize-handle {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
+    background-color: transparent;
+  }
+
+  .caption-button {
+    color: white;
+    transition: background-color 0.1s ease, color 0.1s ease;
+  }
+
+  .caption-button:hover {
+    color: gray
+  }
+  
