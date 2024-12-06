@@ -131,11 +131,20 @@
   .window-header {
     display: flex;
     justify-content: space-between;
+    align-content: center;
     border: none;
     padding: 10px;
     user-select: none;
     color: white;
   }
+
+  .window-header .window-icon {
+    width: 20px;
+    height: 20px;
+    padding: 0px;
+    margin-right: 10px;
+  }
+  
 
   .window-header .window-title {
     flex-grow: 1; /* Title will grow and take up remaining space */
@@ -181,4 +190,3 @@
   .caption-button:hover {
     color: gray
   }
-  

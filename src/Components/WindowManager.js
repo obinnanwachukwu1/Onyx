@@ -22,6 +22,7 @@ const WindowManager = () => {
             const newWindow = {
                 id: Date.now(),
                 appId: app.id,
+                appIcon: app.icon,
                 title: app.name,
                 content: app.component,
                 position: app.initialPosition || { x: 100, y: 100 },

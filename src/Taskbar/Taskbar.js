@@ -33,9 +33,10 @@ const Taskbar = React.forwardRef(( { windows, setButtonPosition}, ref) => {
               <button
                 key={window.id}
                 ref={(el) => (buttonRefs.current[window.id] = el)}
-                className={`taskbar-item ${window.isMinimized ? 'minimized' : !window.active ? 'inactive' : ''}`}
+                className={`taskbar-item ${window.isMinimized ? 'minimized' : !window.isActive ? 'inactive' : ''}`}
                 onClick={() => activateWindow(window.id)}
               >
+                <img src={window.appIcon} className='taskbar-icon'/>
                 {window.title}
               </button>
             )

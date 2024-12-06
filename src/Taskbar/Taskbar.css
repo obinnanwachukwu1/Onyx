@@ -21,6 +21,9 @@
   }
   
   .taskbar-item {
+    display: flex;
+    justify-content: left;
+    align-items: center;
     background-color: #5555558a;
     height: 40px;
     color: white;
@@ -31,8 +34,17 @@
     border-radius: 5px;
     outline: none;
     flex-shrink: 0;
-    width: 150px;
+    width: 180px;
+    font-size: 14px;
   }
+
+  .taskbar-item .taskbar-icon {
+    height: 20px;
+    width: 20px;
+    margin-right: 10px;
+  }
+
+
   
   .taskbar-item:hover {
     background-color: #777;

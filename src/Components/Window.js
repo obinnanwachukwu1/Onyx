@@ -9,6 +9,7 @@ import { WindowManagerContext } from './WindowManagerContext';
 const Window = ({
   id,
   appId,
+  appIcon,
   title,
   content,
   position,
@@ -177,10 +178,11 @@ const Window = ({
       onContextMenu={(e) => {e.stopPropagation(); e.preventDefault()}}
     >
       <div className={`window-header ${isActive ? 'active' : 'inactive'}`} onMouseDown={handleMouseDown} onDoubleClick={toggleMaximizing}>
-      <span className="window-title">{title}</span>
-      <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faWindowMinimize}/></button>
-      <button className="caption-button" onClick={toggleMaximizing}>{!isMaximized? <FontAwesomeIcon icon={faWindowMaximize} /> : <FontAwesomeIcon icon={faWindowRestore} />}</button>
-      <button className="caption-button" onClick={handleClosing}><FontAwesomeIcon icon={faX}/></button>
+        <img src={appIcon} className='window-icon'/>
+        <span className="window-title">{title}</span>
+        <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faWindowMinimize}/></button>
+        <button className="caption-button" onClick={toggleMaximizing}>{!isMaximized? <FontAwesomeIcon icon={faWindowMaximize} /> : <FontAwesomeIcon icon={faWindowRestore} />}</button>
+        <button className="caption-button" onClick={handleClosing}><FontAwesomeIcon icon={faX}/></button>
       </div>
       <div className="window-content" style={{
         flexGrow: 1,
