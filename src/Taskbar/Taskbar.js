@@ -1,11 +1,12 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useContext } from 'react';
 import './Taskbar.css';
 import Clock from './Clock';
 import LaunchButton from './LaunchButton';
+import { WindowManagerContext } from '../Components/WindowManagerContext';
 
-const Taskbar = React.forwardRef(( { windows, onSelectWindow, setButtonPosition, toggleLauncher }, ref) => {
+const Taskbar = React.forwardRef(( { windows, setButtonPosition}, ref) => {
+  const {activateWindow, toggleLauncherVisibility} = useContext(WindowManagerContext)
   const buttonRefs = useRef({});
-
   const handleRightClick = (e, val) => {
     e.stopPropagation();
     e.preventDefault();
@@ -24,7 +25,7 @@ const Taskbar = React.forwardRef(( { windows, onSelectWindow, setButtonPosition,
 
   return (
     <div ref={ref} className="taskbar" onContextMenu={(e) => handleRightClick(e, 2)}>
-      <LaunchButton onClick={toggleLauncher} />
+      <LaunchButton onClick={toggleLauncherVisibility} />
       <div className="taskbar-items">
         {windows.map(
           (window) =>
@@ -33,7 +34,7 @@ const Taskbar = React.forwardRef(( { windows, onSelectWindow, setButtonPosition,
                 key={window.id}
                 ref={(el) => (buttonRefs.current[window.id] = el)}
                 className={`taskbar-item ${window.isMinimized ? 'minimized' : !window.active ? 'inactive' : ''}`}
-                onClick={() => onSelectWindow(window.id)}
+                onClick={() => activateWindow(window.id)}
               >
                 {window.title}
               </button>

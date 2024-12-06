@@ -1,55 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowMinimize} from '@fortawesome/free-solid-svg-icons/faWindowMinimize';
 import './Window.css';
 import { faX } from '@fortawesome/free-solid-svg-icons';
 import { faWindowMaximize, faWindowRestore } from '@fortawesome/free-regular-svg-icons';
+import { WindowManagerContext } from './WindowManagerContext';
 
 const Window = ({
   id,
+  appId,
   title,
   content,
   position,
-  setPosition,
   size,
-  setSize,
-  restoreSize,
-  isActive,
   isMaximized,
-  doRestoreFromTaskbar,
-  closingWindowID,
-  setdoRestoreFromTaskbar,
-  preClose,
-  preMaximize,
-  preRestore,
-  getTaskbarTransformPos,
-  onClose,
-  onClick,
+  isMinimized,
+  showInTaskbar,
+  isActive,
+  restoreSize,
+  isRestoringFromTaskbar,
+  setisRestoringFromTaskbar,
   onMinimize,
-  onMaximize,
-  onRestore,
 }) => {
-//   const [position, setPosition] = useState(initialPosition);
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [rel, setRel] = useState({ x: 0, y: 0 });
-  const [isOpening, setIsOpening] = useState(!doRestoreFromTaskbar);
+  const [isOpening, setIsOpening] = useState(!isRestoringFromTaskbar);
   const [isClosing, setIsClosing] = useState(false);
   const [isMinimizing, setIsMinimizing] = useState(false);
   const [isMaximizing, setIsMaximizing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [initialPosition, setInitialPosition] = useState(null);
+  const {closingWindowID, activateWindow, setWindowPosition, setWindowSize, sendIntentToClose, sendIntentToMaximize, sendIntentToRestore, notifyClose, notifyMaximize, notifyMinimize, notifyRestore, getTaskbarTransformPos, afterRestoreFromTaskbar} = useContext(WindowManagerContext)
 
   useEffect(() => {
     if (isOpening) {
         setTimeout(() => {
             setIsOpening(false);
             }, 250);
-    } else if (isActive && doRestoreFromTaskbar) {
-        getTaskbarTransformPos();
+    } else if (isActive && isRestoringFromTaskbar) {
+        getTaskbarTransformPos(id);
         setTimeout(() => {
-            setdoRestoreFromTaskbar(false);
-            doRestoreFromTaskbar = false;
+            afterRestoreFromTaskbar(id);
+            isRestoringFromTaskbar = false;
           }, 250);
     }
   }, []);
@@ -58,48 +51,46 @@ const Window = ({
     if (closingWindowID === id) {
       setIsClosing(true);
       setTimeout(() => {
-          onClose();
+          notifyClose(id);
         }, 250);
     }
   }, [closingWindowID])
   
   const handleWindowClick = (e) => {
     e.stopPropagation();
-    onClick();
+    activateWindow(id);
   };
 
   const handleClosing = (e) => {
-    preClose();
+    sendIntentToClose(id);
   }
 
   const handleMinimizing = (e) => {
-    getTaskbarTransformPos();
+    getTaskbarTransformPos(id);
     setIsMinimizing(true);
     setTimeout(() => {
-        onMinimize();
+        notifyMinimize(id);
         setIsMinimizing(false);
       }, 250);
   }
 
   const toggleMaximizing = (e) => {
     if (!isMaximized) {
-      preMaximize();
+      sendIntentToMaximize(id);
       setIsMaximizing(true);
       setTimeout(() => {
-        onMaximize();
+        notifyMaximize(id);
         setIsMaximizing(false);
       }, 250)
     } else {
-      preRestore();
+      sendIntentToRestore(id);
       console.log( document.documentElement.style.getPropertyValue('--width'))
       setIsRestoring(true);
       setTimeout(() => {
-        onRestore();
+        notifyRestore(id);
         setIsRestoring(false);
       }, 250)
     }
-
-    
   }
 
   const handleMouseDown = (e) => {
@@ -110,7 +101,7 @@ const Window = ({
       y: e.pageY - position.y,
     });
     document.body.style.userSelect = 'none';
-    onClick();
+    activateWindow(id);
   };
 
   const handleMouseMove = (e) => {
@@ -123,13 +114,13 @@ const Window = ({
 
       if (dragging) {
         if (!isMaximized) {
-          setPosition({
+          setWindowPosition(id, {
             x: Math.max(0, Math.min(e.pageX - rel.x, window.innerWidth - size.width)),
             y: Math.max(0, Math.min(e.pageY - rel.y, window.innerHeight - size.height)),
           });
         } else {
-          setSize(restoreSize);
-          setPosition({
+          setWindowSize(id, restoreSize);
+          setWindowPosition(id, {
             x:  Math.max(0, Math.min(e.pageX - restoreSize.width/2, window.innerWidth - restoreSize.width)),
             y:  Math.max(Math.min(e.pageY - 10, window.innerHeight - restoreSize.height), 0),
           });
@@ -139,7 +130,7 @@ const Window = ({
     if (resizing) {
       const newWidth = Math.max(200, e.pageX - position.x); // 200 is the min width
       const newHeight = Math.max(150, e.pageY - position.y); // 150 is the min height
-      setSize({ width: newWidth, height: newHeight });
+      setWindowSize(id, { width: newWidth, height: newHeight });
     }
   };
 
@@ -174,7 +165,7 @@ const Window = ({
 
   return (
     <div
-      className={`window ${isOpening ? 'window-opening' : isClosing ? 'window-closing' : doRestoreFromTaskbar ? 'window-restoring-from-taskbar' : isMinimizing ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : '' } ${isActive ? 'active' : 'inactive'} ${isMaximized || isMaximizing? 'maximized' : ''}`}
+      className={`window ${isOpening ? 'window-opening' : isClosing ? 'window-closing' : isRestoringFromTaskbar ? 'window-restoring-from-taskbar' : isMinimizing ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : '' } ${isActive ? 'active' : 'inactive'} ${isMaximized || isMaximizing? 'maximized' : ''}`}
       style={{
         top: position.y,
         left: position.x,
