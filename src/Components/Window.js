@@ -191,7 +191,11 @@ const Window = ({
       <button className="caption-button" onClick={toggleMaximizing}>{!isMaximized? <FontAwesomeIcon icon={faWindowMaximize} /> : <FontAwesomeIcon icon={faWindowRestore} />}</button>
       <button className="caption-button" onClick={handleClosing}><FontAwesomeIcon icon={faX}/></button>
       </div>
-      <div className="window-content">
+      <div className="window-content" style={{
+        flexGrow: 1,
+        width: '100%',
+        height:  '100%',
+      }}>
         {content}
       </div>
       <div className="resize-handle" onMouseDown={handleResizeStart} />

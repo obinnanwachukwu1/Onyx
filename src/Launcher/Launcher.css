@@ -1,21 +1,67 @@
+@keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideDown {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
+  
+
 .launcher {
     position: fixed;
     bottom: 50px;
     left: 0;
-    background-color: #333;
+    background-color: #191919c6;
     border-radius: 8px;
     padding: 16px;
     margin: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     z-index: 1000;
-    width: 600px;
+    width: 542px;
     height: 500px;
 }
+
+.launcher.visible {
+    animation: slideUp 0.2s ease-in-out forwards;
+  }
+  
+.launcher.hidden {
+    animation: slideDown 0.2s ease-in-out forwards;
+  }
 
 .launcher-content {
     min-width: 600px;
     min-height: 500px;
     color: white;
+}
+
+.launcher-body {
+    display: flex; /* Enable flexbox */
+    flex-wrap: wrap; /* Allow wrapping to next line */
+    flex-direction: row; /* Items flow in a row */
+    align-content: flex-start; /* Align rows within the container */
+    justify-content: flex-start; /* Align items within each row */
+    height: 100%; /* Ensure it respects the parent's height */
+    width: 100%; /* Fill the parent's width */
+}
+
+.launcher-body > * {
+    margin-right: 10px; 
+    margin-bottom: 10px;
 }
 
 .launcher button {

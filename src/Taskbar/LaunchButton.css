@@ -3,13 +3,17 @@
     height: 40px;
     font-size: large;
     align-items: center;
-    background-color: #555;
+    background-color: transparent;
     color: white;
     border: none;
-    margin-right: 5px;
-    padding: 10px;
+    margin-right: 10px;
+    padding: 4px;
     cursor: pointer;
     border-radius: 5px;
     outline: none;
-    flex-shrink: 0;
+    /* flex-shrink: 0; */
+  }
+
+  .launch-button > * {
+    height: 75%;
   }

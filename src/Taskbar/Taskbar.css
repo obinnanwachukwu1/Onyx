@@ -21,7 +21,7 @@
   }
   
   .taskbar-item {
-    background-color: #555;
+    background-color: #5555558a;
     height: 40px;
     color: white;
     border: none;
@@ -31,6 +31,7 @@
     border-radius: 5px;
     outline: none;
     flex-shrink: 0;
+    width: 150px;
   }
   
   .taskbar-item:hover {

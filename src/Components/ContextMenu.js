@@ -6,7 +6,10 @@ import { faCaretRight } from '@fortawesome/free-solid-svg-icons';
 
 const ContextMenu = ({ contextMenuItems, position, onClose}) => {
     return (
-        <div className="context-menu" style={{
+        <div className="context-menu" onClick={(e) => {
+            
+        }}
+        style={{
             top: position.y,
             left: position.x,
           }}>

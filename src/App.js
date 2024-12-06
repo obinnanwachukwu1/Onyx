@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Window from './Window';
+import Window from './Components/Window';
 import Taskbar from './Taskbar/Taskbar';
 import IconNewWindow from "./assets/icons/IconNewWindow.svg"
 import "./App.css"
@@ -7,6 +7,8 @@ import DesktopIcon from './Desktop/DesktopIcon';
 import IconNotepad from "./assets/icons/IconNotepad.svg"
 import { ContextMenu, ContextMenuItem } from './Components/ContextMenu';
 import Launcher from './Launcher/Launcher';
+import Notepad from './Apps/Notepad/Notepad';
+import WelcomeCenter from './Apps/WelcomeCenter/WelcomeCenter';
 
 function App() {
   const [windows, setWindows] = useState([]);
@@ -15,8 +17,18 @@ function App() {
   const [buttonPositions, setButtonPositions] = useState({}); // Store taskbar button positions
   const [contextMenu, setContextMenu] = useState(null);
   const [isLauncherVisible, setIsLauncherVisible] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(false)
   const taskbarRef = useRef(null);
 
+  const onFirstLoad = () => {
+    if (firstLoad) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      spawnWindow("Welcome Center", <WelcomeCenter/>, {width: 500, height: 500})
+    }, 500);
+    setFirstLoad(true);
+  }
   const handleRightClick = (e, val) => {
     e.stopPropagation();
     e.preventDefault();
@@ -124,12 +136,21 @@ function App() {
   };
 
   const setAllInactive = (e) => {
-    // Check if click is inside launcher
-    const launcherElement = document.querySelector('.launcher');
-    if (launcherElement && launcherElement.contains(e.target)) {
-      return;
+    // Check if the click is inside an active context menu
+    if (contextMenu && contextMenu.visible) {
+      const contextMenuElement = document.querySelector('.context-menu');
+      if (contextMenuElement && contextMenuElement.contains(e.target)) {
+        return;
+      }
     }
-    
+    // Check if click is inside launcher
+    if (isLauncherVisible) {
+      const launcherElement = document.querySelector('.launcher');
+      if (launcherElement && launcherElement.contains(e.target)) {
+        return;
+      }
+    }
+
     setActiveWindowId(null);
     setContextMenu(null);
     setIsLauncherVisible(false);
@@ -211,7 +232,7 @@ function App() {
   };
 
   return (
-    <div className="desktop" onMouseDown={setAllInactive} onContextMenu={(e) => handleRightClick(e, 1)}>
+    <div className="desktop" onMouseDown={setAllInactive} onContextMenu={(e) => handleRightClick(e, 1)} onLoad={onFirstLoad}>
       <DesktopIcon imageSrc={IconNewWindow} text={"Test Window"} onClick={() => spawnWindow(
         "Hello World", 
         <div style={{
@@ -234,23 +255,7 @@ function App() {
         </div>, 
         {width: 500, height:500})}/>
       <DesktopIcon imageSrc={IconNotepad} text={"Notepad"} onClick={() => spawnWindow(
-        "Notepad", 
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flex: 1,
-          width: "100%",
-          height: "100%",
-        }}>
-          <textarea style={{
-            width: "100%",
-            height: "100%",
-            flex: 1,
-            flexGrow: 1
-          }}
-          onContextMenu={(e) => e.stopPropagation()}
-          ></textarea>
-        </div>, 
+        "Notepad",<Notepad />, 
         {width: 500, height:500})}/>
       {windows.map((window) => (
         !window.isMinimized ? (<Window
@@ -285,10 +290,12 @@ function App() {
             {onClick: item.onClick, label: item.label}
           ))} 
           position={contextMenu.position}
-          onClose={() => setAllInactive}
+          onClose={() => {{
+            setContextMenu(null);
+          }}}
         />
       ) : null}
-      <Launcher isVisible={isLauncherVisible} onClose={closeLauncher} />
+      <Launcher isVisible={isLauncherVisible} onClose={closeLauncher} spawnWindow={spawnWindow}/>
       <Taskbar ref={taskbarRef} windows={windows} onSelectWindow={activateWindow} setButtonPosition={setButtonPosition} toggleLauncher={toggleLauncher}/>
     </div>
   );

@@ -1,0 +1,1356 @@
+> src/App.css
+.desktop {
+    user-select: none;
+}
+> src/index.js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+> src/index.css
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+.desktop {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.desktop::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  
+  background-image: url("./assets/wallpaper/wall0.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  filter: blur(1px);
+  transform: scale(1.05);
+}
+
+.desktop h1 {
+  color: white;
+  padding: 20px;
+}
+> src/App.js
+import React, { useState, useRef, useEffect } from 'react';
+import Window from './Components/Window';
+import Taskbar from './Taskbar/Taskbar';
+import IconNewWindow from "./assets/icons/IconNewWindow.svg"
+import "./App.css"
+import DesktopIcon from './Desktop/DesktopIcon';
+import IconNotepad from "./assets/icons/IconNotepad.svg"
+import { ContextMenu, ContextMenuItem } from './Components/ContextMenu';
+import Launcher from './Launcher/Launcher';
+import Notepad from './Apps/Notepad/Notepad';
+import WelcomeCenter from './Apps/WelcomeCenter/WelcomeCenter';
+
+function App() {
+  const [windows, setWindows] = useState([]);
+  const [closingWindowID, setClosingWindowID] = useState(-1);
+  const [activeWindowId, setActiveWindowId] = useState(null);
+  const [buttonPositions, setButtonPositions] = useState({}); // Store taskbar button positions
+  const [contextMenu, setContextMenu] = useState(null);
+  const [isLauncherVisible, setIsLauncherVisible] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(false)
+  const taskbarRef = useRef(null);
+
+  const onFirstLoad = () => {
+    if (firstLoad) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      spawnWindow("Welcome Center", <WelcomeCenter/>, {width: 500, height: 500})
+    }, 500);
+    setFirstLoad(true);
+  }
+  const handleRightClick = (e, val) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setAllInactive();
+    const contextMenuItems = [
+      { label: 'Change Wallpaper', onClick: () => console.log("Hello World")}
+    ];
+
+    const contextMenuPosition = { x: e.clientX, y: e.clientY };
+
+    setContextMenu({
+      items: contextMenuItems,
+      position: contextMenuPosition,
+      visible: true
+    });
+  };
+
+  const setButtonPosition = (id, position) => {
+    setButtonPositions((prevPositions) => ({
+      ...prevPositions,
+      [id]: position,
+    }));
+  };
+
+  // Function to create a new window
+  const spawnWindow = (title, content, sz) => {
+      const newWindow = {
+        id: Date.now(),
+        title: title,
+        content: content,
+        position: { x: 100, y: 100 },
+        size: sz,
+        minSize: sz,
+        restorePosition:{ x: 100, y: 100 },
+        restoreSize: sz,
+        isMaximized: false,
+        isMinimized: false,
+        isRestoring: false,
+        showInTaskbar: true,
+        active: true,
+      };
+      setWindows([...windows, newWindow]);
+      setActiveWindowId(newWindow.id);
+    };
+
+  // Function to handle window actions before the closing animation starts
+  const preCloseWindow = (id) => {
+    if (closingWindowID === -1) {
+      setClosingWindowID(id);
+      setWindows((prevWindows) =>
+        prevWindows.map((window) =>
+          window.id === id
+            ? { ...window, showInTaskbar: false}
+            : window
+        )
+      );
+    }
+  };
+
+  const updateWindowPosition = (id, newPosition) => {
+    setWindows((prevWindows) =>
+      prevWindows.map((window) =>
+        window.id === id ? { ...window, position: newPosition, restorePosition: newPosition } : window
+      )
+    );
+  };
+
+  const setWindowSize = (id, sz) => {
+    const minSize = windows.find((window) => window.id === id).minSize;
+    const newSz = {width: Math.max(sz.width, minSize.width), height: Math.max(sz.height, minSize.height)};
+    setWindows((prevWindows) =>
+      prevWindows.map((window) =>
+        window.id === id ? { ...window, size: newSz, restoreSize: newSz, isMaximized: false } : window
+      )
+    );
+  };
+
+  const setdoRestoreFromTaskbar = (id, val) => {
+    setWindows((prevWindows) =>
+      prevWindows.map((window) =>
+        window.id === id ? { ...window, doRestoreFromTaskbar: val } : window
+      )
+    );
+  }
+
+  const closeWindow = (id) => {
+    setWindows(windows.filter(window => window.id !== id));
+    if (id === activeWindowId) setActiveWindowId(null); // Reset active window if it was closed
+    setClosingWindowID(-1);
+  };
+
+  // Function to bring a window to the front (make it active)
+  const activateWindow = (id) => {
+    setIsLauncherVisible(false);
+    setActiveWindowId(id);
+    setWindows((prevWindows) =>
+      prevWindows.map((window) =>
+        window.id === id ? ( window.isMinimized ? 
+          { ...window, doRestoreFromTaskbar: true, isMinimized: false, active: true} 
+          : { ...window, active: true}
+        ) 
+          : { ...window, active: false }
+      )
+    );
+  };
+
+  const setAllInactive = (e) => {
+    // Check if the click is inside an active context menu
+    if (contextMenu && contextMenu.visible) {
+      const contextMenuElement = document.querySelector('.context-menu');
+      if (contextMenuElement && contextMenuElement.contains(e.target)) {
+        return;
+      }
+    }
+    // Check if click is inside launcher
+    if (isLauncherVisible) {
+      const launcherElement = document.querySelector('.launcher');
+      if (launcherElement && launcherElement.contains(e.target)) {
+        return;
+      }
+    }
+
+    setActiveWindowId(null);
+    setContextMenu(null);
+    setIsLauncherVisible(false);
+    setWindows((prevWindows) =>
+      prevWindows.map((window) => ({
+        ...window,
+        active: false,
+      }))
+    );
+  };
+
+  const minimizeWindow = (id) => {
+    setWindows((prevWindows) =>
+      prevWindows.map((window) =>
+        window.id === id ? { ...window, isMinimized: true, minimizing: false } : window
+      )
+    );
+  };
+
+  const maximizeWindow = (id) => {
+    setWindows((prevWindows) =>
+      prevWindows.map((w) =>
+        w.id === id ? { ...w, isMaximized: true, size: {width: window.innerWidth, height: (window.innerHeight - taskbarRef.current.clientHeight)}, position: {x: 0, y: 0}} : w
+      )
+    );
+  }
+
+  const restoreWindow = (id) => {
+    setWindows((prevWindows) =>
+      prevWindows.map((w) =>
+        w.id === id ? { ...w, isMaximized: false, size: w.restoreSize, position: w.restorePosition} : w
+      )
+    );
+  }
+
+  const setIsMaximized = (id, val) => {
+    setWindows((prevWindows) =>
+      prevWindows.map((w) =>
+        w.id === id ? { ...w, isMaximized: false} : w
+      )
+    );
+  }
+
+  const preMaximizeWindow = ()=> {
+    document.documentElement.style.setProperty('--width', `${window.innerWidth}px`);
+    document.documentElement.style.setProperty('--height', `${window.innerHeight - taskbarRef.current.clientHeight}px`);
+  }
+
+  const preRestoreWindow = (id) => {
+    const sz = windows.find((window) => window.id ==id).restoreSize;
+    const pos = windows.find((window) => window.id ==id).restorePosition;
+    console.log(pos);
+
+    document.documentElement.style.setProperty('--width', `${sz.width}px`);
+    document.documentElement.style.setProperty('--height', `${sz.height}px`);
+    document.documentElement.style.setProperty('--dx', `${pos.x}px`);
+    document.documentElement.style.setProperty('--dy', `${pos.y}px`);
+  }
+
+  const getTaskbarTransformPos = (id) => {
+    const taskbarButtonPosition = buttonPositions[id];
+    const windowPosition = windows.find((window) => window.id === id).position;
+
+    // Calculate the distance to animate
+    const dx = taskbarButtonPosition.left - windowPosition.x;
+    const dy = taskbarButtonPosition.top - windowPosition.y;
+  
+    // Add a CSS variable to handle the transform values
+    document.documentElement.style.setProperty('--dx', `${dx}px`);
+    document.documentElement.style.setProperty('--dy', `${dy}px`);
+  };
+  
+  const toggleLauncher = () => {
+    setIsLauncherVisible(!isLauncherVisible);
+  };
+
+  const closeLauncher = () => {
+    setIsLauncherVisible(false);
+  };
+
+  return (
+    <div className="desktop" onMouseDown={setAllInactive} onContextMenu={(e) => handleRightClick(e, 1)} onLoad={onFirstLoad}>
+      <DesktopIcon imageSrc={IconNewWindow} text={"Test Window"} onClick={() => spawnWindow(
+        "Hello World", 
+        <div style={{
+          width: '300px',
+          height: '300px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, #1e3c72, #2a5298, #0f2027)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          // boxShadow: '0 0 20px #88f, 0 0 40px #88f',
+          color: '#fff',
+          fontFamily: 'sans-serif',
+          textAlign: 'center',
+          padding: '20px',
+          lineHeight: '1.5',
+          animation: 'glow 2s infinite alternate'
+        }}>
+          <p>Step through the portal<br/>into a world<br/>of endless possibilities.</p>
+        </div>, 
+        {width: 500, height:500})}/>
+      <DesktopIcon imageSrc={IconNotepad} text={"Notepad"} onClick={() => spawnWindow(
+        "Notepad",<Notepad />, 
+        {width: 500, height:500})}/>
+      {windows.map((window) => (
+        !window.isMinimized ? (<Window
+          key={window.id}
+          id={window.id}
+          title={window.title}
+          content={window.content}
+          position={window.position}
+          setPosition={(newPosition) => updateWindowPosition(window.id, newPosition)}
+          restorePosition={window.position}
+          restoreSize={window.restoreSize}
+          size={window.size}
+          setSize={(newSize) => setWindowSize(window.id, newSize)}
+          isActive={window.id === activeWindowId}
+          isMaximized={window.isMaximized}
+          doRestoreFromTaskbar={window.doRestoreFromTaskbar}
+          closingWindowID={closingWindowID}
+          setdoRestoreFromTaskbar={(val) => setdoRestoreFromTaskbar(window.id, val)}
+          preClose={() => preCloseWindow(window.id)}
+          preMaximize={() => preMaximizeWindow()}
+          preRestore={() => preRestoreWindow(window.id)}
+          getTaskbarTransformPos={() => getTaskbarTransformPos(window.id)}
+          onClose={() => closeWindow(window.id)}
+          onClick={() => activateWindow(window.id)}
+          onMinimize={() => minimizeWindow(window.id)}
+          onMaximize={() => maximizeWindow(window.id)}
+          onRestore={() => restoreWindow(window.id)} />)  : null
+      ))}
+      {contextMenu ? (
+        <ContextMenu 
+          contextMenuItems={contextMenu.items.map((item, index) => (
+            {onClick: item.onClick, label: item.label}
+          ))} 
+          position={contextMenu.position}
+          onClose={() => {{
+            setContextMenu(null);
+          }}}
+        />
+      ) : null}
+      <Launcher isVisible={isLauncherVisible} onClose={closeLauncher} spawnWindow={spawnWindow}/>
+      <Taskbar ref={taskbarRef} windows={windows} onSelectWindow={activateWindow} setButtonPosition={setButtonPosition} toggleLauncher={toggleLauncher}/>
+    </div>
+  );
+}
+export default App;
+> src/Launcher/LauncherIcon.js
+import React from 'react';
+import './LauncherIcon.css'; // Make sure to create this CSS file for styling
+
+const LauncherIcon = ({ imageSrc, text, onClick }) => {
+    return (
+        <button className="launcher-icon-button" onClick={onClick}>
+            <img src={imageSrc} alt={text} className="launcher-icon-image" />
+            <span className="launcher-icon-text">{text}</span>
+        </button>
+    );
+};
+
+export default LauncherIcon;
+> src/Launcher/Launcher.css
+@keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideDown {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
+  
+
+.launcher {
+    position: fixed;
+    bottom: 50px;
+    left: 0;
+    background-color: #191919c6;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 542px;
+    height: 500px;
+}
+
+.launcher.visible {
+    animation: slideUp 0.2s ease-in-out forwards;
+  }
+  
+.launcher.hidden {
+    animation: slideDown 0.2s ease-in-out forwards;
+  }
+
+.launcher-content {
+    min-width: 600px;
+    min-height: 500px;
+    color: white;
+}
+
+.launcher-body {
+    display: flex; /* Enable flexbox */
+    flex-wrap: wrap; /* Allow wrapping to next line */
+    flex-direction: row; /* Items flow in a row */
+    align-content: flex-start; /* Align rows within the container */
+    justify-content: flex-start; /* Align items within each row */
+    height: 100%; /* Ensure it respects the parent's height */
+    width: 100%; /* Fill the parent's width */
+}
+
+.launcher-body > * {
+    margin-right: 10px; 
+    margin-bottom: 10px;
+}
+
+.launcher button {
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.launcher button:hover {
+    background-color: #666;
+}
+
+> src/Launcher/Launcher.js
+import React, { useState, useEffect } from 'react';
+import './Launcher.css';
+import LauncherIcon from './LauncherIcon';
+import IconNotepad from "../assets/icons/IconNotepad.svg"
+import Notepad from '../Apps/Notepad/Notepad';
+
+
+const Launcher = ({ isVisible, onClose, spawnWindow }) => {
+  const [shouldRender, setShouldRender] = useState(isVisible);
+
+  useEffect(() => {
+    if (isVisible) {
+      setShouldRender(true);
+    } else {
+      const timer = setTimeout(() => setShouldRender(false), 500); // Matches animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible]);
+
+  if (!shouldRender) return null;
+
+  return (
+    <div className={`launcher ${isVisible ? "visible" : "hidden"}`}>
+      <div className="launcher-content">
+        <div className="launcher-header">
+          <h2>Launcher</h2>
+        </div>
+        <div className="launcher-body">
+          <LauncherIcon imageSrc={IconNotepad} text={"Notepad"} onClick={() => {
+            spawnWindow("Notepad",<Notepad />, 
+        {width: 500, height:500});
+        onClose();
+          }}/>
+          <LauncherIcon imageSrc={IconNotepad} text={"Notepad"}/>
+          <LauncherIcon imageSrc={IconNotepad} text={"Notepad"}/>
+          <LauncherIcon imageSrc={IconNotepad} text={"Notepad"}/>
+          <LauncherIcon imageSrc={IconNotepad} text={"Notepad"}/>
+          <LauncherIcon imageSrc={IconNotepad} text={"Notepad"}/>
+          <LauncherIcon imageSrc={IconNotepad} text={"Notepad"}/>
+          <LauncherIcon imageSrc={IconNotepad} text={"Notepad"}/>
+        </div>
+        <div className="launcher-footer">
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Launcher;
+
+> src/Launcher/LauncherIcon.css
+.launcher-icon-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    cursor: default;
+    transition: background-color 0.3s;
+    color: white;
+    width: 128px;
+    height: 128px;
+}
+
+.launcher-icon-button img {
+    width: 48px;
+    height: 48px;
+    padding: 8px;
+    background-color: transparent;
+    -webkit-filter: drop-shadow(3px 3px 5px #222);
+    filter: drop-shadow(3px 3px 5px #222);
+    display: inline-block;
+}
+
+.launcher-icon-button span {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: transparent;
+    -webkit-filter: drop-shadow(3px 3px 5px #222);
+    filter: drop-shadow(3px 3px 5px #222);
+    display: inline-block;
+}
+
+.launcher-icon-button:hover {
+    background-color: rgba(173, 216, 230, 0.5);
+}
+
+.launcher-icon-button:active {
+    background-color: rgba(0, 191, 255, 0.501);
+}
+> src/Desktop/DesktopIcon.js
+import React from 'react';
+import './DesktopIcon.css'; // Make sure to create this CSS file for styling
+
+const DesktopIcon = ({ imageSrc, text, onClick }) => {
+    return (
+        <button className="icon-button" onDoubleClick={onClick}>
+            <img src={imageSrc} alt={text} className="icon-image" />
+            <span className="icon-text">{text}</span>
+        </button>
+    );
+};
+
+export default DesktopIcon;
+> src/Desktop/DesktopIcon.css
+.icon-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    cursor: default;
+    transition: background-color 0.3s;
+    color: white;
+    width: 64pt;
+}
+
+.icon-button img {
+    width: 32pt;
+    height: 32pt;
+    padding: 8pt;
+    background-color: transparent;
+    -webkit-filter: drop-shadow(3px 3px 5px #222);
+    filter: drop-shadow(3px 3px 5px #222);
+    display: inline-block;
+}
+
+.icon-button span {
+    padding-top: 8pt;
+    padding-bottom: 8pt;
+    background-color: transparent;
+    -webkit-filter: drop-shadow(3px 3px 5px #222);
+    filter: drop-shadow(3px 3px 5px #222);
+    display: inline-block;
+}
+
+.icon-button:hover {
+    background-color: rgba(173, 216, 230, 0.5);
+}
+
+.icon-button:active {
+    background-color: rgba(0, 191, 255, 0.501);
+}
+> src/Components/Window.js
+import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faWindowMinimize} from '@fortawesome/free-solid-svg-icons/faWindowMinimize';
+import './Window.css';
+import { faX } from '@fortawesome/free-solid-svg-icons';
+import { faWindowMaximize, faWindowRestore } from '@fortawesome/free-regular-svg-icons';
+
+const Window = ({
+  id,
+  title,
+  content,
+  position,
+  setPosition,
+  size,
+  setSize,
+  restoreSize,
+  isActive,
+  isMaximized,
+  doRestoreFromTaskbar,
+  closingWindowID,
+  setdoRestoreFromTaskbar,
+  preClose,
+  preMaximize,
+  preRestore,
+  getTaskbarTransformPos,
+  onClose,
+  onClick,
+  onMinimize,
+  onMaximize,
+  onRestore,
+}) => {
+//   const [position, setPosition] = useState(initialPosition);
+  const [dragging, setDragging] = useState(false);
+  const [resizing, setResizing] = useState(false);
+  const [rel, setRel] = useState({ x: 0, y: 0 });
+  const [isOpening, setIsOpening] = useState(!doRestoreFromTaskbar);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isMinimizing, setIsMinimizing] = useState(false);
+  const [isMaximizing, setIsMaximizing] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [initialPosition, setInitialPosition] = useState(null);
+
+  useEffect(() => {
+    if (isOpening) {
+        setTimeout(() => {
+            setIsOpening(false);
+            }, 250);
+    } else if (isActive && doRestoreFromTaskbar) {
+        getTaskbarTransformPos();
+        setTimeout(() => {
+            setdoRestoreFromTaskbar(false);
+            doRestoreFromTaskbar = false;
+          }, 250);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (closingWindowID === id) {
+      setIsClosing(true);
+      setTimeout(() => {
+          onClose();
+        }, 250);
+    }
+  }, [closingWindowID])
+  
+  const handleWindowClick = (e) => {
+    e.stopPropagation();
+    onClick();
+  };
+
+  const handleClosing = (e) => {
+    preClose();
+  }
+
+  const handleMinimizing = (e) => {
+    getTaskbarTransformPos();
+    setIsMinimizing(true);
+    setTimeout(() => {
+        onMinimize();
+        setIsMinimizing(false);
+      }, 250);
+  }
+
+  const toggleMaximizing = (e) => {
+    if (!isMaximized) {
+      preMaximize();
+      setIsMaximizing(true);
+      setTimeout(() => {
+        onMaximize();
+        setIsMaximizing(false);
+      }, 250)
+    } else {
+      preRestore();
+      console.log( document.documentElement.style.getPropertyValue('--width'))
+      setIsRestoring(true);
+      setTimeout(() => {
+        onRestore();
+        setIsRestoring(false);
+      }, 250)
+    }
+
+    
+  }
+
+  const handleMouseDown = (e) => {
+    e.stopPropagation();
+    setInitialPosition({x: e.pageX, y: e.pageY});
+    setRel({
+      x: e.pageX - position.x,
+      y: e.pageY - position.y,
+    });
+    document.body.style.userSelect = 'none';
+    onClick();
+  };
+
+  const handleMouseMove = (e) => {
+    if (initialPosition) {
+      const deltaX = Math.abs(e.pageX - initialPosition.x);
+      const deltaY = Math.abs(e.pageY - initialPosition.y);
+      if (!dragging && (deltaX > 5 || deltaY > 5)) {
+        setDragging(true);
+      }
+
+      if (dragging) {
+        if (!isMaximized) {
+          setPosition({
+            x: Math.max(0, Math.min(e.pageX - rel.x, window.innerWidth - size.width)),
+            y: Math.max(0, Math.min(e.pageY - rel.y, window.innerHeight - size.height)),
+          });
+        } else {
+          setSize(restoreSize);
+          setPosition({
+            x:  Math.max(0, Math.min(e.pageX - restoreSize.width/2, window.innerWidth - restoreSize.width)),
+            y:  Math.max(Math.min(e.pageY - 10, window.innerHeight - restoreSize.height), 0),
+          });
+        }
+      }
+    }
+    if (resizing) {
+      const newWidth = Math.max(200, e.pageX - position.x); // 200 is the min width
+      const newHeight = Math.max(150, e.pageY - position.y); // 150 is the min height
+      setSize({ width: newWidth, height: newHeight });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDragging(false);
+    setResizing(false);
+    setInitialPosition(false);
+    document.body.style.userSelect = '';
+  };
+
+  const handleResizeStart = (e) => {
+    setResizing(true);
+    document.body.style.userSelect = 'none';
+  };
+
+  useEffect(() => {
+    // Handle drag and resize events
+    if (initialPosition || dragging || resizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [initialPosition, dragging, resizing]);
+  
+
+  return (
+    <div
+      className={`window ${isOpening ? 'window-opening' : isClosing ? 'window-closing' : doRestoreFromTaskbar ? 'window-restoring-from-taskbar' : isMinimizing ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : '' } ${isActive ? 'active' : 'inactive'} ${isMaximized || isMaximizing? 'maximized' : ''}`}
+      style={{
+        top: position.y,
+        left: position.x,
+        width: size.width,
+        height: size.height,
+        zIndex: isActive ? 100 : 1, // Active window gets higher z-index
+      }}
+      onMouseDown={handleWindowClick} // Notify App.js to bring this window to the front
+      onContextMenu={(e) => {e.stopPropagation(); e.preventDefault()}}
+    >
+      <div className={`window-header ${isActive ? 'active' : 'inactive'}`} onMouseDown={handleMouseDown} onDoubleClick={toggleMaximizing}>
+      <span className="window-title">{title}</span>
+      <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faWindowMinimize}/></button>
+      <button className="caption-button" onClick={toggleMaximizing}>{!isMaximized? <FontAwesomeIcon icon={faWindowMaximize} /> : <FontAwesomeIcon icon={faWindowRestore} />}</button>
+      <button className="caption-button" onClick={handleClosing}><FontAwesomeIcon icon={faX}/></button>
+      </div>
+      <div className="window-content" style={{
+        flexGrow: 1,
+        width: '100%',
+        height:  '100%',
+      }}>
+        {content}
+      </div>
+      <div className="resize-handle" onMouseDown={handleResizeStart} />
+    </div>
+  );
+};
+
+export default Window;
+> src/Components/ContextMenu.js
+import React from 'react';
+import { useState } from 'react';
+import './ContextMenu.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretRight } from '@fortawesome/free-solid-svg-icons';
+
+const ContextMenu = ({ contextMenuItems, position, onClose}) => {
+    return (
+        <div className="context-menu" onClick={(e) => {
+            
+        }}
+        style={{
+            top: position.y,
+            left: position.x,
+          }}>
+            {contextMenuItems.map((item, index) => (
+                <ContextMenuItem 
+                    key={index} 
+                    onClick={(e) => {
+                        item.onClick(e);
+                        onClose();
+                    }} 
+                    label={item.label} 
+                />
+            ))}
+        </div>
+    );
+};
+
+const ContextMenuItem = ({ onClick, label}) => {
+
+    return (
+        <div className="context-menu-item" onClick={onClick}>
+            {label}
+        </div>
+    );
+};
+
+export { ContextMenu, ContextMenuItem };
+> src/Components/Window.css
+
+  @keyframes flipIn {
+    0% {
+      transform: perspective(1000px) rotateX(-20deg); /* Start flipped */
+      opacity: 0;
+      scale: 80%;
+    }
+    100% {
+      transform: perspective(1000px) rotateX(0); /* End normal position */
+      opacity: 1;
+      scale: 100%;
+    }
+  }
+
+  @keyframes flipOut {
+    0% {
+        transform: perspective(1000px) rotateX(0); /* End normal position */
+        opacity: 1;
+        scale: 100%;
+      }
+    
+    100% {
+      transform: perspective(1000px) rotateX(10deg); /* Start flipped */
+      opacity: 0;
+      scale: 80%;
+    }
+  }
+  
+  @keyframes minimizeToTaskbar {
+    from {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translate(var(--dx), var(--dy)) scale(0.1); /* Move towards the taskbar */
+        opacity: 0;
+    }
+  } 
+
+  @keyframes restoreFromTaskbar {
+    from {
+        transform: translate(var(--dx), var(--dy)) scale(0.1); /* Move towards the taskbar */
+        opacity: 0;
+    }
+    to {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+  } 
+
+  @keyframes maximize {
+    0% {
+      transform: scale(1);
+    }
+  
+    100% {
+      top: 0;
+      left: 0;
+      width: var(--width);
+      height: var(--height);
+      transform: scale(1);
+    }
+  }
+
+  @keyframes restore {
+    0% {
+      transform: scale(1);
+    }
+  
+    100% {
+      top: var(--dy);
+      left: var(--dx);
+      width: var(--width);
+      height: var(--height);
+      transform: scale(1);
+    }
+  }
+  
+  .window {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid black;
+    border-top-left-radius: 10pt;
+    border-top-right-radius: 10pt;
+    background-color: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    transform: perspective(1000px) rotateY(0); /* Normal position */
+    transition: transform 0.5s ease; /* Smooth transition for other transforms */
+    overflow: hidden;
+  }
+  .window.active {
+    border: 2px solid #333;
+  }
+
+  .window.inactive {
+    border: 2px solid #666666;
+  }
+
+  .window.maximized {
+    border-top-left-radius: 0pt;
+    border-top-right-radius: 0pt;
+  }
+  
+  .window-opening {
+    animation: flipIn 0.25s ease-out forwards; /* Apply the flip animation */
+  }
+
+  .window-minimizing {
+    animation: minimizeToTaskbar 0.25s ease-out forwards;
+    transform-origin: top left;
+  }
+
+  .window-maximizing {
+    animation: maximize 0.25s ease-in-out forwards;
+  }
+
+  .window-restoring {
+    animation: restore 0.25s ease-in-out forwards;
+  }
+
+  .window-restoring-from-taskbar {
+    animation: restoreFromTaskbar 0.25s ease-out forwards;
+    transform-origin: top left;
+  }
+
+  .window-closing {
+    animation: flipOut 0.25s ease-out forwards; /* Apply the flip animation */
+  }
+  
+  .window-header {
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    padding: 10px;
+    user-select: none;
+    color: white;
+  }
+
+  .window-header .window-title {
+    flex-grow: 1; /* Title will grow and take up remaining space */
+    margin-right: 10px; /* Optional margin between title and button */
+  }
+  
+  .window-header button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+  }
+  
+  .window-header.active {
+    background-color: #333;
+  }
+  
+  .window-header.inactive {
+    background-color: #666666;
+  }
+  
+  
+  .window-content {
+    display: flex;
+    flex: 1;
+  }
+  
+  .resize-handle {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
+    background-color: transparent;
+  }
+
+  .caption-button {
+    color: white;
+    transition: background-color 0.1s ease, color 0.1s ease;
+  }
+
+  .caption-button:hover {
+    color: gray
+  }
+  
+> src/Components/ContextMenu.css
+.context-menu {
+    display: flex;
+    flex-direction: column;
+    min-width: 100pt;
+    position: absolute;
+    background-color: #333;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10pt;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    z-index: 1000;
+}
+
+.context-menu-item {
+    flex-grow: 1;
+    padding: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: darkgray;
+}
+
+.context-menu-item:hover {
+    background-color: #555;
+}
+> src/Taskbar/Clock.js
+import React, { useState, useEffect } from 'react';
+import "./Clock.css"
+
+const Clock = () => {
+  const [time, setTime] = useState(new Date());
+
+  // Update time every second
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTime(new Date());
+    }, 1000); // Update every 1000ms (1 second)
+
+    return () => clearInterval(intervalId); // Cleanup the interval on component unmount
+  }, []);
+
+  // Format the time to display it nicely
+  const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  return <div className="taskbar-clock clock"> {formattedTime}</div>;
+};
+
+export default Clock;
+
+> src/Taskbar/LaunchButton.css
+.launch-button {
+    width: 40px;
+    height: 40px;
+    font-size: large;
+    align-items: center;
+    background-color: transparent;
+    color: white;
+    border: none;
+    margin-right: 10px;
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 5px;
+    outline: none;
+    /* flex-shrink: 0; */
+  }
+
+  .launch-button > * {
+    height: 75%;
+  }
+> src/Taskbar/Taskbar.css
+.taskbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background-color: #191919c6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+    z-index: 100; /* Keep the taskbar on top of the windows */
+  }
+
+  .taskbar-items {
+    flex-grow: 1;
+    display: flex;
+    justify-content: left;
+    overflow:auto;
+  }
+  
+  .taskbar-item {
+    background-color: #5555558a;
+    height: 40px;
+    color: white;
+    border: none;
+    margin-right: 10px;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    outline: none;
+    flex-shrink: 0;
+    width: 150px;
+  }
+  
+  .taskbar-item:hover {
+    background-color: #777;
+  }
+  
+  .taskbar-item.minimized {
+    opacity: 0.4;
+  }
+  
+  .taskbar-item.inactive {
+    opacity: 0.8;
+  }
+> src/Taskbar/Taskbar.js
+import React, { useRef, useEffect, useState } from 'react';
+import './Taskbar.css';
+import Clock from './Clock';
+import LaunchButton from './LaunchButton';
+
+const Taskbar = React.forwardRef(( { windows, onSelectWindow, setButtonPosition, toggleLauncher }, ref) => {
+  const buttonRefs = useRef({});
+
+  const handleRightClick = (e, val) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log(val);
+  };
+
+  useEffect(() => {
+    windows.forEach((window) => {
+      const button = buttonRefs.current[window.id];
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        setButtonPosition(window.id, rect);
+      }
+    });
+  }, [windows]);
+
+  return (
+    <div ref={ref} className="taskbar" onContextMenu={(e) => handleRightClick(e, 2)}>
+      <LaunchButton onClick={toggleLauncher} />
+      <div className="taskbar-items">
+        {windows.map(
+          (window) =>
+            window.showInTaskbar && (
+              <button
+                key={window.id}
+                ref={(el) => (buttonRefs.current[window.id] = el)}
+                className={`taskbar-item ${window.isMinimized ? 'minimized' : !window.active ? 'inactive' : ''}`}
+                onClick={() => onSelectWindow(window.id)}
+              >
+                {window.title}
+              </button>
+            )
+        )}
+      </div>
+      <Clock />
+    </div>
+  );
+});
+
+export default Taskbar;
+
+> src/Taskbar/LaunchButton.js
+import React from 'react';
+import './LaunchButton.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRocket } from '@fortawesome/free-solid-svg-icons';
+
+const LaunchButton = ({ onClick }) => {
+    return (
+        <button className="launch-button" onClick={onClick}>
+            <FontAwesomeIcon icon={faRocket}/>
+        </button>
+    );
+};
+
+export default LaunchButton;
+> src/Taskbar/Clock.css
+
+.clock {
+    color: white;
+    font-size: 16px;
+    padding: 20px;
+    flex-shrink: 0;
+  }
+> src/assets/icons/IconNotepad.svg
+<svg width="48" xmlns="http://www.w3.org/2000/svg" height="48" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="a" y1="30" x1="34" y2="28" x2="24" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#f39c12"/>
+   <stop offset="1" stop-color="#ffc35a"/>
+  </linearGradient>
+  <linearGradient id="b" y1="30" x1="24" y2="44" x2="38" gradientUnits="userSpaceOnUse">
+   <stop/>
+   <stop offset="1" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="c" y1="37" y2="4" x2="0" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#da4453"/>
+   <stop offset="1" stop-color="#ff7336"/>
+  </linearGradient>
+  <linearGradient xlink:href="#b" id="d" y1="22.313" x1="20.438" y2="25.406" x2="23.531" gradientUnits="userSpaceOnUse"/>
+  <linearGradient id="e" y1="45" y2="24" x2="0" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#60c0f4"/>
+   <stop offset="1" stop-color="#b9e9ff"/>
+  </linearGradient>
+  <linearGradient id="f" y1="23" x1="32" y2="22" x2="25" gradientUnits="userSpaceOnUse" gradientTransform="translate(-1)">
+   <stop stop-color="#cea476"/>
+   <stop offset="1" stop-color="#dab58b"/>
+  </linearGradient>
+  <linearGradient xlink:href="#b" id="g" y1="24" x1="25" y2="38" x2="39" gradientUnits="userSpaceOnUse"/>
+ </defs>
+ <g transform="translate(1)">
+  <g fill-rule="evenodd">
+   <path fill="url(#e)" d="m24 24c0 0-1 .467-1 2 0 1.533 1 2 1 2v2c0 0-6 1.867-6 8 0 6 2.933 6 6 6h10c3.067 0 6 0 6-6 0-6.133-6-8-6-8v-2c0 0 1-.467 1-2 0-1.533-1-2-1-2z"/>
+   <path fill="#65c2f5" d="m26 24v7.473l-1.406.438c0 0-1.138.359-2.324 1.334-1.186.975-2.27 2.341-2.27 4.756 0 2.674.536 3.302.965 3.59.428.288 1.502.41 3.035.41h10c1.533 0 2.607-.122 3.035-.41.428-.288.965-.916.965-3.59 0-2.414-1.084-3.781-2.27-4.756-1.186-.975-2.324-1.334-2.324-1.334l-1.406-.438v-7.473z"/>
+   <path opacity=".2" fill="url(#b)" d="m24 30l13.559 13.559c1.44-.608 2.441-2.059 2.441-5.559 0-6.133-6-8-6-8z"/>
+  </g>
+  <g stroke-linejoin="bevel">
+   <g stroke-width="2">
+    <rect width="10" x="24" y="28" fill="url(#a)" height="2" stroke-linecap="round"/>
+    <path fill="#34495e" d="m20.742 35c-.447.78-.742 1.747-.742 3 0 2.674.536 3.302.965 3.59.428.288 1.502.41 3.035.41h10c1.533 0 2.607-.122 3.035-.41.428-.288.965-.916.965-3.59 0-1.253-.296-2.22-.742-3z"/>
+   </g>
+   <g stroke-linecap="round" stroke-width="4">
+    <rect width="10" x="24" y="22" fill="url(#f)" rx=".989" height="2"/>
+    <rect width="6" x="26" y="24" fill="#cea476" height="3"/>
+   </g>
+  </g>
+  <path opacity=".2" fill="url(#g)" fill-rule="evenodd" d="m25 24l14.969 14.969c.019-.306.031-.625.031-.969 0-6.133-6-8-6-8v-2c0 0 1-.467 1-2 0-1.533-1-2-1-2z"/>
+ </g>
+ <g fill-rule="evenodd" transform="translate(-1)">
+  <path fill="url(#c)" d="m33.998 4l-2.33 1.143c-2.332 1.144-4.794 3.75-4.794 3.75l.366 2.944c-.138.201-.283.415-.429.629l-1.036-1.857-1.686 2.098 1.191 2.042c-.007.011-.016.023-.023.034l-1.491-1.694c0 0-.971 1.143-3.95 5.402-2.979 4.259-5.441 9.217-5.441 9.217l.115 3.368c-.16.237-.33.494-.487.725l-.469-2.759-1.036 1.716-.26 1.655-.581.699c0 0-.962 3.599-.778 4.249.184.651 2.624-.628 2.624-.628l.129-.857 1.975-.635-2.198-.438c.053-.089.118-.197.172-.287.263.081.573.172 1.154.278 1.393.254 2.33-.253 2.33-.253l1-1.273c0 0-.777.541-1.652.699-.861.157-2.326-.205-2.37-.216.077-.127.159-.264.238-.393.37-.094 3.703-.964 5.662-2.346 2.073-1.462 6.186-5.975 6.186-5.975 0 0-.992-.009-3.129-.041-2.01-.03-3.794-.016-4 0 .093-.149 0-1 0-1l8.586-1.344c0 0 .552-1.049 1.394-2.733.842-1.684 3.02-5.922 3.02-5.922 0 0-1.462-.042-2.768-.221-1.246-.172-2.425-.472-2.536-.5.015-.023.031-.047.046-.07.181-.084 1.346-.62 2.215-.891.939-.292 3.801-.697 3.801-.697 0 0 .023-.405.229-1.236.206-.832.618-2.742.618-2.742l-4.981 2.806c.21-.288.408-.545.613-.817l4.551-2.663c0 0 .046-.584.137-1.348.092-.764.072-1.621.072-1.621"/>
+  <path fill="#31363b" d="m34 4c0 0-4.621 4.941-9.222 11.275-4.601 6.334-9.268 13.499-13.934 21.68-4.052 7.104-2.586 7.05-2.586 7.05 0 0 .46-1.184 3.677-6.761 3.076-5.331 6.967-12.216 13.474-21.705 3.101-4.522 8.59-11.534 8.59-11.534"/>
+  <path opacity=".2" fill="url(#d)" d="m33.998 4l-.707.883-2.577 3.298-3.972 5.03c.181-.084 1.345-.62 2.215-.891.939-.292 3.801-.697 3.801-.697 0 0 .024-.405.23-1.236.206-.832.617-2.742.617-2.742l-4.3 2.409c.21-.288.408-.544.613-.816l3.871-2.266c0 0 .045-.584.137-1.348.092-.764.072-1.621.072-1.621m-7.256 9.209l-7.742 10.791 8.586-1.344c0 0 .553-1.05 1.395-2.734.842-1.684 3.02-5.922 3.02-5.922 0 0-1.462-.041-2.768-.221-1.246-.172-2.426-.472-2.537-.5.015-.023.032-.047.047-.07m-7.742 10.791l-7.965 13.52c.58.204 2.465-.785 2.465-.785l.129-.855 1.977-.635-2.199-.439c.053-.089.118-.195.172-.285.263.081.573.171 1.154.277 1.393.254 2.328-.252 2.328-.252l1.01-1.273c0 0-.778.54-1.652.699-.861.157-2.325-.206-2.369-.217.077-.127.158-.263.236-.393.37-.094 3.703-.964 5.662-2.346 2.073-1.462 6.186-5.975 6.186-5.975 0 0-.992-.009-3.129-.041-2.01-.03-3.794-.016-4 0 .093-.149 0-1 0-1"/>
+ </g>
+</svg>
+
+> src/assets/icons/IconNewWindow.svg
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="64" version="1.1" xmlns="http://www.w3.org/2000/svg" height="64" viewBox="0 0 32 32" xmlnsXlink="http://www.w3.org/1999/xlink" xmlnsInkscape="http://www.inkscape.org/namespaces/inkscape">
+ <defs id="defs5455">
+  <linearGradient inkscapeCollect="always" xlinkHref="#linearGradient4303-6" id="linearGradient4643-8" y1="543.79797" y2="502.65509" gradientUnits="userSpaceOnUse" x2="0" gradientTransform="matrix(0.66666726 0 0 0.63518419 128.19014 198.51873)"/>
+  <linearGradient inkscapeCollect="always" id="linearGradient4303-6">
+   <stop style="stop-color:#c6cdd1" id="stop4305-7"/>
+   <stop offset="1" style="stop-color:#e0e5e7" id="stop4307-0"/>
+  </linearGradient>
+  <linearGradient inkscapeCollect="always" xlinkHref="#linearGradient4293" id="linearGradient4183" y1="525.79797" x1="391.57144" y2="540.79797" x2="406.57147" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1 0 0 1 -0.000007 0.000029)"/>
+  <linearGradient inkscapeCollect="always" id="linearGradient4293">
+   <stop id="stop4295"/>
+   <stop offset="1" style="stop-opacity:0" id="stop4297"/>
+  </linearGradient>
+  <linearGradient inkscapeCollect="always" xlinkHref="#linearGradient4303-6" id="linearGradient4643-8-6" y1="543.79797" y2="502.65509" gradientUnits="userSpaceOnUse" x2="0" gradientTransform="matrix(0.47916688 0 0 0.40833329 207.29745 318.54647)"/>
+  <linearGradient id="linearGradient4227">
+   <stop style="stop-color:#2e3436" id="stop4229"/>
+   <stop offset="1" style="stop-color:#555753" id="stop4231"/>
+  </linearGradient>
+  <linearGradient inkscapeCollect="always" xlinkHref="#linearGradient4293" id="linearGradient4247" y1="10" x1="10" y2="30" x2="30" gradientUnits="userSpaceOnUse"/>
+ </defs>
+ <metadata id="metadata5458"/>
+ <g inkscapeLabel="Capa 1" inkscapeGroupmode="layer" id="layer1" transform="matrix(1 0 0 1 -384.57143 -515.798)">
+  <rect width="32" x="384.57144" y="517.79797" rx="0" height="28" style="fill:url(#linearGradient4643-8)" id="rect4641-5"/>
+  <path inkscapeConnector-curvature="0" style="fill:url(#linearGradient4183);opacity:0.2;fill-rule:evenodd" id="path4167" d="m 385.57142,543.79803 30,-20 1.00001,1 -1e-5,20.99997 -29,3e-5 z"/>
+  <rect width="32.00001" x="384.57141" y="517.79797" height="4" style="fill:#566069" id="rect4647-8"/>
+  <rect width="31.999968" x="384.57141" y="521.79797" height="1" style="fill:#3daee9" id="rect4649-8"/>
+  <rect width="30" x="385.57141" y="523.79797" height="20.00003" style="fill:#ffffff" id="rect4653-5"/>
+  <rect width="2" x="413.57141" y="518.79797" rx="1" height="2" style="fill:#eff0f1" id="rect4661-1"/>
+  <rect width="17" x="394.57144" y="528.79797" rx="0" height="13.00003" style="fill:url(#linearGradient4643-8-6)" id="rect4641-5-2"/>
+  <rect width="16.999989" x="394.57144" y="525.79773" height="4" style="fill:#566069" id="rect4647-8-5"/>
+  <rect width="16.999989" x="394.57144" y="529.79773" height="1" style="fill:#3daee9" id="rect4649-8-9"/>
+  <rect width="15.00001" x="395.57144" y="531.79797" height="8.0001" style="fill:#ffffff" id="rect4653-5-8"/>
+  <rect width="1.999998" x="408.57141" y="526.79773" rx="0.999999" height="2" ry="1" style="fill:#eff0f1" id="rect4661-1-1"/>
+  <path style="fill:url(#linearGradient4247);opacity:0.2;fill-rule:evenodd" id="path4236" d="M 27 10 L 27 26 L 10 26 L 14 30 L 31 30 L 32 30 L 32 15 L 27 10 z " transform="matrix(1 0 0 1 384.57143 515.798)"/>
+ </g>
+</svg>
+
+> src/Apps/WelcomeCenter/WelcomeCenter.css
+
+> src/Apps/WelcomeCenter/WelcomeCenter.js
+import React from 'react';
+import './WelcomeCenter.css';
+
+const WelcomeCenter = () => {
+    return (
+        <div className = "welcome-center">
+            <text>Welcome!</text>
+        </div>
+    )
+}
+
+export default WelcomeCenter
+
+> src/Apps/Notepad/Notepad.js
+import React from 'react';
+import './Notepad.css';
+
+const Notepad = () => {
+    return (
+        <div className = "notepad">
+            <textarea className='text-input'/>
+        </div>
+    )
+}
+
+export default Notepad
+
+
+
+> src/Apps/Notepad/Notepad.css
+.notepad {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.text-input {
+    width: 100%;
+    height: 100%;
+}
+
