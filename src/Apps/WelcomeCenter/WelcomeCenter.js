@@ -4,7 +4,7 @@ import './WelcomeCenter.css';
 const WelcomeCenter = () => {
     return (
         <div className = "welcome-center">
-            <text>Welcome!</text>
+            <h1>Welcome to my website!</h1>
         </div>
     )
 }

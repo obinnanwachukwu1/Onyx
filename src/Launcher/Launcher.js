@@ -29,7 +29,7 @@ const Launcher = () => {
         </div>
         <div className="launcher-body">
           {appList.map((app) =>
-              app.showOnDesktop ? (
+              app.showInLauncher ? (
                   <LauncherIcon
                   key={app.id}
                   imageSrc={app.icon}

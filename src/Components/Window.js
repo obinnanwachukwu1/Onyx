@@ -15,13 +15,10 @@ const Window = ({
   position,
   size,
   isMaximized,
-  isMinimized,
   showInTaskbar,
   isActive,
   restoreSize,
   isRestoringFromTaskbar,
-  setisRestoringFromTaskbar,
-  onMinimize,
 }) => {
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
@@ -46,7 +43,7 @@ const Window = ({
             isRestoringFromTaskbar = false;
           }, 250);
     }
-  }, []);
+  }, [isOpening]);
 
   useEffect(() => {
     if (closingWindowID === id) {
@@ -129,8 +126,8 @@ const Window = ({
       }
     }
     if (resizing) {
-      const newWidth = Math.max(200, e.pageX - position.x); // 200 is the min width
-      const newHeight = Math.max(150, e.pageY - position.y); // 150 is the min height
+      const newWidth = Math.max(200, e.pageX - position.x);
+      const newHeight = Math.max(150, e.pageY - position.y);
       setWindowSize(id, { width: newWidth, height: newHeight });
     }
   };
@@ -148,7 +145,6 @@ const Window = ({
   };
 
   useEffect(() => {
-    // Handle drag and resize events
     if (initialPosition || dragging || resizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);

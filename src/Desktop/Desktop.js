@@ -15,7 +15,7 @@ const Desktop = () => {
     useEffect(() => {
       if (!launched) {
         setLaunched(true);
-        launchApp("notepad");
+        launchApp("welcome-center");
       }
     }, [launched]);
   

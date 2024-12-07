@@ -46,7 +46,7 @@ const WindowManager = () => {
       };
 
     const activateWindow = (id) => {
-        // setLauncherVisible(false);
+        setLauncherVisible(false);
         setActiveWindowId(id);
         setWindows((prevWindows) =>
         prevWindows.map((window) =>
@@ -173,12 +173,9 @@ const WindowManager = () => {
     const getTaskbarTransformPos = (id) => {
         const taskbarButtonPosition = buttonPositions[id];
         const windowPosition = windows.find((window) => window.id === id).position;
-
-        // Calculate the distance to animate
         const dx = taskbarButtonPosition.left - windowPosition.x;
         const dy = taskbarButtonPosition.top - windowPosition.y;
         
-        // Add a CSS variable to handle the transform values
         document.documentElement.style.setProperty('--dx', `${dx}px`);
         document.documentElement.style.setProperty('--dy', `${dy}px`);
     };

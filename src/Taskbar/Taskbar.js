@@ -5,7 +5,7 @@ import LaunchButton from './LaunchButton';
 import { WindowManagerContext } from '../Components/WindowManagerContext';
 
 const Taskbar = React.forwardRef(( { windows, setButtonPosition}, ref) => {
-  const {activateWindow, toggleLauncherVisibility} = useContext(WindowManagerContext)
+  const {activateWindow, toggleLauncherVisibility, launcherVisible} = useContext(WindowManagerContext)
   const buttonRefs = useRef({});
   const handleRightClick = (e, val) => {
     e.stopPropagation();
@@ -25,7 +25,7 @@ const Taskbar = React.forwardRef(( { windows, setButtonPosition}, ref) => {
 
   return (
     <div ref={ref} className="taskbar" onContextMenu={(e) => handleRightClick(e, 2)}>
-      <LaunchButton onClick={toggleLauncherVisibility} />
+      <LaunchButton launcherVisible={launcherVisible} onClick={toggleLauncherVisibility} />
       <div className="taskbar-items">
         {windows.map(
           (window) =>
