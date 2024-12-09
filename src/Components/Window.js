@@ -19,6 +19,7 @@ const Window = ({
   isActive,
   restoreSize,
   isRestoringFromTaskbar,
+  zIndex
 }) => {
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
@@ -168,7 +169,7 @@ const Window = ({
         left: position.x,
         width: size.width,
         height: size.height,
-        zIndex: isActive ? 100 : 1, // Active window gets higher z-index
+        zIndex: zIndex, // Add this line
       }}
       onMouseDown={handleWindowClick} // Notify App.js to bring this window to the front
       onContextMenu={(e) => {e.stopPropagation(); e.preventDefault()}}

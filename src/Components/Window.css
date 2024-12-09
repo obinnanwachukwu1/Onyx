@@ -170,6 +170,7 @@
   .window-content {
     display: flex;
     flex: 1;
+    overflow:auto;
   }
   
   .resize-handle {

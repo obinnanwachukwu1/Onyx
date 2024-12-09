@@ -12,12 +12,15 @@ const Desktop = () => {
     const [isLauncherVisible, setIsLauncherVisible] = useState(false);
     const {launchApp, deactivateAll} = useContext(WindowManagerContext);
     
+    const hasLaunched = React.useRef(false);
     useEffect(() => {
-      if (!launched) {
-        setLaunched(true);
+      if (!hasLaunched.current) {
+      hasLaunched.current = true;
+      setTimeout(() => {
         launchApp("welcome-center");
+      }, 1000);
       }
-    }, [launched]);
+    }, []);
   
     const handleDesktopIconDoubleClick = (appId) => {
       launchApp(appId);

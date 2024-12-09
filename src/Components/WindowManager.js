@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import Window from './Window';
 import Taskbar from '../Taskbar/Taskbar';
@@ -15,6 +14,7 @@ const WindowManager = () => {
     const [closingWindowID, setClosingWindowID] = useState(-1);
     const [buttonPositions, setButtonPositions] = useState({});
     const [launcherVisible, setLauncherVisible] = useState(false);
+    const [zIndexCounter, setZIndexCounter] = useState(1); // Add this line
 
     const launchApp = (appId) => {
         const app = appList.find((a) => a.id === appId);
@@ -34,25 +34,29 @@ const WindowManager = () => {
                 isRestoringFromTaskbar: false,
                 showInTaskbar: true,
                 isActive: true,
+                zIndex: zIndexCounter, // Add this line
             };
+            setZIndexCounter(prev => prev + 1); // Add this line
             setWindows((prevWindows) => {
                 if (prevWindows.some((window) => window.id === newWindow.id)) {
                     return prevWindows;
                 }
                 return [...prevWindows, newWindow];
             });
-            setActiveWindowId(newWindow.id);
+            deactivateAll();
+            activateWindow(newWindow.id)
         }
       };
 
     const activateWindow = (id) => {
         setLauncherVisible(false);
         setActiveWindowId(id);
+        setZIndexCounter(prev => prev + 1); // Add this line
         setWindows((prevWindows) =>
         prevWindows.map((window) =>
             window.id === id ? ( window.isMinimized ? 
-            { ...window, isRestoringFromTaskbar: true, isMinimized: false, isActive: true} 
-            : { ...window, isActive: true}
+            { ...window, isRestoringFromTaskbar: true, isMinimized: false, isActive: true, zIndex: zIndexCounter} // Add zIndex here
+            : { ...window, isActive: true, zIndex: zIndexCounter} // And here
             ) 
             : { ...window, isActive: false }
         )
@@ -71,7 +75,7 @@ const WindowManager = () => {
         // Check if click is inside launcher
         if (launcherVisible) {
             const launcherElement = document.querySelector('.launcher');
-            if (launcherElement && launcherElement.contains(e.target)) {
+            if (e && launcherElement && launcherElement.contains(e.target)) {
                 return;
             }
         }
@@ -201,12 +205,14 @@ const WindowManager = () => {
     return (
         <WindowManagerContext.Provider value={{closingWindowID, launcherVisible, launchApp, activateWindow, deactivateAll, notifyClose, setWindowPosition, setWindowSize, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, toggleLauncherVisibility, closeLauncher}}>
             <Desktop/>
-            {windows.map((window) =>
+            {[...windows] // Create a copy of windows array
+                .sort((a, b) => a.zIndex - b.zIndex) // Sort by zIndex
+                .map((window) =>
                     !window.isMinimized ? (
-                    <Window
-                        key={window.id}
-                        {...window}
-                    />
+                        <Window
+                            key={window.id}
+                            {...window}
+                        />
                     ) : null
                 )}
             <Taskbar ref={taskbarRef} windows={windows} setButtonPosition={setButtonPosition}/>
