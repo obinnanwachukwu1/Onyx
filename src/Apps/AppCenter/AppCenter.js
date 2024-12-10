@@ -100,7 +100,10 @@ const AppCenter = () => {
             <p>{currentApp.fullDescription}</p>
             <div className="screenshots">
               {currentApp.screenshots.map((src, index) => (
-                <img key={index} src={src} alt={`${currentApp.name} screenshot`} />
+                <div className="screenshots-container">
+                  <img key={index} src={src} alt={`${currentApp.name} screenshot`} />
+                  <p className="screenshots-desc">{currentApp.screenshotdescriptions[index]}</p>
+                </div>
               ))}
             </div>
           </div>

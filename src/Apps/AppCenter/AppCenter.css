@@ -144,11 +144,30 @@
   .back-button:hover {
     background-color: #005bb5;
   }
+
+  .screenshots {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    align-content: flex-start;
+    overflow: scroll;
+  }
+
+  .screenshots-container {
+    width: 100%;
+    max-width: 400px;
+    margin-right: 15px;
+    display: block;
+  }
   
   .screenshots img {
     width: 100%;
-    max-width: 400px;
-    margin: 10px auto;
-    display: block;
+    width: 400px;
     border-radius: 8px;
+  }
+
+  .screenshots-desc {
+    word-break: break-all;
+    word-wrap: break-word;
   }
