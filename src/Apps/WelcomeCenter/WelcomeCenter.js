@@ -33,9 +33,9 @@ const WelcomeCenter = () => {
     return (
         <div className={`${isMobile ? 'welcome-container-mobile' : 'welcome-container'}`}>
             <div className="welcome-header-section">
-                <h1 className="welcome-header">Welcome to My Portfolio</h1>
+                <h1 className="welcome-header">Welcome to Onyx</h1>
                 <p className="welcome-subheader">
-                    Hi, I'm <strong>Obinna Nwachukwu</strong>, a Computer Science major at Georgia Tech.
+                    Hi, I'm <strong>Obinna Nwachukwu</strong>, a Computer Science major at Georgia Tech. This is Onyx - an environment to showcase my projects and experience. Select an option below.
                 </p>
             </div>
             {

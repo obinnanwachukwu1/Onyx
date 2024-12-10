@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import './Terminal.css';
 import useLockedState from '../../hooks/useLockedState';
+import details from '../../EnvironmentDetails';
 
 const Terminal = () => {
     const terminalInputRef = useRef(null);
@@ -53,7 +54,7 @@ const Terminal = () => {
                     const data = await response.json();
                     setIp(data.ip);
                     const idtf = "root@" + data.ip + ":~$ ";
-                    const msg = "Terminal Environment 1.0\n\nroot@" + data.ip + ":~$ ";
+                    const msg = details.name + " Enviornment v" + details.version_major + "." + details.version_minor + "\n\nroot@" + data.ip + ":~$ ";
                     setIdentifier(idtf);
                     setValue(msg)
                     setMinCursorPosition(msg.length)
@@ -152,32 +153,19 @@ const Terminal = () => {
             }
         }
     };
-    
-    const handleSelect = (event) => {
-        const terminalInput = terminalInputRef.current;
-        if (terminalInput) {
-            const position = event.target.selectionStart;
-            const position2 = event.target.selectionEnd;
-            if (position < minCursorPosition && position === position2) {
-                terminalInput.setSelectionRange(minCursorPosition,minCursorPosition);
-                setCursorPosition(minCursorPosition);
-            } else {
-                setCursorPosition(position);
-            }
-            console.log(`Cursor position: ${position}`);
-        }
-    };
 
     const runCommand = async (command) => {
         if (command !== "") {
             const args = command.split(" ");
             switch (args[0]) {
                 case "help":
-                    await consolePrint("List of commands:\n'help' - Shows this page\n'ip' - Prints your IP address to the console")
+                    await consolePrint("List of commands:\n'help' - Shows this page\n'ip' - Prints your IP address to the console\n'version'- Prints the version of the environemnt to the console")
                 break;
                 case "ip":
                     await consolePrint(ip)
                 break;
+                case "version":
+                    await consolePrint(details.name + " Enviornment v" + details.version_major + "." + details.version_minor)
                 default:
                     await consolePrint("\"" + args[0] + "\" - bad command or file name");
             }
