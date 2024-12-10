@@ -135,7 +135,7 @@
     }
   }
   
-  .back-button {
+  .app-center-back-button {
     display: inline-block;
     margin-bottom: 20px;
     padding: 10px 15px;
@@ -147,7 +147,7 @@
     transition: background-color 0.3s;
   }
   
-  .back-button:hover {
+  .app-center-back-button:hover {
     background-color: #005bb5;
   }
 

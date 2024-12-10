@@ -93,7 +93,7 @@ const AppCenter = () => {
           </div>
         ) : (
           <div className="app-page">
-            <button className="back-button" onClick={goBack}>
+            <button className="app-center-back-button" onClick={goBack}>
               ← Back
             </button>
             <h2>{currentApp.name}</h2>
