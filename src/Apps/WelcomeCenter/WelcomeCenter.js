@@ -1,6 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useWindowContext } from "../../Components/WindowContext";
 import { DeviceContext } from "../../Components/DeviceContext";
+import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 import IconResume from '../../assets/icons/IconResume.svg';
 import IconStore from '../../assets/icons/IconStore.svg';
 import IconContact from '../../assets/icons/IconContact.svg';
@@ -9,6 +10,25 @@ import './WelcomeCenter.css';
 const WelcomeCenter = () => {
     const { launchApp } = useWindowContext();
     const { isMobile } = useContext(DeviceContext);
+    const [loading, setLoading] = useState(true);
+    const [workingStatus, setWorkingStatus] = useState("");
+
+    useEffect(() => {
+        fetch('https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/status.json', {cache: "no-cache"})
+            .then(response => response.json())
+            .then(data => {
+                setWorkingStatus(data.working_status);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error loading working status:', error);
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) {
+        return <LoadingScreen />;
+    }
 
     return (
         <div className={`${isMobile ? 'welcome-container-mobile' : 'welcome-container'}`}>
@@ -25,21 +45,21 @@ const WelcomeCenter = () => {
                     <img src={IconStore} className="welcome-card-icon" alt="Projects" />
                     <div className="welcome-card-text">
                         <h3>Projects</h3>
-                        <p>See my best work and technical accomplishments.</p>
+                        <p>My projects and collaborations</p>
                     </div>
                 </div>
                 <div className="welcome-card" onClick={() => launchApp("resume")}>
                     <img src={IconResume} className="welcome-card-icon" alt="Resume" />
                     <div className="welcome-card-text">
                         <h3>Resume</h3>
-                        <p>View my experience and skills in detail.</p>
+                        <p>My detailed education and experiences</p>
                     </div>
                 </div>
                 <div className="welcome-card" onClick={() => launchApp("contactme")}>
                     <img src={IconContact} className="welcome-card-icon" alt="Contact" />
                     <div className="welcome-card-text">
                         <h3>Contact</h3>
-                        <p>Reach out to collaborate or connect!</p>
+                        <p>Reach out to collaborate or connect</p>
                     </div>
                 </div>
             </div>
@@ -49,14 +69,14 @@ const WelcomeCenter = () => {
                     <img src={IconStore} className="welcome-card-icon-mobile" alt="Projects" />
                     <div className="welcome-card-text-mobile">
                         <h3>Projects</h3>
-                        <p>See my best work</p>
+                        <p>My projects and collaborations</p>
                     </div>
                 </div>
                 <div className="welcome-card-mobile" onClick={() => launchApp("resume")}>
                     <img src={IconResume} className="welcome-card-icon-mobile" alt="Resume" />
                     <div className="welcome-card-text-mobile">
                         <h3>Resume</h3>
-                        <p>View my experience and skills in detail.</p>
+                        <p>My detailed education and experiences</p>
                     </div>
                 </div>
                 <div className="welcome-card-mobile" onClick={() => launchApp("contactme")}>
@@ -71,9 +91,9 @@ const WelcomeCenter = () => {
             
 
             <div className="welcome-current-focus">
-                <h3 className="welcome-section-header">What I’m Working On</h3>
+                <h3 className="welcome-section-header">What I'm Working On</h3>
                 <p className="welcome-focus-text">
-                    I’m building an AI-driven collaborative documentation assistant for the Berkeley RDI Hackathon.
+                    {workingStatus}
                 </p>
             </div>
 
