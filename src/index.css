@@ -4,4 +4,6 @@ html, body, #root {
   margin: 0;
   font-family: Arial, sans-serif;
   overflow: hidden;
+  overscroll-behavior-x: none;
+
 }
