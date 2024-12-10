@@ -107,7 +107,7 @@ const AppCenter = () => {
               ))}
             </div>
             {currentApp.canTry ? (
-              <button className="try-button" onClick={() => window.open(currentApp.trial)}>
+              <button className="back-button" onClick={() => window.open(currentApp.trial)}>
               Try Now
             </button>
           ) : null}
