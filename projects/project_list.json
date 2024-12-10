@@ -5,8 +5,8 @@
       "description": "A React website that emulates a desktop environment",
       "fullDescription": "My portfolio is a React app that emulates a Windows-like desktop environment. Its purpose is to show off my resume and projects in a unique and fun way.",
       "image": "https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/Portfolio/banner.png",
-      "screenshots": ["https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/Portfolio/s1.png", "https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/Portfolio/s1.png"],
-      "screenshotdescriptions": ["Welcome Center", "Welcome Center Again!"],
+      "screenshots": ["https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/Portfolio/s1.png"],
+      "screenshotdescriptions": ["Welcome Center"],
       "icon": "﹫"
     }
   ]
