@@ -1,9 +1,9 @@
 [
     {
       "id": 1,
-      "name": "AD",
-      "description": "AI-powered documentation assistant for real-time collaboration.",
-      "fullDescription": "AgentDoc is a next-gen documentation tool that integrates AI for seamless collaboration in real time. It supports features like version control, AI-assisted editing, and multi-user collaboration.",
+      "name": "Portfolio",
+      "description": "A React website that emulates a desktop environment",
+      "fullDescription": "My portfolio is a React app that emulates a Windows-like desktop environment. Its purpose is to show off my resume and projects in a unique and fun way.",
       "image": "https://via.placeholder.com/800x400",
       "screenshots": ["https://via.placeholder.com/300", "https://via.placeholder.com/300"],
       "icon": "📄"
