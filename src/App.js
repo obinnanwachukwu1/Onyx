@@ -1,23 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import {isMobile} from 'react-device-detect';
+import React, { useContext } from 'react';
 import AppManager from './Components/AppManager';
-
 import WindowManager from "./Components/WindowManager"
+import { DeviceContext } from './Components/DeviceContext';
 
 const App = () => {
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsSmallScreen(window.innerWidth <= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+  const { isMobile } = useContext(DeviceContext);
   return (
     <div>
-      {isMobile || isSmallScreen ? (
+      {isMobile ? (
         <AppManager />
       ) : (
         <WindowManager />

@@ -1,0 +1,19 @@
+.launch-button-mobile {
+    width: 40px;
+    height: 40px;
+    font-size: large;
+    align-items: center;
+    background-color: transparent;
+    color: white;
+    border: none;
+    margin-right: 10px;
+    margin-left: 10px;
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 5px;
+    outline: none;
+  }
+
+.launch-button-mobile > * {
+  height: 75%;
+}
