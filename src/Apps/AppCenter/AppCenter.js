@@ -2,47 +2,36 @@ import React, { useState, useEffect } from "react";
 import "./AppCenter.css";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 
-const apps = [
-  {
-    id: 1,
-    name: "AgentDoc",
-    description: "AI-powered documentation assistant for real-time collaboration.",
-    fullDescription: "AgentDoc is a next-gen documentation tool that integrates AI for seamless collaboration in real time. It supports features like version control, AI-assisted editing, and multi-user collaboration.",
-    image: "https://via.placeholder.com/800x400",
-    screenshots: ["https://via.placeholder.com/300", "https://via.placeholder.com/300"],
-    icon: "📄",
-  },
-  {
-    id: 2,
-    name: "HBOS Scheduler",
-    description: "Priority-based scheduler implemented in xv6.",
-    fullDescription: "HBOS Scheduler is an advanced scheduling algorithm designed for operating systems. It optimizes process handling with priority-based task execution.",
-    image: "https://via.placeholder.com/800x400",
-    screenshots: ["https://via.placeholder.com/300"],
-    icon: "⚙️",
-  },
-  {
-    id: 3,
-    name: "Desktop Portfolio",
-    description: "Portfolio website emulating a desktop environment.",
-    fullDescription: "This project demonstrates a unique desktop-style portfolio using React. Features include window management, taskbar navigation, and app-like interactions.",
-    image: "https://via.placeholder.com/800x400",
-    screenshots: ["https://via.placeholder.com/300"],
-    icon: "🖥️",
-  },
-];
-
 const AppCenter = () => {
+  const [apps, setApps] = useState([]);
   const [currentApp, setCurrentApp] = useState(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
-  const [loading, isLoading] = useState(false)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    fetch('https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/project_list.json')
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch projects');
+        return response.json();
+      })
+      .then(data => {
+        setApps(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (apps.length === 0) return;
     const interval = setInterval(() => {
       setCarouselIndex((prevIndex) => (prevIndex + 1) % apps.length);
-    }, 10000); // Change every 10 seconds
+    }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [apps]);
 
   const openApp = (app) => {
     setCurrentApp(app);
@@ -56,6 +45,8 @@ const AppCenter = () => {
     <div className="app-center">
       {loading ? (
         <LoadingScreen />
+      ) : error ? (
+        <div className="error-message">Error: {error}</div>
       ) : (
         <div>
         {!currentApp ? (
