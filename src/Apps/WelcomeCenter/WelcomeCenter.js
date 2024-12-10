@@ -35,7 +35,7 @@ const WelcomeCenter = () => {
             <div className="welcome-header-section">
                 <h1 className="welcome-header">Welcome to Onyx</h1>
                 <p className="welcome-subheader">
-                    Hi, I'm <strong>Obinna Nwachukwu</strong>, a Computer Science major at Georgia Tech. This is Onyx - an environment to showcase my projects and experience. Select an option below.
+                    Hi, I'm <strong>Obinna Nwachukwu</strong>, a Computer Science major at Georgia Tech. This is <strong>Onyx</strong> - an environment to showcase my projects and experience. Select an option below.
                 </p>
             </div>
             {
