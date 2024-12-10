@@ -1,0 +1,144 @@
+.welcome-container {
+    width: 85%;
+    max-width: 650px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    color: #333;
+}
+
+.welcome-container-mobile {
+    width: 85%;
+    max-width: 650px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    color: #333;
+}
+
+.welcome-header-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.welcome-header {
+    font-size: 28px;
+    font-weight: bold;
+    color: #0078D7;
+    margin-bottom: 10px;
+}
+
+.welcome-subheader {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.welcome-action-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 30px;
+    margin-bottom: 40px;
+}
+
+.welcome-action-section-mobile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 30px;
+    margin-bottom: 40px;
+}
+
+.welcome-card {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+    background-color: #F5F8FA;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #E0E6ED;
+}
+
+.welcome-card-mobile {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    text-align: center;
+    background-color: #F5F8FA;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #E0E6ED;
+}
+
+.welcome-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background-color: #E8F0FE;
+}
+
+.welcome-card-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 10px;
+    color: #0078D7;
+}
+
+.welcome-card-icon-mobile {
+    width: 64px;
+    height: 64px;
+    color: #0078D7;
+}
+
+.welcome-card-text {
+    font-size: 14px;
+    color: #555;
+}
+
+.welcome-card-text-mobile {
+    flex: 1;
+    font-size: 14px;
+    color: #555;
+}
+
+
+.welcome-current-focus {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.welcome-section-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #444;
+}
+
+.welcome-focus-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}
+
+.welcome-footer {
+    margin-top: 30px;
+    text-align: center;
+    border-top: 1px solid #EEE;
+    padding-top: 10px;
+}
+
+.welcome-footer-text {
+    font-size: 13px;
+    color: #777;
+}

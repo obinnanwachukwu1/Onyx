@@ -1,0 +1,26 @@
+.mobile-desktop {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  user-select: none;
+  overflow: hidden;
+}
+
+.mobile-desktop::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  
+  background-image: url("../../assets/wallpaper/wall0.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  filter: blur(1px);
+  transform: scale(1.05);
+  overflow: hidden;
+}

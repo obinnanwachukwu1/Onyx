@@ -1,5 +1,5 @@
 import React from 'react';
-import './LauncherIcon.css'; // Make sure to create this CSS file for styling
+import './LauncherIcon.css';
 
 const LauncherIcon = ({ imageSrc, text, onClick }) => {
     return (

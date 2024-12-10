@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Window from './Window';
-import Taskbar from '../Taskbar/Taskbar';
-import Desktop from '../Desktop/Desktop';
+import Taskbar from './Taskbar/Taskbar';
+import Desktop from './Desktop/Desktop';
 import appList from '../Apps/AppList';
-import Launcher from '../Launcher/Launcher';
+import Launcher from './Launcher/Launcher';
 
 import { WindowManagerContext } from './WindowManagerContext';
 
@@ -14,7 +14,7 @@ const WindowManager = () => {
     const [closingWindowID, setClosingWindowID] = useState(-1);
     const [buttonPositions, setButtonPositions] = useState({});
     const [launcherVisible, setLauncherVisible] = useState(false);
-    const [zIndexCounter, setZIndexCounter] = useState(1); // Add this line
+    const [zIndexCounter, setZIndexCounter] = useState(1);
 
     const launchApp = (appId) => {
         const app = appList.find((a) => a.id === appId);
@@ -34,9 +34,10 @@ const WindowManager = () => {
                 isRestoringFromTaskbar: false,
                 showInTaskbar: true,
                 isActive: true,
-                zIndex: zIndexCounter, // Add this line
+                renderMobile: false,
+                zIndex: zIndexCounter,
             };
-            setZIndexCounter(prev => prev + 1); // Add this line
+            setZIndexCounter(prev => prev + 1);
             setWindows((prevWindows) => {
                 if (prevWindows.some((window) => window.id === newWindow.id)) {
                     return prevWindows;
@@ -51,12 +52,12 @@ const WindowManager = () => {
     const activateWindow = (id) => {
         setLauncherVisible(false);
         setActiveWindowId(id);
-        setZIndexCounter(prev => prev + 1); // Add this line
+        setZIndexCounter(prev => prev + 1);
         setWindows((prevWindows) =>
         prevWindows.map((window) =>
             window.id === id ? ( window.isMinimized ? 
-            { ...window, isRestoringFromTaskbar: true, isMinimized: false, isActive: true, zIndex: zIndexCounter} // Add zIndex here
-            : { ...window, isActive: true, zIndex: zIndexCounter} // And here
+            { ...window, isRestoringFromTaskbar: true, isMinimized: false, isActive: true, zIndex: zIndexCounter}
+            : { ...window, isActive: true, zIndex: zIndexCounter}
             ) 
             : { ...window, isActive: false }
         )
@@ -108,8 +109,10 @@ const WindowManager = () => {
     };
 
     const sendIntentToMaximize = ()=> {
-        document.documentElement.style.setProperty('--width', `${window.innerWidth}px`);
-        document.documentElement.style.setProperty('--height', `${window.innerHeight - taskbarRef.current.clientHeight}px`);
+        const desktop = document.querySelector('.desktop');
+        const desktopBounds = desktop.getBoundingClientRect();
+        document.documentElement.style.setProperty('--width', `${desktopBounds.width}px`);
+        document.documentElement.style.setProperty('--height', `${desktopBounds.height - taskbarRef.current.clientHeight}px`);
     }
 
     const sendIntentToRestore = (id) => {
@@ -125,14 +128,14 @@ const WindowManager = () => {
 
     const sendIntentToClose = (id) => {
         if (closingWindowID === -1) {
-        setClosingWindowID(id);
-        setWindows((prevWindows) =>
-            prevWindows.map((window) =>
-            window.id === id
-                ? { ...window, showInTaskbar: false}
-                : window
-            )
-        );
+            setClosingWindowID(id);
+            setWindows((prevWindows) =>
+                prevWindows.map((window) =>
+                window.id === id
+                    ? { ...window, showInTaskbar: false}
+                    : window
+                )
+            );
         }
     };
 
@@ -197,10 +200,10 @@ const WindowManager = () => {
             deactivateAll();
         }
         setLauncherVisible(!launcherVisible);
-      };
+    };
     const closeLauncher = () => {
         setLauncherVisible(false);
-      };
+    };
 
     return (
         <WindowManagerContext.Provider value={{closingWindowID, launcherVisible, launchApp, activateWindow, deactivateAll, notifyClose, setWindowPosition, setWindowSize, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, toggleLauncherVisibility, closeLauncher}}>

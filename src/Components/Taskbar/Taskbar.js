@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useContext } from 'react';
 import './Taskbar.css';
 import Clock from './Clock';
 import LaunchButton from './LaunchButton';
-import { WindowManagerContext } from '../Components/WindowManagerContext';
+import { WindowManagerContext } from '../WindowManagerContext';
 
 const Taskbar = React.forwardRef(( { windows, setButtonPosition}, ref) => {
   const {activateWindow, toggleLauncherVisibility, launcherVisible} = useContext(WindowManagerContext)

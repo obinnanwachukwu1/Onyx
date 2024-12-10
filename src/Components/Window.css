@@ -46,7 +46,7 @@
         transform: translate(0, 0) scale(1);
         opacity: 1;
     }
-  } 
+  }
 
   @keyframes maximize {
     0% {
@@ -75,6 +75,28 @@
       transform: scale(1);
     }
   }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideDown {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
   
   .window {
     position: absolute;
@@ -89,6 +111,21 @@
     transition: transform 0.5s ease; /* Smooth transition for other transforms */
     overflow: hidden;
   }
+  .window-mobile {
+    border: unset;
+    border-top-left-radius: 0pt;
+    border-top-right-radius: 0pt;
+  }
+
+  .window-mobile-opening {
+    animation: slideUp 0.25s ease-out forwards;
+  }
+  
+  .window-mobile-closing {
+    animation: slideDown 0.25s ease-out forwards;
+  }
+
+
   .window.active {
     border: 2px solid #333;
   }
@@ -104,6 +141,10 @@
   
   .window-opening {
     animation: flipIn 0.25s ease-out forwards; /* Apply the flip animation */
+  }
+
+  .window-closing {
+    animation: flipOut 0.25s ease-out forwards; /* Apply the flip animation */
   }
 
   .window-minimizing {
@@ -122,10 +163,6 @@
   .window-restoring-from-taskbar {
     animation: restoreFromTaskbar 0.25s ease-out forwards;
     transform-origin: top left;
-  }
-
-  .window-closing {
-    animation: flipOut 0.25s ease-out forwards; /* Apply the flip animation */
   }
   
   .window-header {
