@@ -4,8 +4,7 @@ import { faWindowMinimize} from '@fortawesome/free-solid-svg-icons/faWindowMinim
 import './Window.css';
 import { faX } from '@fortawesome/free-solid-svg-icons';
 import { faWindowMaximize, faWindowRestore } from '@fortawesome/free-regular-svg-icons';
-import { WindowManagerContext } from './WindowManagerContext';
-import { AppManagerContext } from './AppManagerContext';
+import { useWindowContext } from './WindowContext';
 
 const Window = ({
   id,
@@ -32,17 +31,6 @@ const Window = ({
   const [isMaximizing, setIsMaximizing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [initialPosition, setInitialPosition] = useState(null);
-
-  const useWindowContext = () => {
-    const windowManagerContext = useContext(WindowManagerContext);
-    const appManagerContext = useContext(AppManagerContext);
-    
-    // Check if we're inside WindowManagerContext provider
-    const isInsideWindowManager = windowManagerContext !== undefined;
-    
-    return isInsideWindowManager ? windowManagerContext : appManagerContext;
-  };
-
   const {closingWindowID, activateWindow, setWindowPosition, setWindowSize, sendIntentToClose, sendIntentToMaximize, sendIntentToRestore, notifyClose, notifyMaximize, notifyMinimize, notifyRestore, getTaskbarTransformPos, afterRestoreFromTaskbar} = useWindowContext();
 
   useEffect(() => {
@@ -60,7 +48,6 @@ const Window = ({
   }, [isOpening]);
 
   useEffect(() => {
-    console.log(closingWindowID === id)
     if (closingWindowID === id) {
       setIsClosing(true);
       setTimeout(() => {
@@ -97,7 +84,6 @@ const Window = ({
       }, 250)
     } else {
       sendIntentToRestore(id);
-      console.log( document.documentElement.style.getPropertyValue('--width'))
       setIsRestoring(true);
       setTimeout(() => {
         notifyRestore(id);

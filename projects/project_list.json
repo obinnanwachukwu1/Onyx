@@ -7,24 +7,6 @@
       "image": "https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/Portfolio/banner.png",
       "screenshots": ["https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/Portfolio/s1.png", "https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/Portfolio/s1.png"],
       "screenshotdescriptions": ["Welcome Center", "Welcome Center Again!"],
-      "icon": "🖥️"
-    },
-    {
-      "id": 2,
-      "name": "HBOS",
-      "description": "Priority-based scheduler implemented in xv6.",
-      "fullDescription": "HBOS Scheduler is an advanced scheduling algorithm designed for operating systems. It optimizes process handling with priority-based task execution.",
-      "image": "https://via.placeholder.com/800x400",
-      "screenshots": ["https://via.placeholder.com/300"],
-      "icon": "⚙️"
-    },
-    {
-      "id": 3,
-      "name": "Desktop",
-      "description": "Portfolio website emulating a desktop environment.",
-      "fullDescription": "This project demonstrates a unique desktop-style portfolio using React. Features include window management, taskbar navigation, and app-like interactions.",
-      "image": "https://via.placeholder.com/800x400",
-      "screenshots": ["https://via.placeholder.com/300"],
-      "icon": "🖥️"
+      "icon": "﹫"
     }
   ]

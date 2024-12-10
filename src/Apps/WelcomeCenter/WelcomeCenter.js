@@ -99,8 +99,17 @@ const WelcomeCenter = () => {
 
             <footer className="welcome-footer">
                 <p className="welcome-footer-text">
-                    Need help? Use the taskbar below or drag and resize windows for a real desktop feel!
+                    Attributions: Symbol icons from FontAwesome, stylized icons from KDE breeze-icons, background from Unsplash
                 </p>
+                {isMobile ? (
+                <p className="welcome-footer-text">
+                    Need help? Click the rocket icon at the bottom of the screen to get started!
+                </p>
+                ) : (
+                <p className="welcome-footer-text">
+                    Need help? Click the rocket icon at the bottom left of the screen or drag and resize windows for a real desktop feel!
+                </p>
+            )}
             </footer>
         </div>
     );
