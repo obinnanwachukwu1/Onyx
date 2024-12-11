@@ -160,12 +160,13 @@ const Terminal = () => {
             switch (args[0]) {
                 case "help":
                     await consolePrint("List of commands:\n'help' - Shows this page\n'ip' - Prints your IP address to the console\n'version'- Prints the version of the environemnt to the console")
-                break;
+                    break;
                 case "ip":
                     await consolePrint(ip)
-                break;
+                    break;
                 case "version":
                     await consolePrint(details.name + " Enviornment v" + details.version_major + "." + details.version_minor)
+                    break;
                 default:
                     await consolePrint("\"" + args[0] + "\" - bad command or file name");
             }
