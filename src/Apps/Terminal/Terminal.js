@@ -59,6 +59,7 @@ const Terminal = () => {
                     setValue(msg)
                     setMinCursorPosition(msg.length)
                     setCursorPosition(msg.length)
+                    terminalInputRef.current.focus();
                     doneInit(true);
                 }
             } catch (error) {
