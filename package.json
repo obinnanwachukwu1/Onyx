@@ -1,5 +1,5 @@
 {
-  "name": "personal-website",
+  "name": "onyx",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -20,7 +20,7 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://chemicaldaniel.github.io/website",
+  "homepage": "https://obinnanwachukwu.com",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
