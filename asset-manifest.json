@@ -1,21 +1,21 @@
 {
   "files": {
-    "main.css": "/website/static/css/main.3d766db5.css",
-    "main.js": "/website/static/js/main.2d37ffd4.js",
-    "static/media/wall0.jpg": "/website/static/media/wall0.31ec805a3aa324304d88.jpg",
-    "static/media/resume.pdf": "/website/static/media/resume.b59c26162a0a7d28c7dd.pdf",
-    "static/media/IconNotepad.svg": "/website/static/media/IconNotepad.98b4e310e93efa4d742eb0def1794c24.svg",
-    "static/media/IconNewWindow.svg": "/website/static/media/IconNewWindow.41867b38e5e36c8c92e4dc8ebbaa7b59.svg",
-    "static/media/IconStore.svg": "/website/static/media/IconStore.6c9074a39b96ea7a45b7b6e56b83cff5.svg",
-    "static/media/IconResume.svg": "/website/static/media/IconResume.9049231c220ecd7a1733305e371ae2f0.svg",
-    "static/media/IconContact.svg": "/website/static/media/IconContact.5455ea5920d84a0ce7ff98a94b3b9fc9.svg",
-    "static/media/IconTerminal.svg": "/website/static/media/IconTerminal.f3c22bf6ebf4ec3e162fa14ba1fafdae.svg",
-    "index.html": "/website/index.html",
-    "main.3d766db5.css.map": "/website/static/css/main.3d766db5.css.map",
-    "main.2d37ffd4.js.map": "/website/static/js/main.2d37ffd4.js.map"
+    "main.css": "/static/css/main.d7b407fa.css",
+    "main.js": "/static/js/main.8732160f.js",
+    "static/media/wall0.jpg": "/static/media/wall0.31ec805a3aa324304d88.jpg",
+    "static/media/resume.pdf": "/static/media/resume.b59c26162a0a7d28c7dd.pdf",
+    "static/media/IconNotepad.svg": "/static/media/IconNotepad.98b4e310e93efa4d742eb0def1794c24.svg",
+    "static/media/IconNewWindow.svg": "/static/media/IconNewWindow.41867b38e5e36c8c92e4dc8ebbaa7b59.svg",
+    "static/media/IconStore.svg": "/static/media/IconStore.6c9074a39b96ea7a45b7b6e56b83cff5.svg",
+    "static/media/IconResume.svg": "/static/media/IconResume.9049231c220ecd7a1733305e371ae2f0.svg",
+    "static/media/IconContact.svg": "/static/media/IconContact.5455ea5920d84a0ce7ff98a94b3b9fc9.svg",
+    "static/media/IconTerminal.svg": "/static/media/IconTerminal.f3c22bf6ebf4ec3e162fa14ba1fafdae.svg",
+    "index.html": "/index.html",
+    "main.d7b407fa.css.map": "/static/css/main.d7b407fa.css.map",
+    "main.8732160f.js.map": "/static/js/main.8732160f.js.map"
   },
   "entrypoints": [
-    "static/css/main.3d766db5.css",
-    "static/js/main.2d37ffd4.js"
+    "static/css/main.d7b407fa.css",
+    "static/js/main.8732160f.js"
   ]
 }
