@@ -97,6 +97,17 @@
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
       background-color: #E8F0FE;
   }
+
+  .error-message h3 {
+    margin: 0;
+    margin-top: 20px;
+    font-size: 30px;
+  }
+
+  .error-message p {
+    margin: 0;
+    font-size: 20px;
+  }
   
   
   .app-icon {

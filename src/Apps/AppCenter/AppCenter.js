@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./AppCenter.css";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFaceFrown } from '@fortawesome/free-regular-svg-icons';
+
+
 
 const AppCenter = () => {
   const [apps, setApps] = useState([]);
@@ -46,7 +50,11 @@ const AppCenter = () => {
       {loading ? (
         <LoadingScreen />
       ) : error ? (
-        <div className="error-message">Error: {error}</div>
+        <div className="error-message" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '2rem' }}>
+          <FontAwesomeIcon icon={faFaceFrown} size="4x" />
+          <h3>The App Center isn't working right now</h3>
+          <p>err-code: {error}</p>
+        </div>
       ) : (
         <div>
         {!currentApp ? (
