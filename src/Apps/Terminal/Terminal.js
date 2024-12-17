@@ -54,7 +54,7 @@ const Terminal = () => {
                     const data = await response.json();
                     setIp(data.ip);
                     const idtf = "root@" + data.ip + ":~$ ";
-                    const msg = details.name + " Enviornment v" + details.version_major + "." + details.version_minor + "\n\nroot@" + data.ip + ":~$ ";
+                    const msg = details.name + " Environment v" + details.version_major + "." + details.version_minor + "\n\nroot@" + data.ip + ":~$ ";
                     setIdentifier(idtf);
                     setValue(msg)
                     setMinCursorPosition(msg.length)
@@ -166,7 +166,7 @@ const Terminal = () => {
                     await consolePrint(ip)
                     break;
                 case "version":
-                    await consolePrint(details.name + " Enviornment v" + details.version_major + "." + details.version_minor)
+                    await consolePrint(details.name + " Environment v" + details.version_major + "." + details.version_minor)
                     break;
                 default:
                     await consolePrint("\"" + args[0] + "\" - bad command or file name");
