@@ -14,7 +14,7 @@ const WelcomeCenter = () => {
     const [workingStatus, setWorkingStatus] = useState("");
 
     useEffect(() => {
-        fetch('https://raw.githubusercontent.com/ChemicalDaniel/website/refs/heads/main/projects/status.json', {cache: "no-cache"})
+        fetch('hhttps://github.com/ChemicalDaniel/Onyx/blob/gh-pages/projects/status.json', {cache: "no-cache"})
             .then(response => response.json())
             .then(data => {
                 setWorkingStatus(data.working_status);
