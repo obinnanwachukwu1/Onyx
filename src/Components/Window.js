@@ -128,7 +128,6 @@ const Window = ({
   
       if (dragging) {
         if (!isMaximized) {
-          // Calculate constrained positions
           const newX = Math.max(
             0,
             Math.min(pageX - rel.x, desktopBounds.width - size.width)
@@ -140,6 +139,7 @@ const Window = ({
   
           setWindowPosition(id, { x: newX, y: newY });
         } else {
+          notifyRestore(id);
           setWindowSize(id, restoreSize);
   
           const newX = Math.max(
@@ -152,6 +152,7 @@ const Window = ({
           );
   
           setWindowPosition(id, { x: newX, y: newY });
+          
         }
       }
     }
