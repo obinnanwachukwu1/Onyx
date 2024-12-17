@@ -14,7 +14,7 @@ const AppCenter = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/ChemicalDaniel/Onyx/refs/heads/gh-pages/projects/project_list.json', {cache: "no-cache"})
+    fetch('https://obinnanwachukwu.com/projects/project_list.json', {cache: "no-cache"})
       .then(response => {
         if (!response.ok) throw new Error('Failed to fetch projects');
         return response.json();
