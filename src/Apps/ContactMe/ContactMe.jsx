@@ -45,17 +45,6 @@ const ContactMe = () => {
                 </div>
             </div>
             <div
-                key={"instagram"}
-                className="contact-item"
-                onClick={() => window.open("https://www.instagram.com/itsobinnasworld")}
-            >
-                <div className="contact-icon"><FontAwesomeIcon icon={faInstagram} /></div>
-                <div className="contact-info">
-                <h3>Instagram</h3>
-                <p>itsobinnasworld</p>
-                </div>
-            </div>
-            <div
                 key={"github"}
                 className="contact-item"
                 onClick={() => window.open("https://www.github.com/chemicaldaniel")}
@@ -69,17 +58,17 @@ const ContactMe = () => {
             <div
                 key={"email"}
                 className="contact-item"
-                onClick={() => window.open("mailto:obinna.nwachukwu@icloud.com")}
+                onClick={() => window.open("mailto:me@obinnanwachukwu.com")}
             >
                 <div className="contact-icon"><FontAwesomeIcon icon={faEnvelope} /></div>
                 <div className="contact-info">
                 <h3>Email</h3>
-                <p>obinna.nwachukwu@icloud.com</p>
+                <p>me@obinnanwachukwu.com</p>
                 </div>
             </div>
-          <button className="direct-contact-button" onClick={() => setShowForm(true)}>
+          {/* <button className="direct-contact-button" onClick={() => setShowForm(true)}>
             Contact Me Directly
-          </button>
+          </button> */}
         </div>
       ) : (
         <div className="contact-form">
