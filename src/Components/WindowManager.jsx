@@ -206,7 +206,7 @@ const WindowManager = () => {
     };
 
     return (
-        <WindowManagerContext.Provider value={{closingWindowID, launcherVisible, launchApp, activateWindow, deactivateAll, notifyClose, setWindowPosition, setWindowSize, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, toggleLauncherVisibility, closeLauncher}}>
+        <WindowManagerContext.Provider value={{closingWindowID, launcherVisible, launchApp, activateWindow, deactivateAll, setWindowPosition, setWindowSize, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, toggleLauncherVisibility, closeLauncher}}>
             <Desktop/>
             {[...windows] // Create a copy of windows array
                 .sort((a, b) => a.zIndex - b.zIndex) // Sort by zIndex
