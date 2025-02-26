@@ -1,7 +1,7 @@
-# Personal Website
+# Onyx
 
 ## Overview
-This is my personal website/portfolio that showcases my work, skills, and experiences. The site serves as a central hub for anyone looking to learn more about me and my professional background.
+Onyx is my personal website/portfolio that showcases my work, skills, and experiences. The site serves as a central hub for anyone looking to learn more about me and my professional background.
 
 ## Features
 - Responsive design that works across desktop, tablet, and mobile devices
