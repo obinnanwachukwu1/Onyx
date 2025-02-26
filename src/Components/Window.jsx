@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowMinimize} from '@fortawesome/free-solid-svg-icons/faWindowMinimize';
 import './Window.css';
-import { faX } from '@fortawesome/free-solid-svg-icons';
+import { faCircle, faX } from '@fortawesome/free-solid-svg-icons';
 import { faWindowMaximize, faWindowRestore } from '@fortawesome/free-regular-svg-icons';
 import { useWindowContext } from './WindowContext';
 
@@ -241,9 +241,9 @@ const Window = ({
       <div className={`window-header ${isActive ? 'active' : 'inactive'}`} onMouseDown={handleMouseDown} onDoubleClick={toggleMaximizing} onTouchStart={handleMouseDown}>
         <img src={appIcon} className='window-icon'/>
         <span className="window-title">{title}</span>
-        <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faWindowMinimize}/></button>
-        <button className="caption-button" onClick={toggleMaximizing}>{!isMaximized? <FontAwesomeIcon icon={faWindowMaximize} /> : <FontAwesomeIcon icon={faWindowRestore} />}</button>
-        <button className="caption-button" onClick={handleClosing}><FontAwesomeIcon icon={faX}/></button>
+        <button className="caption-button" onClick={toggleMaximizing}><FontAwesomeIcon icon={faCircle} style={{color: '#28C840'}}/></button>
+        <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faCircle} style={{color: '#FDBC2E'}}/></button>
+        <button className="caption-button" onClick={handleClosing}><FontAwesomeIcon icon={faCircle} style={{color: '#FF5E57'}}/></button>
       </div>}
       <div className="window-content" style={{
         flexGrow: 1,
