@@ -57,6 +57,8 @@
   
   .taskbar-item.minimized {
     opacity: 0.4;
+    background-color: #e7e7e7;
+    box-shadow: none;
   }
   
   .taskbar-item.inactive {

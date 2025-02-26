@@ -58,7 +58,7 @@ const AppCenter = () => {
       ) : (
         <div>
         {!currentApp ? (
-          <div className="main-page">
+          <div>
             {/* Carousel Section */}
             <div className="carousel">
               <div
@@ -79,7 +79,7 @@ const AppCenter = () => {
             </div>
   
             {/* App List Section */}
-            <div>
+            <div className="main-page">
               <h2>Projects</h2>
               <div className="app-list">
                 
