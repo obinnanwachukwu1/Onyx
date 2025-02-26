@@ -4,7 +4,8 @@
     left: 0;
     width: 100%;
     height: 50px;
-    background-color: #191919c6;
+    background-color: #e7e7e7;
+    color: black;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -22,20 +23,24 @@
   
   .taskbar-item {
     display: flex;
+    box-sizing: border-box;
     justify-content: left;
     align-items: center;
-    background-color: #5555558a;
-    height: 40px;
-    color: white;
+    background-color: #dbdbdb;
+    height: 50px;
+    color: black;
     border: none;
-    margin-right: 10px;
+    outline: none;
+    box-shadow: inset 0 -4px 0 black;
+    /* margin-right: 10px; */
     padding: 10px;
     cursor: pointer;
-    border-radius: 5px;
+    /* border-radius: 5px; */
     outline: none;
     flex-shrink: 0;
     width: 180px;
     font-size: 14px;
+
   }
 
   .taskbar-item .taskbar-icon {
@@ -47,7 +52,7 @@
 
   
   .taskbar-item:hover {
-    background-color: #777;
+    background-color: #d6d6d6;
   }
   
   .taskbar-item.minimized {
@@ -56,4 +61,6 @@
   
   .taskbar-item.inactive {
     opacity: 0.8;
+    background-color: #e7e7e7;
+    box-shadow: none;
   }
