@@ -1,19 +1,40 @@
 .launch-button-mobile {
-    width: 40px;
-    height: 40px;
-    font-size: large;
-    align-items: center;
-    background-color: transparent;
-    color: white;
-    border: none;
-    margin-right: 10px;
-    margin-left: 10px;
-    padding: 4px;
-    cursor: pointer;
-    border-radius: 5px;
-    outline: none;
+  width: 46px;
+  height: 46px;
+  font-size: large;
+  align-items: center;
+  background-color: var(--launch-button-bg);
+  border: none;
+  margin-right: 10px;
+  margin-left: 10px;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 100px;
+  outline: none;
+  transition: background-color 0.2s ease;
   }
 
 .launch-button-mobile > * {
   height: 75%;
+}
+
+.launch-button-mobile > * {
+  height: 75%;
+}
+
+.launch-button-mobile:hover {
+  background-color: var(--launch-button-hover);
+}
+
+.launch-button-mobile.clicked {
+  background-color: var(--launch-button-hover);
+}
+
+/* Style for the icon to adapt to theme */
+.launch-button-mobile img {
+filter: var(--launch-icon-filter);
+opacity: var(--launch-icon-opacity);
+transition: filter 0.3s ease, opacity 0.3s ease;
+width: 24px;
+height: 24px;
 }
