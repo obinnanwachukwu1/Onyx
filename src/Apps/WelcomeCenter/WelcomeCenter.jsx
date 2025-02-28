@@ -5,6 +5,7 @@ import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 import IconResume from '../../assets/icons/IconResume.svg';
 import IconStore from '../../assets/icons/IconStore.svg';
 import IconContact from '../../assets/icons/IconContact.svg';
+import logo192 from '../../../public/logo192.png';
 import './WelcomeCenter.css';
 
 const WelcomeCenter = () => {
@@ -33,7 +34,10 @@ const WelcomeCenter = () => {
             { loading ? (<LoadingScreen />) : (
             <div>
                 <div className="welcome-header-section">
-                    <h1 className="welcome-header">Welcome to Onyx</h1>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                    <img src={logo192} width={80} style={{filter: 'drop-shadow(0px 0px 5px rgba(34, 34, 34, 0.2))'}} />
+                    <h1 className="welcome-header">The Onyx Environment</h1>
+                    </div>
                     <p className="welcome-subheader">
                         Hi, I'm <strong>Obinna Nwachukwu</strong>, a Computer Science major at Georgia Tech. This is <strong>Onyx</strong> - an environment to showcase my projects and experience. Select an option below.
                     </p>
