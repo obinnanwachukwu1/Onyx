@@ -243,7 +243,7 @@ const Window = ({
         <span className="window-title">{title}</span>
         <button className="caption-button" onClick={toggleMaximizing}><FontAwesomeIcon icon={faCircle} style={{color: '#28C840'}}/></button>
         <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faCircle} style={{color: '#FDBC2E'}}/></button>
-        <button className="caption-button" onClick={handleClosing}><FontAwesomeIcon icon={faCircle} style={{color: '#FF5E57'}}/></button>
+        <button className="caption-button" onClick={handleClosing}> <FontAwesomeIcon icon={faCircle} style={{color: '#FF5E57'}}/></button>
       </div>}
       <div className="window-content" style={{
         flexGrow: 1,
