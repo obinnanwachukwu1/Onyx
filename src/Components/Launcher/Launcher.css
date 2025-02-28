@@ -122,5 +122,5 @@
 }
 
 .launcher button:hover {
-    background-color: #d5d5d5;
+    background-color: var(--taskbar-item-hover-bg);
 }
