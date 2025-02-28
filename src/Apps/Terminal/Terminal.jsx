@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import './Terminal.css';
 import useLockedState from '../../hooks/useLockedState';
 import details from '../../EnvironmentDetails';
+import toggleTheme from '../../Components/toggleTheme';
 
 const Terminal = () => {
     const terminalInputRef = useRef(null);
@@ -160,13 +161,17 @@ const Terminal = () => {
             const args = command.split(" ");
             switch (args[0]) {
                 case "help":
-                    await consolePrint("List of commands:\n'help' - Shows this page\n'ip' - Prints your IP address to the console\n'version'- Prints the version of the environemnt to the console")
+                    await consolePrint("List of commands:\n'help' - Shows this page\n'ip' - Prints your IP address to the console\n'version'- Prints the version of the environemnt to the console\n'toggleTheme' - Changes the color scheme of the system")
                     break;
                 case "ip":
                     await consolePrint(ip)
                     break;
                 case "version":
                     await consolePrint(details.name + " Environment v" + details.version_major + "." + details.version_minor)
+                    break;
+                case "toggleTheme":
+                    toggleTheme()
+                    await consolePrint("Theme changed")
                     break;
                 default:
                     await consolePrint("\"" + args[0] + "\" - bad command or file name");
@@ -179,9 +184,9 @@ const Terminal = () => {
         <div className = "terminal">
             <textarea 
                 className='terminal-input'
-                style={{ caretColor: "transparent" }} 
+                // style={{ caretColor: "transparent" }} 
                 ref={terminalInputRef}
-                value={value.slice(0, cursorPosition) + caret + value.slice(cursorPosition, value.length)}
+                value={value}
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setValue(e.target.value)}
                 spellCheck={false}

@@ -7,3 +7,49 @@ html, body, #root {
   overscroll-behavior-x: none;
 
 }
+
+:root {
+  /* Light theme (default) */
+  --window-bg: white;
+  --window-border-active: #e7e7e7;
+  --window-border-inactive: #f3f3f3;
+  --window-shadow-active: rgba(0, 0, 0, 0.5);
+  --window-shadow-inactive: rgba(0, 0, 0, 0.3);
+  --header-bg-active: #e7e7e7;
+  --header-bg-inactive: #f3f3f3;
+  --text-color: black;
+  --launch-button-bg: #e7e7e7;
+  --launch-button-hover: #d6d6d6;
+  --launch-icon-filter: none; /* No filter needed for light theme */
+  --launch-icon-opacity: 1;
+  --taskbar-bg: #e7e7e7;
+  --taskbar-item-bg: #dbdbdb;
+  --taskbar-item-hover-bg: #d6d6d6;
+  --taskbar-item-border: black;
+  --taskbar-item-minimized-bg: #e7e7e7;
+  --taskbar-item-inactive-bg: #e7e7e7;
+  --launcher-mobile-bg: #f0f0f0f2;
+}
+
+[data-theme="dark"] {
+  /* Dark theme */
+  --window-bg: #1e1e1e;
+  --window-border-active: #444444;
+  --window-border-inactive: #333333;
+  --window-shadow-active: rgba(0, 0, 0, 0.7);
+  --window-shadow-inactive: rgba(0, 0, 0, 0.5);
+  --header-bg-active: #333333;
+  --header-bg-inactive: #2a2a2a;
+  --text-color: #e0e0e0;
+  --launch-button-bg: #333333;
+  --launch-button-hover: #555555;
+  --launch-icon-filter: invert(1) brightness(1.7); /* Invert black to white and brighten */
+  --launch-icon-opacity: 1;
+  --taskbar-bg: #333333;
+  --taskbar-item-bg: #444444;
+  --taskbar-item-hover-bg: #555555;
+  --taskbar-item-border: #aaaaaa;
+  --taskbar-item-minimized-bg: #333333;
+  --taskbar-item-inactive-bg: #333333;
+  --launcher-mobile-bg: #191919f2;
+}

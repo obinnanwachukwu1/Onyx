@@ -14,9 +14,9 @@ const Clock = () => {
   }, []);
 
   // Format the time to display it nicely
-  const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formattedTime = time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
-  return <div className="taskbar-clock clock"> {formattedTime}</div>;
+  return <div className="taskbar-clock clock" style={{ userSelect: 'none' }}>{formattedTime}</div>;
 };
 
 export default Clock;

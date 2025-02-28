@@ -2,7 +2,7 @@
     {
       "id": 1,
       "name": "Onyx",
-      "description": "A React website that emulates a desktop environment",
+      "description": "My perosnal portfolio website",
       "fullDescription": "Onyx is a React app that emulates a Windows-like desktop environment. Its purpose is to show off my resume and projects in a unique and fun way.",
       "image": "https://obinnanwachukwu.com/projects/Portfolio/banner.png",
       "screenshots": ["https://obinnanwachukwu.com/projects/Portfolio/s1.png"],

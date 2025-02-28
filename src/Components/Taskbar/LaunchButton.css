@@ -1,17 +1,18 @@
 .launch-button {
-    width: 40px;
-    height: 40px;
+    width: 46px;
+    height: 46px;
     font-size: large;
     align-items: center;
-    background-color: transparent;
-    color: white;
+    background-color: var(--launch-button-bg);
+    color: black;
     border: none;
     margin-right: 10px;
     margin-left: 10px;
     padding: 4px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 100px;
     outline: none;
+    transition: background-color 0.2s ease;
     /* flex-shrink: 0; */
   }
 
@@ -20,9 +21,18 @@
   }
 
 .launch-button:hover {
-    background-color: rgba(173, 216, 230, 0.5);
+    background-color: var(--launch-button-hover);
 }
 
 .launch-button.clicked {
-    background-color: rgba(0, 191, 255, 0.501);
+    background-color: var(--launch-button-hover);
+}
+
+/* Style for the icon to adapt to theme */
+.launch-button img {
+  filter: var(--launch-icon-filter);
+  opacity: var(--launch-icon-opacity);
+  transition: filter 0.3s ease, opacity 0.3s ease;
+  width: 24px;
+  height: 24px;
 }
