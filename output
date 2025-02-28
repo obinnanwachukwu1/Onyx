@@ -257,7 +257,6 @@ function App() {
   const preRestoreWindow = (id) => {
     const sz = windows.find((window) => window.id ==id).restoreSize;
     const pos = windows.find((window) => window.id ==id).restorePosition;
-    console.log(pos);
 
     document.documentElement.style.setProperty('--width', `${sz.width}px`);
     document.documentElement.style.setProperty('--height', `${sz.height}px`);
@@ -689,7 +688,6 @@ const Window = ({
       }, 250)
     } else {
       preRestore();
-      console.log( document.documentElement.style.getPropertyValue('--width'))
       setIsRestoring(true);
       setTimeout(() => {
         onRestore();
@@ -1156,7 +1154,6 @@ const Taskbar = React.forwardRef(( { windows, onSelectWindow, setButtonPosition,
   const handleRightClick = (e, val) => {
     e.stopPropagation();
     e.preventDefault();
-    console.log(val);
   };
 
   useEffect(() => {
