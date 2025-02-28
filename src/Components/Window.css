@@ -1,3 +1,4 @@
+  
 
   @keyframes flipIn {
     0% {
@@ -105,14 +106,14 @@
     border: 2px solid black;
     border-radius: 10pt;
     background-color: white;
-    transform: perspective(1000px) rotateY(0); /* Normal position */
-    transition: transform 0.5s ease; /* Smooth transition for other transforms */
+    transform: perspective(1000px) rotateY(0);
+    transition: transform 0.5s ease;
     overflow: hidden;
+    color: black;
   }
   .window-mobile {
     border: unset;
-    border-top-left-radius: 0pt;
-    border-top-right-radius: 0pt;
+    border-radius: 0pt;
   }
 
   .window-mobile-opening {
@@ -125,13 +126,13 @@
 
 
   .window.active {
-    border: 2px solid #e7e7e7;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--window-border-active);
+    box-shadow: 0px 0px 10px var(--window-shadow-active);
   }
-
+  
   .window.inactive {
-    border: 2px solid #f3f3f3;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--window-border-inactive);
+    box-shadow: 0px 0px 10px var(--window-shadow-inactive);
   }
 
   .window.maximized {
@@ -173,7 +174,7 @@
     padding: 10px;
     height: 30px;
     user-select: none;
-    color: black;
+    color: var(--text-color);
   }
 
   .window-header .window-icon {
@@ -194,16 +195,16 @@
   .window-header button {
     background-color: transparent;
     border: none;
-    color: black;
+    color: var(--text-color);
     font-size: 16px;
   }
   
   .window-header.active {
-    background-color: #e7e7e7;
+    background-color: var(--header-bg-active);
   }
   
   .window-header.inactive {
-    background-color: #f3f3f3;
+    background-color: var(--header-bg-inactive);
   }
   
   

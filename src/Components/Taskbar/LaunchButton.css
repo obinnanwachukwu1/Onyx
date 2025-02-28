@@ -3,7 +3,7 @@
     height: 46px;
     font-size: large;
     align-items: center;
-    background-color: transparent;
+    background-color: var(--launch-button-bg);
     color: black;
     border: none;
     margin-right: 10px;
@@ -12,6 +12,7 @@
     cursor: pointer;
     border-radius: 100px;
     outline: none;
+    transition: background-color 0.2s ease;
     /* flex-shrink: 0; */
   }
 
@@ -20,9 +21,18 @@
   }
 
 .launch-button:hover {
-    background-color: rgba(194, 194, 194, 0.5);
+    background-color: var(--launch-button-hover);
 }
 
 .launch-button.clicked {
-    background-color: rgba(147, 147, 147, 0.501);
+    background-color: var(--launch-button-hover);
+}
+
+/* Style for the icon to adapt to theme */
+.launch-button img {
+  filter: var(--launch-icon-filter);
+  opacity: var(--launch-icon-opacity);
+  transition: filter 0.3s ease, opacity 0.3s ease;
+  width: 24px;
+  height: 24px;
 }

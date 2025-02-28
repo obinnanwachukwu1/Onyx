@@ -6,7 +6,7 @@
     border: none;
     cursor: default;
     transition: background-color 0.3s;
-    color: black;
+    color: var(--text-color);
     width: 128px;
     height: 128px;
 }
@@ -36,4 +36,8 @@
 
 .launcher-icon-button:active {
     background-color: rgba(0, 191, 255, 0.501);
+}
+
+.launcher-icon-text {
+    color: var(--text-color);
 }
