@@ -1,6 +1,6 @@
 
 .clock {
-    color: black;
+  color: var(--text-color);
     font-size: 16px;
     padding: 20px;
     flex-shrink: 0;
