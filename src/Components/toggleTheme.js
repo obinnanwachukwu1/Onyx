@@ -1,4 +1,4 @@
-export const toggleTheme = () => {
+export default function toggleTheme() {
     // Check current theme
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -9,9 +9,6 @@ export const toggleTheme = () => {
     // Store preference in localStorage
     localStorage.setItem('theme-preference', newTheme);
 };
-
-// Make it accessible from the console
-window.toggleTheme = toggleTheme;
   
   export const initializeTheme = () => {
     // Check for saved preference

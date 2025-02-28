@@ -10,7 +10,6 @@ const NavigationBar = React.forwardRef(( {windows, setButtonPosition}, ref) => {
   const handleRightClick = (e, val) => {
     e.stopPropagation();
     e.preventDefault();
-    console.log(val);
   };
 
   return (
