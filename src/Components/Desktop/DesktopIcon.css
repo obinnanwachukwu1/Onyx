@@ -15,8 +15,8 @@
     height: 32pt;
     padding: 8pt;
     background-color: transparent;
-    -webkit-filter: drop-shadow(3px 3px 3px #222222a6);
-    filter: drop-shadow(3px 3px 3px #222222a6);
+    -webkit-filter: drop-shadow(3px 3px 3px #000000bf);
+    filter: drop-shadow(3px 3px 3px #000000bf);
     display: inline-block;
 }
 
@@ -24,8 +24,8 @@
     padding-top: 8pt;
     padding-bottom: 8pt;
     background-color: transparent;
-    -webkit-filter: drop-shadow(3px 3px 3px #222222a6);
-    filter: drop-shadow(3px 3px 3px #222222a6);
+    -webkit-filter: drop-shadow(3px 3px 5px #000000);
+    filter: drop-shadow(3px 3px 5px #000000);
     display: inline-block;
 }
 
