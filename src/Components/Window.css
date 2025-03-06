@@ -136,8 +136,7 @@
   }
 
   .window.maximized {
-    border-top-left-radius: 0pt;
-    border-top-right-radius: 0pt;
+    border-radius: 0pt;
   }
   
   .window-opening {
