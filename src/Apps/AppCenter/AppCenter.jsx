@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./AppCenter.css";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -15,6 +15,8 @@ const AppCenter = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionType, setTransitionType] = useState(""); // "to-detail" or "to-main"
+  const containerRef = useRef(null)
+  const [landingScrollPos, setLandingScrollPos] = useState(0);
 
   useEffect(() => {
     fetch('https://obinnanwachukwu.com/projects/project_list.json', {cache: "no-cache"})
@@ -116,7 +118,7 @@ const AppCenter = () => {
           </button>
         </div>
       ) : (
-        <div className="app-center-container">
+        <div ref={containerRef} className="app-center-container">
           <div className={`app-center-main ${currentApp ? 'hidden' : 'visible'} ${
             isTransitioning && transitionType === "to-detail" ? 'fade-out' : 
             isTransitioning && transitionType === "to-main" ? 'fade-in' : ''
@@ -137,7 +139,7 @@ const AppCenter = () => {
             </header>
             
             {/* Featured Carousel Section with Error Handling */}
-            {apps.length > 0 && (
+            {apps.length > 0 && searchTerm.length === 0 && (
               <div className="app-featured-section">
                 <h2 className="section-heading">Featured</h2>
                 <div className="featured-carousel-container">
