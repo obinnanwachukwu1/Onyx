@@ -44,7 +44,7 @@ yarn dev
 4. Open your browser and visit `http://localhost:3000`
 
 ## Deployment
-This site is deployed using Github Pages
+This site is deployed using GitHub Pages
 
 To deploy your own version:
 ```bash
@@ -67,7 +67,7 @@ website/
 ```
 
 ## Future Improvements
-- Add dark mode support
+- ~Add dark mode support~
 - Add file browser
 
 ## Contact
