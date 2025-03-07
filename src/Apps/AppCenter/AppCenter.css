@@ -67,6 +67,7 @@
 .app-center-header-buttons {
   display: flex;
   flex-direction: row;
+  justify-content: center;
   align-items: flex-start;
 }
 
@@ -717,6 +718,19 @@
   .app-center-search {
     width: 100%;
     margin-top: 15px;
+  }
+
+  .refresh-icon {
+    height: 18.5px;
+    border-radius: 8px;
+    padding: 12px;
+    background-color: rgba(118, 118, 128, 0.12);
+    border-width: 0px;
+    outline: none;
+    transition: background-color 0.2s;
+    margin-right: 12px;
+    margin-top: 15px;
+
   }
   
   .featured-carousel {
