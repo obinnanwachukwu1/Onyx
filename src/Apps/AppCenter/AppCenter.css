@@ -351,7 +351,9 @@
 
 .app-card-icon {
   height: 120px;
-  padding: 20px;
+  width: auto;
+  max-height: 120px;
+  object-fit: contain;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -426,6 +428,7 @@
   transition: background-color 0.2s;
   display: flex;
   align-items: center;
+  margin-right: 10px;
   gap: 8px;
 }
 
@@ -697,6 +700,13 @@
   font-size: 14px;
 }
 
+.app-action-buttons {
+  display: flex;
+  flex-direction: row;
+}
+
+
+
 /* Responsive Styles */
 @media (max-width: 900px) {
   .app-center-header {
@@ -744,7 +754,10 @@
   
   .app-detail-meta,
   .app-action-buttons {
+    flex-direction: row;
     justify-content: center;
+    display: flex;
+    flex-direction: row;
   }
   
   .featured-carousel {

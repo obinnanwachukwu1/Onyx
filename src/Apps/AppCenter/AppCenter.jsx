@@ -293,7 +293,7 @@ const AppCenter = () => {
                   <h3 className="section-title">Screenshots</h3>
                   <div className="app-screenshots-gallery">
                     {currentApp.screenshots.map((src, index) => (
-                      <div key={index} className="screenshot-item" onClick={() => setActiveScreenshot(src)}>
+                      <div key={index} className="screenshot-item">
                         <img src={src} alt={`${currentApp.name} screenshot ${index + 1}`} />
                       </div>
                     ))}
