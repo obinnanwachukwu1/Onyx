@@ -66,13 +66,6 @@ const WindowManager = () => {
 
 
     const deactivateAll = (e) => {
-        // // Check if the click is inside an active context menu
-        // if (contextMenu && contextMenu.visible) {
-        // const contextMenuElement = document.querySelector('.context-menu');
-        // if (contextMenuElement && contextMenuElement.contains(e.target)) {
-        //     return;
-        // }
-        // }
         // Check if click is inside launcher
         if (launcherVisible) {
             const launcherElement = document.querySelector('.launcher');

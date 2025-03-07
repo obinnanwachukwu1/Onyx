@@ -8,6 +8,7 @@
   background-color: #f5f5f7;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
+  user-select: none;
 }
 
 /* Force all elements to inherit box-sizing to prevent size issues */
@@ -63,6 +64,12 @@
   flex-wrap: wrap;
 }
 
+.app-center-header-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
 .app-center-header h1 {
   font-size: 32px;
   font-weight: 700;
@@ -79,12 +86,30 @@
   width: 100%;
 }
 
+
+
 .search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #86868b;
+}
+
+
+.refresh-icon {
+  height: 18.5px;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: rgba(118, 118, 128, 0.12);
+  border-width: 0px;
+  outline: none;
+  transition: background-color 0.2s;
+  margin-right: 12px;
+}
+
+.refresh-icon:hover {
+  background-color: rgba(118, 118, 128, 0.2);
 }
 
 .app-center-search input {
@@ -637,7 +662,7 @@
   overflow: hidden;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
   width: 280px;
-  height: 200px;
+  height: 158px;
 }
 
 .screenshot-item img {

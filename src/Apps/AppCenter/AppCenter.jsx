@@ -3,7 +3,7 @@ import "./AppCenter.css";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFaceFrown } from '@fortawesome/free-regular-svg-icons';
-import { faChevronLeft, faStar, faCalendarAlt, faCode, faDownload, faChevronRight, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faStar, faCalendarAlt, faCode, faDownload, faChevronRight, faSearch, faRefresh } from "@fortawesome/free-solid-svg-icons";
 
 const AppCenter = () => {
   const [apps, setApps] = useState([]);
@@ -32,7 +32,7 @@ const AppCenter = () => {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [loading]);
 
   useEffect(() => {
     if (apps.length === 0) return;
@@ -125,15 +125,18 @@ const AppCenter = () => {
           }`}>
             <header className="app-center-header">
               <h1>App Center</h1>
-              <div className="app-center-search">
-                <div className="search-input-container">
-                  <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                  <input 
-                    type="text" 
-                    placeholder="Search apps..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+              <div className="app-center-header-buttons">
+                <FontAwesomeIcon icon={faRefresh} className="refresh-icon" onClick={() => {setLoading(true)}}/>
+                <div className="app-center-search">
+                  <div className="search-input-container">
+                    <FontAwesomeIcon icon={faSearch} className="search-icon" />
+                    <input 
+                      type="text" 
+                      placeholder="Search apps..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </header>
@@ -225,9 +228,7 @@ const AppCenter = () => {
                       className="app-card"
                       onClick={() => openApp(app)}
                     >
-                      <div className="app-card-icon">
-                        {app.icon}
-                      </div>
+                      <img className="app-card-icon" src={app.icon}/>
                       <div className="app-card-content">
                         <h3 className="app-card-title">{app.name}</h3>
                         <p className="app-card-category">{app.category || "Application"}</p>
@@ -256,7 +257,7 @@ const AppCenter = () => {
                 <div className="app-detail-hero">
                   <div className="app-detail-icon-container">
                     <div className="app-detail-icon">
-                      {currentApp.icon && <div className="app-icon-large">{currentApp.icon}</div>}
+                      {currentApp.icon && <img src={currentApp.icon} className="app-icon-large"/>}
                     </div>
                   </div>
                   
@@ -292,7 +293,7 @@ const AppCenter = () => {
                   <h3 className="section-title">Screenshots</h3>
                   <div className="app-screenshots-gallery">
                     {currentApp.screenshots.map((src, index) => (
-                      <div key={index} className="screenshot-item">
+                      <div key={index} className="screenshot-item" onClick={() => setActiveScreenshot(src)}>
                         <img src={src} alt={`${currentApp.name} screenshot ${index + 1}`} />
                       </div>
                     ))}

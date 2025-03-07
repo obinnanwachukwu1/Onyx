@@ -235,7 +235,7 @@ const Window = ({
         zIndex: zIndex, // Add this line
       }}
       onMouseDown={handleWindowClick} // Notify App.js to bring this window to the front
-      onContextMenu={(e) => {e.stopPropagation(); e.preventDefault()}}
+      // onContextMenu={(e) => {e.stopPropagation(); e.preventDefault()}}
     >
       { renderMobile ? null :
       <div className={`window-header ${isActive ? 'active' : 'inactive'}`} onMouseDown={handleMouseDown} onDoubleClick={toggleMaximizing} onTouchStart={handleMouseDown}>
