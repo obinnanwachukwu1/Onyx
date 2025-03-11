@@ -6,8 +6,11 @@ import appList from '../Apps/AppList';
 import Launcher from './Launcher/Launcher';
 
 import { WindowManagerContext } from './WindowManagerContext';
-
-const WindowManager = () => {
+export const WindowStartPosition = {
+    DEFAULT: 'default',
+    CENTERSCREEN: 'centerScreen'
+}
+const WindowManager = ({windowSize}) => {
     const taskbarRef = useRef(null)
     const [windows, setWindows] = useState([]);
     const [activeWindowId, setActiveWindowId] = useState(null);
@@ -25,8 +28,6 @@ const WindowManager = () => {
                 appIcon: app.icon,
                 title: app.name,
                 content: app.component,
-                position: app.initialPosition || { x: 100, y: 100 },
-                restorePosition: app.initialPosition || { x: 100, y: 100 },
                 size: app.initialSize || { width: 500, height: 500 },
                 restoreSize: app.initialSize || { width: 500, height: 500 },
                 isMaximized: false,
@@ -37,6 +38,8 @@ const WindowManager = () => {
                 renderMobile: false,
                 zIndex: zIndexCounter,
             };
+            newWindow.position = app.initialPosition === WindowStartPosition.CENTERSCREEN ? {x: (windowSize.width - newWindow.size.width) / 2, y: (windowSize.height - newWindow.size.height) / 2 } : { x: 100, y: 100 },
+            newWindow.restorePosition =  app.initialPosition === WindowStartPosition.CENTERSCREEN ? {x: (windowSize.width - newWindow.size.width) / 2, y: (windowSize.height - newWindow.size.height) / 2 } : { x: 100, y: 100 },
             setZIndexCounter(prev => prev + 1);
             setWindows((prevWindows) => {
                 if (prevWindows.some((window) => window.id === newWindow.id)) {

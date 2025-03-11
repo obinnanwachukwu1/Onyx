@@ -5,8 +5,6 @@ import appList from '../../Apps/AppList';
 import { WindowManagerContext } from '../WindowManagerContext';
 
 const Desktop = () => {
-    const [launched, setLaunched] = useState(false);
-    const [isLauncherVisible, setIsLauncherVisible] = useState(false);
     const {launchApp, deactivateAll} = useContext(WindowManagerContext);
     
     const hasLaunched = React.useRef(false);

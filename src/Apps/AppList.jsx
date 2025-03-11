@@ -11,6 +11,7 @@ import IconStore from '../assets/icons/IconStore.svg';
 import IconContact from '../assets/icons/IconContact.svg';
 import AppCenter from './AppCenter/AppCenter';
 import ContactMe from './ContactMe/ContactMe';
+import { WindowStartPosition } from '../Components/WindowManager';
 
 const appList = [
     {
@@ -64,7 +65,7 @@ const appList = [
       icon: IconNewWindow,
       component: <WelcomeCenter />,
       initialSize: { width: 800, height: 800 },
-      initialPosition: {x: (document.documentElement.clientWidth - 800) / 2, y: (document.documentElement.clientHeight - 800) / 2 },
+      initialPosition: WindowStartPosition.CENTERSCREEN,
       showOnDesktop: false,
       showInLauncher: true
     },
