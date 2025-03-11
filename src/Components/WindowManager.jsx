@@ -51,6 +51,35 @@ const WindowManager = ({windowSize}) => {
             activateWindow(newWindow.id)
         }
       };
+      useEffect(() => {
+        setWindows(prevWindows => 
+            prevWindows.map(window => {
+                let updatedWindow = { ...window };
+                
+                if (window.isMaximized) {
+                    updatedWindow.size = {
+                        width: windowSize.width,
+                        height: windowSize.height - (taskbarRef.current?.clientHeight || 0)
+                    };
+                    updatedWindow.position = { x: 0, y: 0 };
+                    return updatedWindow;
+                }
+                
+                const rightEdge = window.position.x + window.size.width;
+                const bottomEdge = window.position.y + window.size.height;
+                
+                if (rightEdge > windowSize.width || bottomEdge > windowSize.height) {
+                    const newX = Math.max(0, Math.min(window.position.x, windowSize.width - window.size.width));
+                    const newY = Math.max(0, Math.min(window.position.y, windowSize.height - window.size.height - (taskbarRef.current?.clientHeight || 0)));
+                    
+                    updatedWindow.position = { x: newX, y: newY };
+                }
+                
+                return updatedWindow;
+            })
+        );
+    }, [windowSize]);
+
 
     const activateWindow = (id) => {
         setLauncherVisible(false);
