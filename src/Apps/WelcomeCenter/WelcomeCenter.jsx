@@ -5,7 +5,7 @@ import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 import IconResume from '../../assets/icons/IconResume.svg';
 import IconStore from '../../assets/icons/IconStore.svg';
 import IconContact from '../../assets/icons/IconContact.svg';
-import logo192 from '../../../public/logo192.png';
+import logo192 from '../../../logo192.png'
 import './WelcomeCenter.css';
 
 const WelcomeCenter = () => {

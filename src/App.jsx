@@ -5,14 +5,14 @@ import { DeviceContext } from './Components/DeviceContext';
 import { initializeTheme } from './Components/toggleTheme';
 
 const App = () => {
-  const { isMobile } = useContext(DeviceContext);
+  const { isMobile, windowSize } = useContext(DeviceContext);
   initializeTheme()
   return (
     <div>
       {isMobile ? (
         <AppManager />
       ) : (
-        <WindowManager />
+        <WindowManager windowSize={windowSize}/>
       )}
     </div>
   );
