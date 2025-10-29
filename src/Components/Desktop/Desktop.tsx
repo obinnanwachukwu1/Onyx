@@ -9,18 +9,18 @@ const Desktop = (): JSX.Element => {
   const hasLaunched = useRef<boolean>(false);
 
   useEffect(() => {
-    if (!hasLaunched.current) {
-      hasLaunched.current = true;
-      const timer = window.setTimeout(() => {
-        launchApp('welcome-center');
-      }, 1000);
-
-      return () => {
-        window.clearTimeout(timer);
-      };
+    if (hasLaunched.current) {
+      return;
     }
 
-    return undefined;
+    const timer = window.setTimeout(() => {
+      hasLaunched.current = true;
+      launchApp('welcome-center');
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [launchApp]);
 
   const handleDesktopIconDoubleClick = (appId: string) => {
