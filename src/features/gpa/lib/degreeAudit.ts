@@ -9,7 +9,7 @@ const TAIL_REGEX = new RegExp(
 );
 
 const BASE_SCALE = 4;
-const BASE_LETTER_POINTS = {
+const BASE_LETTER_POINTS: Record<string, number> = {
   A: 4,
   B: 3,
   C: 2,
@@ -17,7 +17,31 @@ const BASE_LETTER_POINTS = {
   F: 0,
 };
 
-export const DEFAULT_GRADE_CONFIG = {
+export interface GradeConfig {
+  scaleMax: number;
+  usePlusMinus: boolean;
+}
+
+export interface RawCourse {
+  course: string;
+  grade: string;
+  credits: number;
+  term: string;
+}
+
+export interface CourseMetrics extends RawCourse {
+  effectiveGrade: string;
+  baseGrade: string | null;
+  gradePoints: number | null;
+  weightedCredits: number;
+}
+
+export interface GpaSummary {
+  gradedCredits: number;
+  gpa: number | null;
+}
+
+export const DEFAULT_GRADE_CONFIG: GradeConfig = {
   scaleMax: 4,
   usePlusMinus: false,
 };
@@ -39,19 +63,21 @@ export const EDITABLE_GRADES = [
   'S',
   'U',
   'IP',
-];
+] as const;
 
-export function truncate(value, decimals) {
+export type EditableGrade = (typeof EDITABLE_GRADES)[number];
+
+export function truncate(value: number, decimals: number): number {
   const factor = 10 ** decimals;
   return Math.trunc(value * factor) / factor;
 }
 
-function normalizeLine(line) {
+function normalizeLine(line: string): string {
   return line.replace(/[ \t]+/g, ' ').trim();
 }
 
-function findCourseSegment(line) {
-  let lastMatch = null;
+function findCourseSegment(line: string): string | null {
+  let lastMatch: RegExpExecArray | null = null;
   COURSE_CODE.lastIndex = 0;
   let match = COURSE_CODE.exec(line);
   while (match) {
@@ -62,7 +88,7 @@ function findCourseSegment(line) {
   return lastMatch ? line.slice(lastMatch.index).trim() : null;
 }
 
-function buildRawCourse(course, grade, credits, term) {
+function buildRawCourse(course: string, grade: string, credits: number, term: string): RawCourse {
   return {
     course,
     grade: grade.toUpperCase(),
@@ -71,7 +97,7 @@ function buildRawCourse(course, grade, credits, term) {
   };
 }
 
-function parseRowFromLine(line) {
+function parseRowFromLine(line: string): RawCourse | null {
   const termMatch = line.match(TERM_REGEX);
   if (!termMatch) {
     return null;
@@ -105,7 +131,7 @@ function parseRowFromLine(line) {
   return null;
 }
 
-function parseRowFromMultiline(lines, index) {
+function parseRowFromMultiline(lines: string[], index: number): [RawCourse | null, number] {
   const line = lines[index];
 
   if (line.includes('Course Title') || line.includes('Satisfied by:')) {
@@ -159,7 +185,7 @@ function parseRowFromMultiline(lines, index) {
   return [null, 1];
 }
 
-function baseGrade(letter) {
+function baseGrade(letter: string | null): string | null {
   if (!letter) {
     return null;
   }
@@ -173,11 +199,11 @@ function baseGrade(letter) {
   return BASE_LETTER_POINTS[first] !== undefined ? first : null;
 }
 
-function normalizeGrade(grade) {
+function normalizeGrade(grade: string): string {
   return grade.trim().toUpperCase();
 }
 
-function effectiveGrade(grade, config) {
+function effectiveGrade(grade: string, config: GradeConfig): string {
   const normalized = normalizeGrade(grade);
   if (!config.usePlusMinus) {
     return normalized.replace(/[+-]$/, '');
@@ -185,7 +211,7 @@ function effectiveGrade(grade, config) {
   return normalized;
 }
 
-function letterBasePoints(letter, scaleMax) {
+function letterBasePoints(letter: string, scaleMax: number): number | null {
   const base = BASE_LETTER_POINTS[letter];
   if (typeof base !== 'number') {
     return null;
@@ -194,7 +220,7 @@ function letterBasePoints(letter, scaleMax) {
   return Number((base * multiplier).toFixed(4));
 }
 
-function applyPlusMinus(basePoints, grade, config) {
+function applyPlusMinus(basePoints: number, grade: string, config: GradeConfig): number {
   const adjustmentBase = 0.3 * (config.scaleMax / BASE_SCALE);
   if (!config.usePlusMinus) {
     return basePoints;
@@ -211,14 +237,14 @@ function applyPlusMinus(basePoints, grade, config) {
   return basePoints;
 }
 
-export function applyGrade(course, grade) {
+export function applyGrade<T extends { grade: string }>(course: T, grade: string): T {
   return {
     ...course,
     grade: normalizeGrade(grade),
   };
 }
 
-export function computeCourseMetrics(course, config) {
+export function computeCourseMetrics(course: RawCourse, config: GradeConfig): CourseMetrics {
   const effective = effectiveGrade(course.grade, config);
   const base = baseGrade(effective);
 
@@ -266,7 +292,7 @@ export function computeCourseMetrics(course, config) {
   };
 }
 
-export function parseDegreeAudit(text) {
+export function parseDegreeAudit(text: string): RawCourse[] {
   const lines = text
     .split(/\r?\n/)
     .map(normalizeLine)
@@ -276,7 +302,7 @@ export function parseDegreeAudit(text) {
     return [];
   }
 
-  const rows = [];
+  const rows: RawCourse[] = [];
 
   for (let index = 0; index < lines.length; ) {
     const [row, consumed] = parseRowFromMultiline(lines, index);
@@ -286,8 +312,8 @@ export function parseDegreeAudit(text) {
     index += consumed;
   }
 
-  const seen = new Set();
-  const uniqueRows = [];
+  const seen = new Set<string>();
+  const uniqueRows: RawCourse[] = [];
 
   rows.forEach((row) => {
     const key = `${row.course}|${row.grade}|${row.credits}|${row.term}`;
@@ -300,7 +326,7 @@ export function parseDegreeAudit(text) {
   return uniqueRows;
 }
 
-export function summarizeGpa(rows, config) {
+export function summarizeGpa(rows: RawCourse[], config: GradeConfig): GpaSummary {
   let gradedCredits = 0;
   let totalWeighted = 0;
 

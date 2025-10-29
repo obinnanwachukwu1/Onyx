@@ -1,6 +1,22 @@
-import React from 'react';
+import type { FC } from 'react';
 
-function SettingsModal({ open, scale, usePlusMinus, onScaleChange, onTogglePlusMinus, onClose }) {
+interface SettingsModalProps {
+  open: boolean;
+  scale: number;
+  usePlusMinus: boolean;
+  onScaleChange: (value: string) => void;
+  onTogglePlusMinus: () => void;
+  onClose: () => void;
+}
+
+const SettingsModal: FC<SettingsModalProps> = ({
+  open,
+  scale,
+  usePlusMinus,
+  onScaleChange,
+  onTogglePlusMinus,
+  onClose,
+}) => {
   if (!open) {
     return null;
   }
@@ -35,6 +51,6 @@ function SettingsModal({ open, scale, usePlusMinus, onScaleChange, onTogglePlusM
       </div>
     </div>
   );
-}
+};
 
 export default SettingsModal;

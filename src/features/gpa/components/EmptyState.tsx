@@ -1,7 +1,12 @@
-import React from 'react';
+import type { FC } from 'react';
 import { UploadCloud } from 'lucide-react';
 
-function EmptyState({ onUpload, onAddSemester }) {
+interface EmptyStateProps {
+  onUpload: () => void;
+  onAddSemester: () => void;
+}
+
+const EmptyState: FC<EmptyStateProps> = ({ onUpload, onAddSemester }) => {
   return (
     <section className="gpa-empty">
       <p>Nothing here yet. Upload a DegreeWorks PDF or start by adding a semester.</p>
@@ -16,6 +21,6 @@ function EmptyState({ onUpload, onAddSemester }) {
       </div>
     </section>
   );
-}
+};
 
 export default EmptyState;
