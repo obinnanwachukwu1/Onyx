@@ -23,7 +23,7 @@ Onyx is my personal website/portfolio that showcases my work, skills, and experi
 ### Installation
 1. Clone the repository
 ```bash
-git clone https://github.com/chemicaldaniel/website.git
+git clone https://github.com/obinnanwachukwu1/website.git
 cd website
 ```
 
