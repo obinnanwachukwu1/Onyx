@@ -8,7 +8,7 @@
       "screenshots": ["https://obinnanwachukwu.com/projects/Onyx/s1.jpg", "https://obinnanwachukwu.com/projects/Onyx/s2.jpg", "https://obinnanwachukwu.com/projects/Onyx/s3.jpg", "https://obinnanwachukwu.com/projects/Onyx/s4.jpg"],
       "canTry": true,
       "trial": "https://obinnanwachukwu.com",
-      "github": "https://github.com/ChemicalDaniel/Onyx",
+      "github": "https://github.com/obinnanwachukwu1/Onyx",
       "releaseDate": "December 2024",
       "icon": "https://obinnanwachukwu.com/projects/Onyx/logo.png",
       "technologies": ["React", "Vite", "JavaScript", "CSS", "Node.js", "Github Pages"]
