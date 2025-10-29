@@ -45,13 +45,13 @@ const ContactMe = (): JSX.Element => {
               <p>obinnanwachukwugt</p>
             </div>
           </div>
-          <div className="contact-item" onClick={() => window.open('https://www.github.com/chemicaldaniel')}>
+          <div className="contact-item" onClick={() => window.open('https://www.github.com/obinnanwachukwu1')}>
             <div className="contact-icon">
               <FontAwesomeIcon icon={faGithub} />
             </div>
             <div className="contact-info">
               <h3>Github</h3>
-              <p>ChemicalDaniel</p>
+              <p>obinnanwachukwu1</p>
             </div>
           </div>
           <div className="contact-item" onClick={() => window.open('mailto:me@obinnanwachukwu.com')}>
