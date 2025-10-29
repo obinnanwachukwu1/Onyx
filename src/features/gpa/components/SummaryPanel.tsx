@@ -1,6 +1,13 @@
-import React from 'react';
+import type { FC } from 'react';
+import type { GpaSummary } from '../lib/degreeAudit';
 
-function SummaryPanel({ summary, semesterCount, courseCount }) {
+interface SummaryPanelProps {
+  summary: GpaSummary | null;
+  semesterCount: number;
+  courseCount: number;
+}
+
+const SummaryPanel: FC<SummaryPanelProps> = ({ summary, semesterCount, courseCount }) => {
   if (!summary) {
     return null;
   }
@@ -21,6 +28,6 @@ function SummaryPanel({ summary, semesterCount, courseCount }) {
       </div>
     </section>
   );
-}
+};
 
 export default SummaryPanel;

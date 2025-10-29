@@ -1,7 +1,14 @@
-import React from 'react';
+import type { FC } from 'react';
 import { RotateCcw, Settings, UploadCloud, Plus } from 'lucide-react';
 
-function PlannerHeader({ onOpenSettings, onReset, onUpload, onAddSemester }) {
+interface PlannerHeaderProps {
+  onOpenSettings: () => void;
+  onReset: () => void;
+  onUpload: () => void;
+  onAddSemester: () => void;
+}
+
+const PlannerHeader: FC<PlannerHeaderProps> = ({ onOpenSettings, onReset, onUpload, onAddSemester }) => {
   return (
     <header className="gpa-planner__header gpa-topbar">
       <h1 className="gpa-planner__title">GPA Planner</h1>
@@ -24,6 +31,6 @@ function PlannerHeader({ onOpenSettings, onReset, onUpload, onAddSemester }) {
       </div>
     </header>
   );
-}
+};
 
 export default PlannerHeader;

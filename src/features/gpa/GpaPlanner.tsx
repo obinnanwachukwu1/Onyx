@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import PlannerHeader from './components/PlannerHeader';
 import StatusBanner from './components/StatusBanner';
 import SummaryPanel from './components/SummaryPanel';
@@ -14,10 +14,21 @@ import {
   parseDegreeAudit,
   summarizeGpa,
   truncate,
+  type RawCourse,
+  type GpaSummary,
 } from './lib/degreeAudit';
+import type {
+  CourseDraft,
+  GradeConfigState,
+  ParseState,
+  PlannerCourse,
+  PlannerSemester,
+  PlannerSemesterDisplay,
+  SemesterCourseWithMetrics,
+} from './types';
 import './GpaPlanner.css';
 
-const SEASON_ORDER = {
+const SEASON_ORDER: Record<string, number> = {
   Winter: 0,
   Spring: 1,
   Summer: 2,
@@ -25,19 +36,19 @@ const SEASON_ORDER = {
 };
 
 let idCounter = 0;
-function createId(prefix) {
+function createId(prefix: string): string {
   idCounter += 1;
   return `${prefix}-${Date.now().toString(36)}-${idCounter.toString(36)}`;
 }
 
-function parseTermSortKey(term) {
+function parseTermSortKey(term: string): { seasonOrder: number; year: number } {
   const [season = '', yearStr = '0'] = term.split(/\s+/);
   const year = Number.parseInt(yearStr, 10) || 0;
   const seasonOrder = SEASON_ORDER[season] ?? -1;
   return { seasonOrder, year };
 }
 
-function compareTermsAsc(a, b) {
+function compareTermsAsc(a: string, b: string): number {
   const aKey = parseTermSortKey(a);
   const bKey = parseTermSortKey(b);
   if (aKey.year !== bKey.year) {
@@ -46,7 +57,7 @@ function compareTermsAsc(a, b) {
   return aKey.seasonOrder - bKey.seasonOrder;
 }
 
-function compareTermsDesc(a, b) {
+function compareTermsDesc(a: string, b: string): number {
   const aKey = parseTermSortKey(a);
   const bKey = parseTermSortKey(b);
   if (aKey.year !== bKey.year) {
@@ -55,27 +66,27 @@ function compareTermsDesc(a, b) {
   return bKey.seasonOrder - aKey.seasonOrder;
 }
 
-function normalizeGradeOptions(usePlusMinus) {
+function normalizeGradeOptions(usePlusMinus: boolean): string[] {
   if (usePlusMinus) {
-    return EDITABLE_GRADES;
+    return [...EDITABLE_GRADES];
   }
   return EDITABLE_GRADES.filter((grade) => !/[+-]$/.test(grade));
 }
 
-function GpaPlanner() {
-  const fileInputRef = useRef(null);
-  const [semesters, setSemesters] = useState([]);
-  const [parseState, setParseState] = useState({ status: 'idle', message: null });
-  const [selectedFileName, setSelectedFileName] = useState(null);
+function GpaPlanner(): JSX.Element {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [semesters, setSemesters] = useState<PlannerSemester[]>([]);
+  const [parseState, setParseState] = useState<ParseState>({ status: 'idle', message: null });
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [filteredOutCount, setFilteredOutCount] = useState(0);
-  const [gradeConfig, setGradeConfig] = useState(DEFAULT_GRADE_CONFIG);
+  const [gradeConfig, setGradeConfig] = useState<GradeConfigState>({ ...DEFAULT_GRADE_CONFIG });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [courseDrafts, setCourseDrafts] = useState({});
-  const [openCourseForms, setOpenCourseForms] = useState({});
+  const [courseDrafts, setCourseDrafts] = useState<Record<string, CourseDraft>>({});
+  const [openCourseForms, setOpenCourseForms] = useState<Record<string, boolean>>({});
 
   const gradeOptions = useMemo(() => normalizeGradeOptions(gradeConfig.usePlusMinus), [gradeConfig.usePlusMinus]);
 
-  const allCourses = useMemo(
+  const allCourses: RawCourse[] = useMemo(
     () =>
       semesters.flatMap((semester) =>
         semester.courses.map((course) => ({
@@ -88,22 +99,22 @@ function GpaPlanner() {
     [semesters],
   );
 
-  const overallSummary = useMemo(() => {
+  const overallSummary = useMemo<GpaSummary | null>(() => {
     if (allCourses.length === 0) {
       return null;
     }
     return summarizeGpa(allCourses, gradeConfig);
   }, [allCourses, gradeConfig]);
 
-  const semesterDisplays = useMemo(() => {
+  const semesterDisplays = useMemo<PlannerSemesterDisplay[]>(() => {
     let cumulativeCredits = 0;
     let cumulativeWeighted = 0;
 
     const orderedAsc = [...semesters].sort((a, b) => compareTermsAsc(a.term, b.term));
 
-    const computed = orderedAsc.map((semester) => {
-      const courseDisplays = semester.courses.map((course) => {
-        const raw = {
+    const computed = orderedAsc.map<PlannerSemesterDisplay>((semester) => {
+      const courseDisplays = semester.courses.map((course): SemesterCourseWithMetrics => {
+        const raw: RawCourse = {
           course: course.course,
           grade: course.grade,
           credits: course.credits,
@@ -131,7 +142,7 @@ function GpaPlanner() {
         termGpa,
         cumulativeGpa,
         gradedCredits: termCredits,
-      };
+      } satisfies PlannerSemesterDisplay;
     });
 
     return computed.sort((a, b) => compareTermsDesc(a.term, b.term));
@@ -155,7 +166,7 @@ function GpaPlanner() {
   useEffect(() => {
     setCourseDrafts((prev) => {
       let changed = false;
-      const next = { ...prev };
+      const next: Record<string, CourseDraft> = { ...prev };
       Object.entries(prev).forEach(([semesterId, draft]) => {
         if (!gradeOptions.includes(draft.grade)) {
           next[semesterId] = {
@@ -185,7 +196,7 @@ function GpaPlanner() {
     }
   };
 
-  const ensureSemesterDraft = (semesterId) => {
+  const ensureSemesterDraft = (semesterId: string) => {
     setCourseDrafts((prev) => {
       if (prev[semesterId]) {
         return prev;
@@ -201,9 +212,10 @@ function GpaPlanner() {
     });
   };
 
-  const handleFileSelection = async (event) => {
-    const [file] = event.target.files ?? [];
-    event.target.value = '';
+  const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.target;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
 
     if (!file) {
       return;
@@ -215,7 +227,7 @@ function GpaPlanner() {
     }
 
     setParseState({ status: 'loading', message: 'Parsing your audit…' });
-    setSelectedFileName(file.name);
+    setSelectedFileName(file instanceof File ? file.name : null);
     setFilteredOutCount(0);
 
     try {
@@ -246,7 +258,7 @@ function GpaPlanner() {
         return;
       }
 
-      const grouped = new Map();
+      const grouped = new Map<string, PlannerCourse[]>();
       filteredRows.forEach((row) => {
         const termCourses = grouped.get(row.term) ?? [];
         const id = createId('course');
@@ -262,7 +274,7 @@ function GpaPlanner() {
         grouped.set(row.term, termCourses);
       });
 
-      const groupedSemesters = [...grouped.keys()]
+      const groupedSemesters: PlannerSemester[] = [...grouped.keys()]
         .sort(compareTermsAsc)
         .map((term) => ({
           id: createId('semester'),
@@ -288,7 +300,7 @@ function GpaPlanner() {
     }
   };
 
-  const openCourseForm = (semesterId) => {
+  const openCourseForm = (semesterId: string) => {
     ensureSemesterDraft(semesterId);
     setOpenCourseForms((prev) => ({
       ...prev,
@@ -296,7 +308,7 @@ function GpaPlanner() {
     }));
   };
 
-  const closeCourseForm = (semesterId) => {
+  const closeCourseForm = (semesterId: string) => {
     setOpenCourseForms((prev) => {
       if (!prev[semesterId]) {
         return prev;
@@ -306,7 +318,7 @@ function GpaPlanner() {
     });
   };
 
-  const handleDraftChange = (semesterId, field, value) => {
+  const handleDraftChange = (semesterId: string, field: keyof CourseDraft, value: string) => {
     ensureSemesterDraft(semesterId);
     setCourseDrafts((prev) => ({
       ...prev,
@@ -317,7 +329,7 @@ function GpaPlanner() {
     }));
   };
 
-  const handleAddCourse = (semesterId, event) => {
+  const handleAddCourse = (semesterId: string, event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const draft = courseDrafts[semesterId];
     if (!draft) {
@@ -336,13 +348,13 @@ function GpaPlanner() {
         }
 
         const id = createId('course');
-        const raw = {
+        const raw: RawCourse = {
           course: draft.course.trim(),
           grade: draft.grade,
           credits,
           term: semester.term,
         };
-        const nextCourse = {
+        const nextCourse: PlannerCourse = {
           ...raw,
           id,
           source: 'manual',
@@ -368,7 +380,7 @@ function GpaPlanner() {
     openCourseForm(semesterId);
   };
 
-  const handleDeleteCourse = (semesterId, courseId) => {
+  const handleDeleteCourse = (semesterId: string, courseId: string) => {
     setSemesters((prev) =>
       prev.map((semester) => {
         if (semester.id !== semesterId) {
@@ -382,7 +394,7 @@ function GpaPlanner() {
     );
   };
 
-  const handleGradeChange = (semesterId, courseId, nextGrade) => {
+  const handleGradeChange = (semesterId: string, courseId: string, nextGrade: string) => {
     setSemesters((prev) =>
       prev.map((semester) => {
         if (semester.id !== semesterId) {
@@ -405,7 +417,7 @@ function GpaPlanner() {
     );
   };
 
-  const handleTermNameChange = (semesterId, nextTerm) => {
+  const handleTermNameChange = (semesterId: string, nextTerm: string) => {
     setSemesters((prev) =>
       prev.map((semester) =>
         semester.id === semesterId
@@ -424,7 +436,7 @@ function GpaPlanner() {
 
   const handleAddSemester = () => {
     const hadSemesters = semesters.length > 0;
-    const newSemester = {
+    const newSemester: PlannerSemester = {
       id: createId('semester'),
       term: 'New Semester',
       courses: [],
@@ -442,7 +454,7 @@ function GpaPlanner() {
     }));
   };
 
-  const handleScaleChange = (value) => {
+  const handleScaleChange = (value: string) => {
     const numeric = Number.parseFloat(value);
     if (Number.isNaN(numeric) || numeric <= 0) {
       return;

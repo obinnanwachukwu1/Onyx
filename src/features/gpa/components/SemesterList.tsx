@@ -1,7 +1,22 @@
-import React from 'react';
+import type { FC, FormEvent } from 'react';
 import SemesterCard from './SemesterCard';
+import type { CourseDraft, PlannerSemesterDisplay } from '../types';
 
-function SemesterList({
+interface SemesterListProps {
+  semesters: PlannerSemesterDisplay[];
+  drafts: Partial<Record<string, CourseDraft>>;
+  openForms: Partial<Record<string, boolean>>;
+  gradeOptions: string[];
+  onDraftChange: (semesterId: string, field: keyof CourseDraft, value: string) => void;
+  onAddCourse: (semesterId: string, event: FormEvent<HTMLFormElement>) => void;
+  onOpenForm: (semesterId: string) => void;
+  onCloseForm: (semesterId: string) => void;
+  onTermChange: (semesterId: string, term: string) => void;
+  onGradeChange: (semesterId: string, courseId: string, grade: string) => void;
+  onDeleteCourse: (semesterId: string, courseId: string) => void;
+}
+
+const SemesterList: FC<SemesterListProps> = ({
   semesters,
   drafts,
   openForms,
@@ -13,7 +28,7 @@ function SemesterList({
   onTermChange,
   onGradeChange,
   onDeleteCourse,
-}) {
+}) => {
   return (
     <div className="gpa-semester-list">
       {semesters.map((semester) => (
@@ -34,6 +49,6 @@ function SemesterList({
       ))}
     </div>
   );
-}
+};
 
 export default SemesterList;

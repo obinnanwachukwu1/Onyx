@@ -1,6 +1,12 @@
-import React from 'react';
+import type { FC } from 'react';
+import type { ParseState } from '../types';
 
-function StatusBanner({ state, fileName }) {
+interface StatusBannerProps {
+  state: ParseState;
+  fileName: string | null;
+}
+
+const StatusBanner: FC<StatusBannerProps> = ({ state, fileName }) => {
   if (!state?.message) {
     return null;
   }
@@ -11,6 +17,6 @@ function StatusBanner({ state, fileName }) {
       {fileName ? <span className="gpa-status__file">Loaded: {fileName}</span> : null}
     </p>
   );
-}
+};
 
 export default StatusBanner;

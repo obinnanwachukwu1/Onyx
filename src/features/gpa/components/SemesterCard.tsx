@@ -1,6 +1,21 @@
-import React from 'react';
+import type { FC, FormEvent } from 'react';
+import type { CourseDraft, PlannerSemesterDisplay } from '../types';
 
-function SemesterCard({
+interface SemesterCardProps {
+  semester: PlannerSemesterDisplay;
+  draft?: CourseDraft;
+  isFormOpen: boolean;
+  gradeOptions: string[];
+  onDraftChange: (semesterId: string, field: keyof CourseDraft, value: string) => void;
+  onAddCourse: (semesterId: string, event: FormEvent<HTMLFormElement>) => void;
+  onOpenForm: (semesterId: string) => void;
+  onCloseForm: (semesterId: string) => void;
+  onTermChange: (semesterId: string, term: string) => void;
+  onGradeChange: (semesterId: string, courseId: string, grade: string) => void;
+  onDeleteCourse: (semesterId: string, courseId: string) => void;
+}
+
+const SemesterCard: FC<SemesterCardProps> = ({
   semester,
   draft,
   isFormOpen,
@@ -12,7 +27,7 @@ function SemesterCard({
   onTermChange,
   onGradeChange,
   onDeleteCourse,
-}) {
+}) => {
   const courseDraft = draft ?? { course: '', credits: '', grade: gradeOptions[0] ?? 'A' };
   const gradeOptionsForDraft = gradeOptions.includes(courseDraft.grade)
     ? gradeOptions
@@ -140,6 +155,6 @@ function SemesterCard({
       )}
     </section>
   );
-}
+};
 
 export default SemesterCard;

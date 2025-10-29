@@ -1,15 +1,21 @@
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+import { getDocument, GlobalWorkerOptions, type PDFDocumentProxy } from 'pdfjs-dist';
+import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?worker&url';
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
-async function loadDocument(data) {
+async function loadDocument(data: ArrayBuffer): Promise<PDFDocumentProxy> {
   const loadingTask = getDocument({ data });
   return loadingTask.promise;
 }
 
-function collapseItemsToLines(items) {
-  const lines = [];
+interface TextLineItem {
+  str: string;
+  hasEOL?: boolean;
+}
+
+function collapseItemsToLines(items: TextLineItem[]): string {
+  const lines: string[] = [];
   let buffer = '';
 
   items.forEach(({ str, hasEOL }) => {
@@ -37,15 +43,15 @@ function collapseItemsToLines(items) {
   return lines.join('\n');
 }
 
-export async function extractTextFromPdf(file) {
+export async function extractTextFromPdf(file: File | Blob): Promise<string> {
   const buffer = await file.arrayBuffer();
   const pdf = await loadDocument(buffer);
-  const pages = [];
+  const pages: string[] = [];
 
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
     const page = await pdf.getPage(pageNumber);
-    const textContent = await page.getTextContent({ normalizeWhitespace: true, disableCombineTextItems: false });
-    const textItems = textContent.items.filter((item) => 'str' in item);
+    const textContent = await page.getTextContent();
+    const textItems = textContent.items.filter((item): item is TextItem => 'str' in item);
     const lines = textItems.map((item) => ({ str: item.str, hasEOL: Boolean(item.hasEOL) }));
     pages.push(collapseItemsToLines(lines));
   }
