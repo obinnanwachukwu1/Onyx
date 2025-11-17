@@ -20,7 +20,6 @@
     "lucide-react": "^0.544.0",
     "pdfjs-dist": "^5.4.149"
   },
-  "homepage": "https://obinnanwachukwu.com",
   "scripts": {
     "start": "vite",
     "build": "vite build",
