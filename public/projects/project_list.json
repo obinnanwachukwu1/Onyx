@@ -4,13 +4,13 @@
       "name": "Onyx",
       "description": "Onyx Portfolio Environment",
       "fullDescription": "Onyx is my personal website/portfolio that showcases my work, skills, and experiences. The site serves as a central hub for anyone looking to learn more about me and my professional background.",
-      "image": "https://obinnanwachukwu.com/projects/Onyx/banner.jpg",
-      "screenshots": ["https://obinnanwachukwu.com/projects/Onyx/s1.jpg", "https://obinnanwachukwu.com/projects/Onyx/s2.jpg", "https://obinnanwachukwu.com/projects/Onyx/s3.jpg", "https://obinnanwachukwu.com/projects/Onyx/s4.jpg"],
+      "image": "/projects/Onyx/banner.webp",
+      "screenshots": ["/projects/Onyx/s1.webp", "/projects/Onyx/s2.webp", "/projects/Onyx/s3.webp", "/projects/Onyx/s4.webp"],
       "canTry": true,
       "trial": "https://obinnanwachukwu.com",
       "github": "https://github.com/obinnanwachukwu1/Onyx",
       "releaseDate": "December 2024",
-      "icon": "https://obinnanwachukwu.com/projects/Onyx/logo.png",
+      "icon": "/projects/Onyx/logo.png",
       "technologies": ["React", "Vite", "JavaScript", "CSS", "Node.js", "Github Pages"]
     }
   ]
