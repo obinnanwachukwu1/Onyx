@@ -17,7 +17,9 @@ const AppManager = (): JSX.Element => {
 
   const launchApp = (appId: string) => {
     const desktop = document.querySelector<HTMLElement>('.mobile-desktop');
-    const navigationBarHeight = navigationBarRef.current?.clientHeight ?? 0;
+    // Navigation bar is fixed height (see NavigationBar.css)
+    const FALLBACK_NAV_HEIGHT = 50;
+    const navigationBarHeight = navigationBarRef.current?.clientHeight ?? FALLBACK_NAV_HEIGHT;
 
     if (!desktop) {
       return;
@@ -47,6 +49,8 @@ const AppManager = (): JSX.Element => {
       isActive: true,
       renderMobile: true,
       zIndex: zIndexCounter,
+      sidebar: app.sidebar ? { items: app.sidebar.items, footer: app.sidebar.footer } : undefined,
+      sidebarActiveId: app.sidebar?.initialActiveId || (app.sidebar?.items?.[0]?.id ?? undefined),
     };
 
     setZIndexCounter((previous) => previous + 1);

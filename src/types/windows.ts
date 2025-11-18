@@ -15,6 +15,14 @@ export enum WindowStartPosition {
   CENTERSCREEN = 'centerScreen',
 }
 
+export interface SidebarItem {
+  id: string;
+  label: string;
+  // Icon is optional; when provided it's a React component (e.g., from lucide-react)
+  // Use `any` to avoid coupling types to specific icon packages.
+  icon?: any;
+}
+
 export interface WindowData {
   id: number;
   appId: string;
@@ -32,6 +40,12 @@ export interface WindowData {
   isActive: boolean;
   renderMobile: boolean;
   zIndex: number;
+  // Optional window-managed sidebar
+  sidebar?: {
+    items: SidebarItem[];
+    footer?: ReactNode;
+  };
+  sidebarActiveId?: string;
 }
 
 export interface AppDefinition {
@@ -47,6 +61,12 @@ export interface AppDefinition {
   category?: string;
   description?: string;
   image?: string;
+  // Optional window-managed sidebar config for this app
+  sidebar?: {
+    items: SidebarItem[];
+    initialActiveId?: string;
+    footer?: ReactNode;
+  };
 }
 
 export interface WindowContextValue {
