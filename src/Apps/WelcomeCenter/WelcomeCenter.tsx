@@ -1,39 +1,39 @@
 import { useEffect, useState } from 'react';
+import { ArrowUpRight, Terminal, Globe, Mail, FileText, Home, Info, Bell, ChevronRight } from 'lucide-react';
+
 import { useWindowContext } from '../../Components/WindowContext';
 import { useDeviceContext } from '../../Components/DeviceContext';
 import LoadingScreen from '../../Components/LoadingScreen/LoadingScreen';
-import IconResume from '../../assets/icons/IconResume.svg';
-import IconStore from '../../assets/icons/IconStore.svg';
-import IconContact from '../../assets/icons/IconContact.svg';
 import logo192 from '../../../logo192.png';
-import './WelcomeCenter.css';
 
 type StatusResponse = {
   working_status?: string;
 };
 
+const STATUS_URL = '/projects/status.json';
+
 const WelcomeCenter = (): JSX.Element => {
   const { launchApp } = useWindowContext();
   const { isMobile } = useDeviceContext();
+
   const [loading, setLoading] = useState<boolean>(true);
   const [workingStatus, setWorkingStatus] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<string>('home');
 
   useEffect(() => {
     let isSubscribed = true;
 
-    fetch('https://obinnanwachukwu.com/projects/status.json', { cache: 'no-cache' })
+    fetch(STATUS_URL, { cache: 'no-cache' })
       .then<StatusResponse>((response) => response.json())
       .then((data) => {
-        if (isSubscribed) {
-          setWorkingStatus(data.working_status ?? '');
-          setLoading(false);
-        }
+        if (!isSubscribed) return;
+        setWorkingStatus(data.working_status ?? '');
+        setLoading(false);
       })
       .catch((error: unknown) => {
         console.error('Error loading working status:', error);
-        if (isSubscribed) {
-          setLoading(false);
-        }
+        if (!isSubscribed) return;
+        setLoading(false);
       });
 
     return () => {
@@ -41,91 +41,165 @@ const WelcomeCenter = (): JSX.Element => {
     };
   }, []);
 
-  return (
-    <div className={isMobile ? 'welcome-container-mobile' : 'welcome-container'}>
-      {loading ? (
+  if (loading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-[var(--window-bg)]">
         <LoadingScreen />
-      ) : (
-        <div>
-          <div className="welcome-header-section">
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <img src={logo192} width={80} style={{ filter: 'drop-shadow(0px 0px 5px rgba(34, 34, 34, 0.2))' }} alt="Onyx Logo" />
-              <h1 className="welcome-header">The Onyx Environment</h1>
-            </div>
-            <p className="welcome-subheader">
-              Hi, I'm <strong>Obinna Nwachukwu</strong>, a Computer Science major at Georgia Tech. This is <strong>Onyx</strong> - an
-              environment to showcase my projects and experience. Select an option below.
-            </p>
-          </div>
-          {!isMobile ? (
-            <div className="welcome-action-section">
-              <div className="welcome-card" onClick={() => launchApp('appcenter')}>
-                <img src={IconStore} className="welcome-card-icon" alt="Projects" />
-                <div className="welcome-card-text">
-                  <h3>Projects</h3>
-                  <p>My projects and collaborations</p>
-                </div>
-              </div>
-              <div className="welcome-card" onClick={() => launchApp('resume')}>
-                <img src={IconResume} className="welcome-card-icon" alt="Resume" />
-                <div className="welcome-card-text">
-                  <h3>Resume</h3>
-                  <p>My detailed education and experiences</p>
-                </div>
-              </div>
-              <div className="welcome-card" onClick={() => launchApp('contactme')}>
-                <img src={IconContact} className="welcome-card-icon" alt="Contact" />
-                <div className="welcome-card-text">
-                  <h3>Contact</h3>
-                  <p>Reach out to collaborate or connect</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="welcome-action-section-mobile">
-              <div className="welcome-card-mobile" onClick={() => launchApp('appcenter')}>
-                <img src={IconStore} className="welcome-card-icon-mobile" alt="Projects" />
-                <div className="welcome-card-text-mobile">
-                  <h3>Projects</h3>
-                  <p>My projects and collaborations</p>
-                </div>
-              </div>
-              <div className="welcome-card-mobile" onClick={() => launchApp('resume')}>
-                <img src={IconResume} className="welcome-card-icon-mobile" alt="Resume" />
-                <div className="welcome-card-text-mobile">
-                  <h3>Resume</h3>
-                  <p>My detailed education and experiences</p>
-                </div>
-              </div>
-              <div className="welcome-card-mobile" onClick={() => launchApp('contactme')}>
-                <img src={IconContact} className="welcome-card-icon-mobile" alt="Contact" />
-                <div className="welcome-card-text-mobile">
-                  <h3>Contact</h3>
-                  <p>Reach out to collaborate or connect!</p>
-                </div>
-              </div>
-            </div>
-          )}
+      </div>
+    );
+  }
 
-          <div className="welcome-current-focus">
-            <h3 className="welcome-section-header">What I'm Working On</h3>
-            <p className="welcome-focus-text">{workingStatus}</p>
-          </div>
+  const SidebarItem = ({ id, icon: Icon, label }: { id: string; icon: any; label: string }) => (
+    <button
+      onClick={() => setActiveTab(id)}
+      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold outline-none transition-colors
+        border ${activeTab === id
+          ? 'bg-[var(--sidebar-item-active-bg)] text-[var(--sidebar-item-active-text)] border-[var(--window-border-active)]'
+          : 'bg-[var(--sidebar-item-bg)] text-[var(--sidebar-item-text)] border-transparent hover:bg-[var(--sidebar-item-hover-bg)]'}
+        focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 focus-visible:ring-offset-[var(--sidebar-bg)]`}
+      aria-current={activeTab === id ? 'page' : undefined}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+    </button>
+  );
 
-          <footer className="welcome-footer">
-            <p className="welcome-footer-text">
-              Attributions: Symbol icons from FontAwesome, stylized icons from KDE breeze-icons, crystal icon from SVGRepo, background from Unsplash
-            </p>
-            {isMobile ? (
-              <p className="welcome-footer-text">Need help? Click the crystal icon at the bottom of the screen to get started!</p>
-            ) : (
-              <p className="welcome-footer-text">
-                Need help? Click the crystal icon at the bottom left of the screen or drag and resize windows for a real desktop feel!
-              </p>
-            )}
-          </footer>
+  return (
+    <div className="flex h-full w-full overflow-hidden bg-[var(--window-bg)] text-[var(--text-color)]">
+      {/* Sidebar */}
+      <div className="flex w-64 flex-col border-r border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] p-4">
+        <div className="mb-6 flex items-center gap-3 px-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--window-bg)] shadow-sm ring-1 ring-[var(--sidebar-border)]">
+            <img src={logo192} alt="Onyx Logo" className="h-5 w-5" />
+          </div>
+          <span className="text-sm font-semibold tracking-tight text-[var(--sidebar-item-text)]">Welcome Center</span>
         </div>
-      )}
+
+        <nav className="space-y-1">
+          <SidebarItem id="home" icon={Home} label="Home" />
+          <SidebarItem id="about" icon={Info} label="About Onyx" />
+          <SidebarItem id="updates" icon={Bell} label="What's New" />
+        </nav>
+
+        <div className="mt-auto pt-4">
+          <div className="rounded-xl bg-[var(--window-bg)] p-3 shadow-sm ring-1 ring-[var(--sidebar-border)]">
+            <div className="mb-2 flex items-center gap-2 text-xs font-medium text-[var(--sidebar-item-text)] opacity-70">
+              <Terminal className="h-3 w-3" />
+              <span>System Status</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-medium text-[var(--sidebar-item-text)]">{workingStatus || 'System Idle'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto bg-[var(--window-bg)]">
+        {activeTab === 'home' && (
+          <div className="mx-auto max-w-3xl p-8">
+            <header className="mb-8">
+              <h1 className="mb-2 text-3xl font-bold tracking-tight text-[var(--text-color)]">Welcome to Onyx</h1>
+              <p className="text-lg text-[var(--text-color)] opacity-70">
+                Your personal desktop environment for exploring my portfolio.
+              </p>
+            </header>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <button
+                onClick={() => launchApp('appcenter')}
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--window-border-inactive)] bg-[var(--welcome-card-bg)] p-6 text-left shadow-sm transition-all hover:border-[var(--window-border-active)] hover:bg-[var(--welcome-card-hover)] hover:shadow-md"
+              >
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--welcome-accent-blue-soft)] text-[var(--welcome-accent-blue)]">
+                  <Globe className="h-6 w-6" />
+                </div>
+                <h3 className="mb-1 text-lg font-semibold text-[var(--text-color)]">Projects</h3>
+                <p className="mb-4 text-sm text-[var(--text-color)] opacity-70">Explore my applications and experiments.</p>
+                <div className="mt-auto flex items-center text-sm font-medium text-[var(--welcome-accent-blue)] group-hover:underline">
+                  Open App Center <ChevronRight className="ml-1 h-4 w-4" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => launchApp('resume')}
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--window-border-inactive)] bg-[var(--welcome-card-bg)] p-6 text-left shadow-sm transition-all hover:border-[var(--window-border-active)] hover:bg-[var(--welcome-card-hover)] hover:shadow-md"
+              >
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--welcome-accent-rose-soft)] text-[var(--welcome-accent-rose)]">
+                  <FileText className="h-6 w-6" />
+                </div>
+                <h3 className="mb-1 text-lg font-semibold text-[var(--text-color)]">Resume</h3>
+                <p className="mb-4 text-sm text-[var(--text-color)] opacity-70">View my professional experience and skills.</p>
+                <div className="mt-auto flex items-center text-sm font-medium text-[var(--welcome-accent-rose)] group-hover:underline">
+                  View Resume <ChevronRight className="ml-1 h-4 w-4" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => launchApp('contactme')}
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--window-border-inactive)] bg-[var(--welcome-card-bg)] p-6 text-left shadow-sm transition-all hover:border-[var(--window-border-active)] hover:bg-[var(--welcome-card-hover)] hover:shadow-md sm:col-span-2"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--welcome-accent-emerald-soft)] text-[var(--welcome-accent-emerald)]">
+                      <Mail className="h-6 w-6" />
+                    </div>
+                    <h3 className="mb-1 text-lg font-semibold text-[var(--text-color)]">Get in Touch</h3>
+                    <p className="text-sm text-[var(--text-color)] opacity-70">Have a project in mind? Let's collaborate.</p>
+                  </div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--welcome-accent-emerald-soft)] text-[var(--welcome-accent-emerald)] group-hover:bg-[var(--welcome-accent-emerald-soft)] group-hover:text-[var(--welcome-accent-emerald)]">
+                    <ArrowUpRight className="h-4 w-4" />
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'about' && (
+          <div className="mx-auto max-w-2xl p-8">
+            <h2 className="mb-6 text-2xl font-bold text-[var(--text-color)]">About Onyx OS</h2>
+            <div className="prose prose-slate">
+              <p className="text-[var(--text-color)] opacity-80">
+                Onyx is a web-based desktop environment built with React and Tailwind CSS. It's designed to showcase my
+                technical skills in a fun, interactive way.
+              </p>
+              <h3 className="mt-6 text-lg font-semibold text-[var(--text-color)]">Features</h3>
+              <ul className="mt-2 list-inside list-disc space-y-2 text-[var(--text-color)] opacity-80">
+                <li>Window management system (drag, resize, minimize)</li>
+                <li>Taskbar and Start Menu</li>
+                <li>File system abstraction</li>
+                <li>Theme support (Light/Dark)</li>
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'updates' && (
+          <div className="mx-auto max-w-2xl p-8">
+            <h2 className="mb-6 text-2xl font-bold text-[var(--text-color)]">What's New</h2>
+            <div className="space-y-6">
+              <div className="border-l-2 border-blue-500 pl-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Latest</span>
+                <h3 className="text-lg font-semibold text-[var(--text-color)]">Welcome Center Redesign</h3>
+                <p className="mt-1 text-sm text-[var(--text-color)] opacity-70">
+                  A fresh new look for the Welcome Center, designed to feel right at home in Onyx OS.
+                </p>
+              </div>
+              <div className="border-l-2 border-[var(--window-border-active)] pl-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-color)] opacity-50">v2.0.0</span>
+                <h3 className="text-lg font-semibold text-[var(--text-color)]">System Overhaul</h3>
+                <p className="mt-1 text-sm text-[var(--text-color)] opacity-70">
+                  Complete rewrite of the window manager and taskbar for better performance and mobile support.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
