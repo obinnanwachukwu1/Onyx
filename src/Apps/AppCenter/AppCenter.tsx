@@ -20,7 +20,9 @@ const AppCenter = () => {
   const [landingScrollPos, setLandingScrollPos] = useState(0);
 
   useEffect(() => {
-    fetch('https://obinnanwachukwu.com/projects/project_list.json', {cache: "no-cache"})
+    // Use a relative path so the request stays same-origin
+    // regardless of whether the site is served from www or apex domain.
+    fetch('/projects/project_list.json', {cache: "no-cache"})
       .then(response => {
         if (!response.ok) throw new Error('Failed to fetch projects');
         return response.json();
