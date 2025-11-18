@@ -189,21 +189,33 @@
     position: relative;
   }
 
+  .window-header-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 60px;
+    z-index: 2;
+  }
+
+  .window-header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    pointer-events: none;
+    gap: 6px;
+  }
+
   .window-header .window-icon {
     width: 20px;
     height: 20px;
     padding: 0px;
-    margin-right: 5px;
+    margin: 0;
     z-index: 2;
   }
 
-
   .window-header .window-title {
-    position: absolute;
-    left: 0;
-    right: 0;
     text-align: center;
-    pointer-events: none;
   }
 
   .window-controls {
@@ -231,8 +243,8 @@
   .window-content {
     display: flex;
     flex: 1;
-    /* Allow window contents (like App Center) to scroll when smaller than content */
-    overflow: auto;
+    /* Keep sidebar fixed; delegate scrolling to inner main area */
+    overflow: hidden;
   }
 
   .resize-handle {
@@ -277,11 +289,19 @@
     transition: opacity 0.1s ease;
   }
 
+  .sidebar-toggle-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
   /* Window-managed sidebar (matches titlebar colors) */
   .window-sidebar {
     display: flex;
     flex-direction: column;
     padding: 12px;
+    overflow-y: auto; /* allow its own scroll when content is long */
   }
 
   .window-sidebar.active {
@@ -374,27 +394,71 @@
 
   .window-mobile-drawer-overlay {
     position: fixed;
-    inset: 0 0 50px 0; /* leave room for mobile taskbar/navigation bar */
+    inset: 0; /* cover full viewport, including bottom */
     background: rgba(0, 0, 0, 0.4);
     display: flex;
     z-index: 1100;
+    opacity: 0;
+    transition: opacity 200ms ease;
   }
+
+  /* Desktop variant: overlay is confined to the window content area
+     so that the titlebar and window chrome remain visible and draggable. */
+  .window-desktop-drawer-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    /* Keep overlay clickable, but below resize handles (z-index: 3) */
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+
+  .overlay-open { opacity: 1; }
+  .overlay-closing { opacity: 0; }
 
   .window-mobile-drawer {
     width: min(80%, 280px);
-    height: calc(100vh - 50px);
+    height: calc(100vh - 50px); /* leave room for mobile taskbar/navigation bar */
     display: flex;
     flex-direction: column;
     padding: 12px;
     box-sizing: border-box; /* include padding in height so footer isn't clipped */
     border-right: 1px solid var(--window-border-active);
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
   }
+
+  .window-desktop-drawer {
+    width: 280px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    box-sizing: border-box;
+    border-right: 1px solid var(--window-border-active);
+    pointer-events: auto; /* capture events only within the drawer itself */
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+  }
+
+  .drawer-open { transform: translateX(0); }
+  .drawer-closed { transform: translateX(-100%); }
 
   .window-mobile-drawer.active {
     background-color: var(--header-bg-active);
   }
 
   .window-mobile-drawer.inactive {
+    background-color: var(--header-bg-inactive);
+  }
+
+  .window-desktop-drawer.active {
+    background-color: var(--header-bg-active);
+  }
+
+  .window-desktop-drawer.inactive {
     background-color: var(--header-bg-inactive);
   }
 
