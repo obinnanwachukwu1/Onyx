@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowMinimize } from '@fortawesome/free-solid-svg-icons/faWindowMinimize';
 import './Window.css';
 import { faCircle, faX } from '@fortawesome/free-solid-svg-icons';
-import { Menu, X as LucideX } from 'lucide-react';
+import { PanelLeft, PanelLeftOpen, X as LucideX } from 'lucide-react';
 import { faWindowMaximize, faWindowRestore } from '@fortawesome/free-regular-svg-icons';
 import { useWindowContext } from './WindowContext';
 import { WindowChromeProvider } from './WindowChromeContext';
@@ -40,6 +40,13 @@ const Window = ({
   const { closingWindowID, activateWindow, setWindowPosition, setWindowSize, sendIntentToClose, sendIntentToMaximize, sendIntentToRestore, notifyClose, notifyMaximize, notifyMinimize, notifyRestore, getTaskbarTransformPos, afterRestoreFromTaskbar } = useWindowContext();
   const [sidebarActiveId, setSidebarActiveId] = useState(sidebarActiveIdFromProps());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [drawerAnimatingOut, setDrawerAnimatingOut] = useState(false);
+  const [drawerOpenActive, setDrawerOpenActive] = useState(false);
+  const isMobileViewport = !!renderMobile;
+  const [isSidebarMobileLayout, setIsSidebarMobileLayout] = useState(
+    isMobileViewport || (size?.width ?? 0) <= 640
+  );
 
   function sidebarActiveIdFromProps() {
     // Prefer provided active id on mount; otherwise first sidebar item
@@ -70,6 +77,74 @@ const Window = ({
       }, 250);
     }
   }, [closingWindowID])
+
+  // Automatically switch sidebar into "mobile" layout when the window is narrow.
+  // Still respect an explicit `renderMobile` (mobile viewport) from parents.
+  useEffect(() => {
+    const breakpoint = 640; // px
+    // Predict the target width during maximize/restore animations so
+    // the sidebar state matches the destination size for a correct animation.
+    let predictiveWidth = size?.width ?? 0;
+    try {
+      if (isMaximizing) {
+        const desktop = document.querySelector('.desktop') as HTMLElement | null;
+        if (desktop) predictiveWidth = desktop.getBoundingClientRect().width;
+      } else if (isRestoring && restoreSize?.width) {
+        predictiveWidth = restoreSize.width;
+      }
+    } catch {}
+
+    const shouldBeMobileSidebar = isMobileViewport || predictiveWidth <= breakpoint;
+    setIsSidebarMobileLayout(shouldBeMobileSidebar);
+
+    // Ensure drawer state matches destination layout for smooth animation
+    if (isMaximizing && !shouldBeMobileSidebar) {
+      // Going to a wide layout: close drawer so overlay doesn't linger
+      setMobileMenuOpen(false);
+    }
+    if (isRestoring && shouldBeMobileSidebar) {
+      // Restoring to a narrow layout: start with drawer hidden
+      setMobileMenuOpen(false);
+    }
+  }, [isMobileViewport, size?.width, isMaximizing, isRestoring, restoreSize?.width]);
+
+  // Whenever the layout crosses the sidebar/mobile breakpoint in either direction,
+  // reset the sidebar drawer state so it doesn't "remember" being open.
+  useEffect(() => {
+    if (!isSidebarMobileLayout) {
+      // Trigger closing animation if visible
+      setMobileMenuOpen(false);
+    }
+  }, [isSidebarMobileLayout]);
+
+  // Handle drawer mount/unmount to allow exit animation
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      setDrawerAnimatingOut(false);
+      setDrawerVisible(true);
+      setDrawerOpenActive(false);
+      // Defer to two animation frames to ensure initial closed state is painted
+      // before toggling to open, which triggers the transition.
+      const raf1 = requestAnimationFrame(() => {
+        const raf2 = requestAnimationFrame(() => setDrawerOpenActive(true));
+        // store nested id on window to allow cleanup
+        (window as any).__raf2 = raf2;
+      });
+      return () => {
+        cancelAnimationFrame(raf1);
+        if ((window as any).__raf2) cancelAnimationFrame((window as any).__raf2);
+      };
+    } else if (drawerVisible) {
+      // Trigger closing animation
+      setDrawerAnimatingOut(true);
+      setDrawerOpenActive(false);
+      const t = setTimeout(() => {
+        setDrawerVisible(false);
+        setDrawerAnimatingOut(false);
+      }, 200);
+      return () => clearTimeout(t);
+    }
+  }, [mobileMenuOpen]);
 
   const handleWindowClick = (e) => {
     e.stopPropagation();
@@ -284,6 +359,9 @@ const Window = ({
     };
   }, [initialPosition, dragging, resizing]);
 
+  const hasSidebar = !!(sidebar && sidebar.items?.length);
+  const showHeader = !renderMobile || (renderMobile && hasSidebar);
+  const SidebarIcon = mobileMenuOpen ? PanelLeftOpen : PanelLeft;
 
   return (
     <div
@@ -298,19 +376,53 @@ const Window = ({
       onMouseDown={handleWindowClick} // Notify App.js to bring this window to the front
     // onContextMenu={(e) => {e.stopPropagation(); e.preventDefault()}}
     >
-      {renderMobile ? null :
-        <div className={`window-header ${isActive ? 'active' : 'inactive'}`} onMouseDown={handleMouseDown} onDoubleClick={toggleMaximizing} onTouchStart={handleMouseDown}>
-          <img src={appIcon} className='window-icon' />
-          <span className="window-title">{title}</span>
-          <div className="window-controls">
-            <button className="caption-button" onClick={toggleMaximizing}><FontAwesomeIcon icon={faCircle} style={{ color: '#28C840' }} /></button>
-            <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faCircle} style={{ color: '#FDBC2E' }} /></button>
-            <button className="caption-button" onClick={handleClosing}> <FontAwesomeIcon icon={faCircle} style={{ color: '#FF5E57' }} /></button>
+      {showHeader ? (
+        <div
+          className={`window-header ${isActive ? 'active' : 'inactive'}`}
+          onMouseDown={handleMouseDown}
+          onDoubleClick={toggleMaximizing}
+          onTouchStart={handleMouseDown}
+        >
+          <div className="window-header-left">
+            {hasSidebar && isSidebarMobileLayout ? (
+              <button
+                className="caption-button sidebar-toggle-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMobileMenuOpen((prev) => !prev);
+                }}
+                aria-label="Open sidebar"
+              >
+                <SidebarIcon className="mobile-menu-icon" />
+              </button>
+            ) : null}
           </div>
-        </div>}
+
+          {/* On mobile, omit icon/title entirely */}
+          {!renderMobile ? (
+            <div className="window-header-center">
+              <img src={appIcon} className="window-icon" />
+              <span className="window-title">{title}</span>
+            </div>
+          ) : (
+            <div className="window-header-center" />
+          )}
+
+          {/* On mobile, hide caption buttons */}
+          {!renderMobile ? (
+            <div className="window-controls">
+              <button className="caption-button" onClick={toggleMaximizing}><FontAwesomeIcon icon={faCircle} style={{ color: '#28C840' }} /></button>
+              <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faCircle} style={{ color: '#FDBC2E' }} /></button>
+              <button className="caption-button" onClick={handleClosing}> <FontAwesomeIcon icon={faCircle} style={{ color: '#FF5E57' }} /></button>
+            </div>
+          ) : (
+            <div className="window-controls" />
+          )}
+        </div>
+      ) : null}
       <div className="window-content" style={{ display: 'flex', flexGrow: 1, width: '100%', height: '100%', position: 'relative' }}>
         {/* Optional window-managed sidebar */}
-        {sidebar && sidebar.items?.length && !renderMobile ? (
+        {sidebar && sidebar.items?.length && !isSidebarMobileLayout ? (
           <aside
             className={`window-sidebar ${isActive ? 'active' : 'inactive'}`}
             style={{
@@ -346,32 +458,23 @@ const Window = ({
           style={{
             flexGrow: 1,
             width: '100%',
-            // On mobile with a sidebar/topbar, reserve vertical space for the top bar
-            height: renderMobile && sidebar && sidebar.items?.length ? 'calc(100% - 44px)' : '100%',
+            height: '100%',
+            overflow: 'auto'
           }}
         >
-          {/* Mobile top bar + drawer */}
-          {sidebar && sidebar.items?.length && renderMobile ? (
-            <div className={`window-mobile-topbar ${isActive ? 'active' : 'inactive'}`}>
-              <button className="mobile-menu-button" onClick={() => setMobileMenuOpen(true)} aria-label="Open menu">
-                <Menu className="mobile-menu-icon" />
-              </button>
-              <span className="mobile-title">{title}</span>
-              <span className="mobile-spacer" />
-            </div>
-          ) : null}
-
-          {sidebar && sidebar.items?.length && renderMobile && mobileMenuOpen ? (
-            <div className="window-mobile-drawer-overlay" onClick={() => setMobileMenuOpen(false)}>
+          {sidebar && sidebar.items?.length && isSidebarMobileLayout && drawerVisible ? (
+            <div
+              className={`${renderMobile ? 'window-mobile-drawer-overlay' : 'window-desktop-drawer-overlay'} ${drawerOpenActive && !drawerAnimatingOut ? 'overlay-open' : 'overlay-closing'}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <div
-                className={`window-mobile-drawer ${isActive ? 'active' : 'inactive'}`}
+                className={`${renderMobile ? 'window-mobile-drawer' : 'window-desktop-drawer'} ${isActive ? 'active' : 'inactive'} ${drawerOpenActive && !drawerAnimatingOut ? 'drawer-open' : 'drawer-closed'}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="drawer-header">
-                  <span className="drawer-title">{title}</span>
-                  <button className="drawer-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
-                    <LucideX className="mobile-menu-icon" />
-                  </button>
+                  {/* On desktop, hide the app title in the drawer header
+                      to avoid duplicating the window titlebar text */}
+                  {renderMobile ? <span className="drawer-title">{title}</span> : <span className="drawer-title"></span>}
                 </div>
                 <div className="drawer-items">
                   {sidebar.items.map((item) => (
