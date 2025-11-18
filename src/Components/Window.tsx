@@ -36,6 +36,7 @@ const Window = ({
   const [isMaximizing, setIsMaximizing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [initialPosition, setInitialPosition] = useState(null);
+  const [resizeDirection, setResizeDirection] = useState(null);
   const { closingWindowID, activateWindow, setWindowPosition, setWindowSize, sendIntentToClose, sendIntentToMaximize, sendIntentToRestore, notifyClose, notifyMaximize, notifyMinimize, notifyRestore, getTaskbarTransformPos, afterRestoreFromTaskbar } = useWindowContext();
   const [sidebarActiveId, setSidebarActiveId] = useState(sidebarActiveIdFromProps());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -171,16 +172,59 @@ const Window = ({
       }
     }
 
-    if (resizing) {
-      // Constrain resizing within the desktop bounds
-      const newWidth = Math.max(
-        200,
-        Math.min(pageX - position.x, desktopBounds.width - position.x)
-      );
-      const newHeight = Math.max(
-        150,
-        Math.min(pageY - position.y, desktopBounds.height - position.y)
-      );
+    if (resizing && resizeDirection) {
+      const minWidth = 200;
+      const minHeight = 150;
+
+      let newX = position.x;
+      let newY = position.y;
+      let newWidth = size.width;
+      let newHeight = size.height;
+
+      // Right and bottom edges (existing behavior)
+      if (resizeDirection.includes('right')) {
+        newWidth = Math.max(
+          minWidth,
+          Math.min(pageX - position.x, desktopBounds.width - position.x)
+        );
+      }
+
+      if (resizeDirection.includes('bottom')) {
+        newHeight = Math.max(
+          minHeight,
+          Math.min(pageY - position.y, desktopBounds.height - position.y)
+        );
+      }
+
+      // Left and top edges – adjust position and size together
+      if (resizeDirection.includes('left')) {
+        const maxX = position.x + size.width - minWidth;
+        newX = Math.min(pageX, maxX);
+        newX = Math.max(0, newX);
+        newWidth = position.x + size.width - newX;
+      }
+
+      if (resizeDirection.includes('top')) {
+        const maxY = position.y + size.height - minHeight;
+        newY = Math.min(pageY, maxY);
+        newY = Math.max(0, newY);
+        newHeight = position.y + size.height - newY;
+      }
+
+      // Ensure window stays within desktop bounds
+      if (newX + newWidth > desktopBounds.width) {
+        const overflowX = newX + newWidth - desktopBounds.width;
+        newWidth = Math.max(minWidth, newWidth - overflowX);
+      }
+
+      if (newY + newHeight > desktopBounds.height) {
+        const overflowY = newY + newHeight - desktopBounds.height;
+        newHeight = Math.max(minHeight, newHeight - overflowY);
+      }
+
+      if (newX !== position.x || newY !== position.y) {
+        setWindowPosition(id, { x: newX, y: newY });
+      }
 
       setWindowSize(id, { width: newWidth, height: newHeight });
     }
@@ -189,6 +233,7 @@ const Window = ({
   const handleMouseUp = () => {
     setDragging(false);
     setResizing(false);
+    setResizeDirection(null);
     setInitialPosition(false);
     document.body.style.userSelect = '';
   };
@@ -217,8 +262,10 @@ const Window = ({
     };
   }, [initialPosition, dragging, resizing]);
 
-  const handleResizeStart = (e) => {
+  const handleResizeStart = (e, direction) => {
+    e.stopPropagation();
     setResizing(true);
+    setResizeDirection(direction);
     document.body.style.userSelect = 'none';
   };
 
@@ -351,7 +398,23 @@ const Window = ({
           </WindowChromeProvider>
         </div>
       </div>
-      <div className="resize-handle" onMouseDown={handleResizeStart} />
+      {/* Corner + edge resize handles */}
+      <div
+        className="resize-handle resize-handle-bottom-right"
+        onMouseDown={(e) => handleResizeStart(e, 'bottom-right')}
+      />
+      <div
+        className="resize-handle resize-handle-bottom-left"
+        onMouseDown={(e) => handleResizeStart(e, 'bottom-left')}
+      />
+      <div
+        className="resize-handle resize-handle-top-right"
+        onMouseDown={(e) => handleResizeStart(e, 'top-right')}
+      />
+      <div
+        className="resize-handle resize-handle-top-left"
+        onMouseDown={(e) => handleResizeStart(e, 'top-left')}
+      />
     </div>
   );
 };

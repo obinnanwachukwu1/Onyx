@@ -1,6 +1,6 @@
 const details = {
   name: 'Onyx',
-  version_major: '1',
+  version_major: '2',
   version_minor: '0',
   release_channel: 'stable',
 } as const;
