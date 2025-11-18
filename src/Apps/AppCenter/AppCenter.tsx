@@ -20,7 +20,7 @@ const AppCenter = () => {
   const [landingScrollPos, setLandingScrollPos] = useState(0);
 
   useEffect(() => {
-    fetch('https://obinnanwachukwu.com/projects/project_list.json', {cache: "no-cache"})
+    fetch('/projects/project_list.json', { cache: 'no-cache' })
       .then(response => {
         if (!response.ok) throw new Error('Failed to fetch projects');
         return response.json();

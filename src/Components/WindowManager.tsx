@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Window from './Window';
 import Taskbar from './Taskbar/Taskbar';
 import Desktop from './Desktop/Desktop';
@@ -194,12 +194,24 @@ const WindowManager = ({windowSize}) => {
         setClosingWindowID(-1);
     };
 
-    const setButtonPosition = (id, position) => {
-        setButtonPositions((prevPositions) => ({
-          ...prevPositions,
-          [id]: position,
-        }));
-      };
+    const setButtonPosition = useCallback((id, position) => {
+        setButtonPositions((prevPositions) => {
+            const prev = prevPositions[id];
+            if (
+                prev &&
+                prev.left === position.left &&
+                prev.top === position.top &&
+                prev.width === position.width &&
+                prev.height === position.height
+            ) {
+                return prevPositions;
+            }
+            return {
+                ...prevPositions,
+                [id]: position,
+            };
+        });
+    }, []);
 
     const getTaskbarTransformPos = (id) => {
         const taskbarButtonPosition = buttonPositions[id];
