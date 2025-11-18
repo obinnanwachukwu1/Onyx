@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, Terminal, Globe, Mail, FileText, Home, Info, Bell, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, Terminal, Globe, Mail, FileText, ChevronRight } from 'lucide-react';
 
 import { useWindowContext } from '../../Components/WindowContext';
+import { useWindowChrome } from '../../Components/WindowChromeContext';
 import { useDeviceContext } from '../../Components/DeviceContext';
 import LoadingScreen from '../../Components/LoadingScreen/LoadingScreen';
 import logo192 from '../../../logo192.png';
@@ -15,10 +16,11 @@ const STATUS_URL = '/projects/status.json';
 const WelcomeCenter = (): JSX.Element => {
   const { launchApp } = useWindowContext();
   const { isMobile } = useDeviceContext();
+  const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [workingStatus, setWorkingStatus] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<string>('home');
+  // Active tab is now window-managed via Window chrome context
 
   useEffect(() => {
     let isSubscribed = true;
@@ -49,58 +51,11 @@ const WelcomeCenter = (): JSX.Element => {
     );
   }
 
-  const SidebarItem = ({ id, icon: Icon, label }: { id: string; icon: any; label: string }) => (
-    <button
-      onClick={() => setActiveTab(id)}
-      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold outline-none transition-colors
-        border ${activeTab === id
-          ? 'bg-[var(--sidebar-item-active-bg)] text-[var(--sidebar-item-active-text)] border-[var(--window-border-active)]'
-          : 'bg-[var(--sidebar-item-bg)] text-[var(--sidebar-item-text)] border-transparent hover:bg-[var(--sidebar-item-hover-bg)]'}
-        focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 focus-visible:ring-offset-[var(--sidebar-bg)]`}
-      aria-current={activeTab === id ? 'page' : undefined}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </button>
-  );
-
   return (
     <div className="flex h-full w-full overflow-hidden bg-[var(--window-bg)] text-[var(--text-color)]">
-      {/* Sidebar */}
-      <div className="flex w-64 flex-col border-r border-[var(--sidebar-border)] bg-[var(--sidebar-bg)] p-4">
-        <div className="mb-6 flex items-center gap-3 px-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--window-bg)] shadow-sm ring-1 ring-[var(--sidebar-border)]">
-            <img src={logo192} alt="Onyx Logo" className="h-5 w-5" />
-          </div>
-          <span className="text-sm font-semibold tracking-tight text-[var(--sidebar-item-text)]">Welcome Center</span>
-        </div>
-
-        <nav className="space-y-1">
-          <SidebarItem id="home" icon={Home} label="Home" />
-          <SidebarItem id="about" icon={Info} label="About Onyx" />
-          <SidebarItem id="updates" icon={Bell} label="What's New" />
-        </nav>
-
-        <div className="mt-auto pt-4">
-          <div className="rounded-xl bg-[var(--window-bg)] p-3 shadow-sm ring-1 ring-[var(--sidebar-border)]">
-            <div className="mb-2 flex items-center gap-2 text-xs font-medium text-[var(--sidebar-item-text)] opacity-70">
-              <Terminal className="h-3 w-3" />
-              <span>System Status</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-              </span>
-              <span className="text-xs font-medium text-[var(--sidebar-item-text)]">{workingStatus || 'System Idle'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto bg-[var(--window-bg)]">
-        {activeTab === 'home' && (
+        {sidebarActiveId === 'home' && (
           <div className="mx-auto max-w-3xl p-8">
             <header className="mb-8">
               <h1 className="mb-2 text-3xl font-bold tracking-tight text-[var(--text-color)]">Welcome to Onyx</h1>
@@ -159,7 +114,7 @@ const WelcomeCenter = (): JSX.Element => {
           </div>
         )}
 
-        {activeTab === 'about' && (
+        {sidebarActiveId === 'about' && (
           <div className="mx-auto max-w-2xl p-8">
             <h2 className="mb-6 text-2xl font-bold text-[var(--text-color)]">About Onyx OS</h2>
             <div className="prose prose-slate">
@@ -178,7 +133,7 @@ const WelcomeCenter = (): JSX.Element => {
           </div>
         )}
 
-        {activeTab === 'updates' && (
+        {sidebarActiveId === 'updates' && (
           <div className="mx-auto max-w-2xl p-8">
             <h2 className="mb-6 text-2xl font-bold text-[var(--text-color)]">What's New</h2>
             <div className="space-y-6">

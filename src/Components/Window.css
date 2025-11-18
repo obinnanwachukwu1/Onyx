@@ -1,13 +1,14 @@
-  
-
   @keyframes flipIn {
     0% {
-      transform: perspective(1000px) rotateX(-20deg); /* Start flipped */
+      transform: perspective(1000px) rotateX(-20deg);
+      /* Start flipped */
       opacity: 0;
       scale: 80%;
     }
+
     100% {
-      transform: perspective(1000px) rotateX(0); /* End normal position */
+      transform: perspective(1000px) rotateX(0);
+      /* End normal position */
       opacity: 1;
       scale: 100%;
     }
@@ -15,37 +16,43 @@
 
   @keyframes flipOut {
     0% {
-        transform: perspective(1000px) rotateX(0); /* End normal position */
-        opacity: 1;
-        scale: 100%;
-      }
-    
+      transform: perspective(1000px) rotateX(0);
+      /* End normal position */
+      opacity: 1;
+      scale: 100%;
+    }
+
     100% {
-      transform: perspective(1000px) rotateX(10deg); /* Start flipped */
+      transform: perspective(1000px) rotateX(10deg);
+      /* Start flipped */
       opacity: 0;
       scale: 80%;
     }
   }
-  
+
   @keyframes minimizeToTaskbar {
     from {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
     }
+
     to {
-        transform: translate(var(--dx), var(--dy)) scale(0.1); /* Move towards the taskbar */
-        opacity: 0;
+      transform: translate(var(--dx), var(--dy)) scale(0.1);
+      /* Move towards the taskbar */
+      opacity: 0;
     }
-  } 
+  }
 
   @keyframes restoreFromTaskbar {
     from {
-        transform: translate(var(--dx), var(--dy)) scale(0.1); /* Move towards the taskbar */
-        opacity: 0;
+      transform: translate(var(--dx), var(--dy)) scale(0.1);
+      /* Move towards the taskbar */
+      opacity: 0;
     }
+
     to {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
     }
   }
 
@@ -53,7 +60,7 @@
     0% {
       transform: scale(1);
     }
-  
+
     100% {
       top: 0;
       left: 0;
@@ -67,7 +74,7 @@
     0% {
       transform: scale(1);
     }
-  
+
     100% {
       top: var(--dy);
       left: var(--dx);
@@ -82,23 +89,25 @@
       transform: translateY(100%);
       opacity: 0;
     }
+
     to {
       transform: translateY(0);
       opacity: 1;
     }
   }
-  
+
   @keyframes slideDown {
     from {
       transform: translateY(0);
       opacity: 1;
     }
+
     to {
       transform: translateY(100%);
       opacity: 0;
     }
   }
-  
+
   .window {
     position: absolute;
     display: flex;
@@ -111,6 +120,7 @@
     overflow: hidden;
     color: black;
   }
+
   .window-mobile {
     border: unset;
     border-radius: 0pt;
@@ -119,7 +129,7 @@
   .window-mobile-opening {
     animation: slideUp 0.25s ease-out forwards;
   }
-  
+
   .window-mobile-closing {
     animation: slideDown 0.25s ease-out forwards;
   }
@@ -129,7 +139,7 @@
     border: 2px solid var(--window-border-active);
     box-shadow: 0px 0px 10px var(--window-shadow-active);
   }
-  
+
   .window.inactive {
     border: 2px solid var(--window-border-inactive);
     box-shadow: 0px 0px 10px var(--window-shadow-inactive);
@@ -138,13 +148,15 @@
   .window.maximized {
     border-radius: 0pt;
   }
-  
+
   .window-opening {
-    animation: flipIn 0.25s ease-out forwards; /* Apply the flip animation */
+    animation: flipIn 0.25s ease-out forwards;
+    /* Apply the flip animation */
   }
 
   .window-closing {
-    animation: flipOut 0.25s ease-out forwards; /* Apply the flip animation */
+    animation: flipOut 0.25s ease-out forwards;
+    /* Apply the flip animation */
   }
 
   .window-minimizing {
@@ -164,55 +176,65 @@
     animation: restoreFromTaskbar 0.25s ease-out forwards;
     transform-origin: top left;
   }
-  
+
   .window-header {
     display: flex;
     justify-content: space-between;
-    align-content: center;
+    align-items: center;
     border: none;
     padding: 10px;
     height: 30px;
     user-select: none;
     color: var(--text-color);
+    position: relative;
   }
 
   .window-header .window-icon {
     width: 20px;
     height: 20px;
     padding: 0px;
-    margin-top: 5px;
     margin-right: 5px;
+    z-index: 2;
   }
-  
+
 
   .window-header .window-title {
-    flex-grow: 1; /* Title will grow and take up remaining space */
-    margin-right: 10px; /* Optional margin between title and button */
-    align-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    pointer-events: none;
   }
-  
+
+  .window-controls {
+    display: flex;
+    /* gap: 2px; */
+    z-index: 2;
+  }
+
   .window-header button {
     background-color: transparent;
     border: none;
     color: var(--text-color);
     font-size: 16px;
   }
-  
+
   .window-header.active {
     background-color: var(--header-bg-active);
   }
-  
+
   .window-header.inactive {
     background-color: var(--header-bg-inactive);
   }
-  
-  
+
+
   .window-content {
     display: flex;
     flex: 1;
-    overflow:auto;
+    /* Let inner content handle scrolling to avoid double scrollbars */
+    overflow: hidden;
   }
-  
+
   .resize-handle {
     position: absolute;
     width: 15px;
@@ -231,4 +253,154 @@
   .caption-button:hover {
     opacity: 0.8;
     transition: opacity 0.1s ease;
+  }
+
+  /* Window-managed sidebar (matches titlebar colors) */
+  .window-sidebar {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .window-sidebar.active {
+    background-color: var(--header-bg-active);
+  }
+
+  .window-sidebar.inactive {
+    background-color: var(--header-bg-inactive);
+  }
+
+  .window-sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .window-sidebar-footer {
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  .window-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+
+  .window-sidebar-item:hover {
+    background: var(--sidebar-item-hover-bg);
+  }
+
+  .window-sidebar-item.active {
+    background: var(--sidebar-item-active-bg);
+    color: var(--sidebar-item-active-text);
+    border-color: var(--window-border-active);
+  }
+
+  .sidebar-item-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Mobile top bar & drawer (shown when renderMobile=true) */
+  .window-mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .window-mobile-topbar.active {
+    background-color: var(--header-bg-active);
+  }
+
+  .window-mobile-topbar.inactive {
+    background-color: var(--header-bg-inactive);
+  }
+
+  .mobile-menu-button {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    padding: 2px;
+  }
+
+  .mobile-menu-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-title {
+    flex: 1;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .mobile-spacer {
+    width: 20px;
+  }
+
+  .window-mobile-drawer-overlay {
+    position: fixed;
+    inset: 0 0 50px 0; /* leave room for mobile taskbar/navigation bar */
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    z-index: 1100;
+  }
+
+  .window-mobile-drawer {
+    width: min(80%, 280px);
+    height: calc(100vh - 50px);
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    box-sizing: border-box; /* include padding in height so footer isn't clipped */
+    border-right: 1px solid var(--window-border-active);
+  }
+
+  .window-mobile-drawer.active {
+    background-color: var(--header-bg-active);
+  }
+
+  .window-mobile-drawer.inactive {
+    background-color: var(--header-bg-inactive);
+  }
+
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .drawer-title {
+    font-weight: 700;
+    color: var(--text-color);
+  }
+
+  .drawer-close {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+  }
+
+  .drawer-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .drawer-footer {
+    margin-top: auto;
+    padding-top: 8px;
   }
