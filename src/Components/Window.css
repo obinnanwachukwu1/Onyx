@@ -231,18 +231,40 @@
   .window-content {
     display: flex;
     flex: 1;
-    /* Let inner content handle scrolling to avoid double scrollbars */
-    overflow: hidden;
+    /* Allow window contents (like App Center) to scroll when smaller than content */
+    overflow: auto;
   }
 
   .resize-handle {
     position: absolute;
-    width: 15px;
-    height: 15px;
+    width: 10px;
+    height: 10px;
+    background-color: transparent;
+    z-index: 3;
+  }
+
+  .resize-handle-bottom-right {
     bottom: 0;
     right: 0;
     cursor: se-resize;
-    background-color: transparent;
+  }
+
+  .resize-handle-bottom-left {
+    bottom: 0;
+    left: 0;
+    cursor: sw-resize;
+  }
+
+  .resize-handle-top-right {
+    top: 0;
+    right: 0;
+    cursor: ne-resize;
+  }
+
+  .resize-handle-top-left {
+    top: 0;
+    left: 0;
+    cursor: nw-resize;
   }
 
   .caption-button {
