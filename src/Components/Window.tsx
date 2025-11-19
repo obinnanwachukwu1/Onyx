@@ -51,7 +51,11 @@ const Window = ({
   function sidebarActiveIdFromProps() {
     // Prefer provided active id on mount; otherwise first sidebar item
     if (typeof sidebarActiveIdProp !== 'undefined') return sidebarActiveIdProp;
-    if (typeof sidebar !== 'undefined' && sidebar.items?.length) return sidebar.items[0].id;
+    if (typeof sidebar !== 'undefined' && sidebar.items?.length) {
+      // Find first non-section item
+      const firstItem = sidebar.items.find(item => item.type !== 'section');
+      return firstItem ? firstItem.id : undefined;
+    }
     return undefined;
   }
 
@@ -435,14 +439,20 @@ const Window = ({
           >
             <div className="window-sidebar-inner">
               {sidebar.items.map((item) => (
-                <button
-                  key={item.id}
-                  className={`window-sidebar-item ${sidebarActiveId === item.id ? 'active' : ''}`}
-                  onClick={() => setSidebarActiveId(item.id)}
-                >
-                  {item.icon ? <item.icon className="sidebar-item-icon" /> : null}
-                  <span className="sidebar-item-label">{item.label}</span>
-                </button>
+                item.type === 'section' ? (
+                  <div key={item.id} className="window-sidebar-section-label">
+                    {item.label}
+                  </div>
+                ) : (
+                  <button
+                    key={item.id}
+                    className={`window-sidebar-item ${sidebarActiveId === item.id ? 'active' : ''}`}
+                    onClick={() => setSidebarActiveId(item.id)}
+                  >
+                    {item.icon ? <item.icon className="sidebar-item-icon" /> : null}
+                    <span className="sidebar-item-label">{item.label}</span>
+                  </button>
+                )
               ))}
             </div>
             {sidebar.footer ? (
@@ -478,14 +488,20 @@ const Window = ({
                 </div>
                 <div className="drawer-items">
                   {sidebar.items.map((item) => (
-                    <button
-                      key={item.id}
-                      className={`window-sidebar-item ${sidebarActiveId === item.id ? 'active' : ''}`}
-                      onClick={() => { setSidebarActiveId(item.id); setMobileMenuOpen(false); }}
-                    >
-                      {item.icon ? <item.icon className="sidebar-item-icon" /> : null}
-                      <span className="sidebar-item-label">{item.label}</span>
-                    </button>
+                    item.type === 'section' ? (
+                      <div key={item.id} className="window-sidebar-section-label">
+                        {item.label}
+                      </div>
+                    ) : (
+                      <button
+                        key={item.id}
+                        className={`window-sidebar-item ${sidebarActiveId === item.id ? 'active' : ''}`}
+                        onClick={() => { setSidebarActiveId(item.id); setMobileMenuOpen(false); }}
+                      >
+                        {item.icon ? <item.icon className="sidebar-item-icon" /> : null}
+                        <span className="sidebar-item-label">{item.label}</span>
+                      </button>
+                    )
                   ))}
                 </div>
                 {sidebar.footer ? (

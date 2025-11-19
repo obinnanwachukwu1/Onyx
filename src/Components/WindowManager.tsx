@@ -18,15 +18,19 @@ const WindowManager = ({ windowSize }) => {
     const [launcherVisible, setLauncherVisible] = useState(false);
     const [zIndexCounter, setZIndexCounter] = useState(1);
 
-    const launchApp = (appId) => {
+    const launchApp = (appId, props = {}) => {
         const app = appList.find((a) => a.id === appId);
         if (app) {
+            const content = React.isValidElement(app.component) 
+                ? React.cloneElement(app.component, props) 
+                : app.component;
+
             const newWindow = {
                 id: Date.now(),
                 appId: app.id,
                 appIcon: app.icon,
                 title: app.name,
-                content: app.component,
+                content: content,
                 size: app.initialSize || { width: 500, height: 500 },
                 restoreSize: app.initialSize || { width: 500, height: 500 },
                 isMaximized: false,

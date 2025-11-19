@@ -4,8 +4,10 @@ import IconNewWindow from '../assets/icons/IconNewWindow.svg';
 import IconTerminal from '../assets/icons/IconTerminal.svg';
 import WelcomeCenter from './WelcomeCenter/WelcomeCenter';
 import StatusPill from './WelcomeCenter/StatusPill';
-import { Home, Info, Bell, Palette } from 'lucide-react';
+import { Home, Info, Bell, Palette, Monitor, FileText, Download, LayoutGrid, HardDrive } from 'lucide-react';
 import Terminal from './Terminal/Terminal';
+import Files from './Files/Files';
+import IconFiles from '../assets/icons/IconFiles.svg';
 import Resume from './Resume/Resume';
 import IconResume from '../assets/icons/IconResume.svg';
 import IconStore from '../assets/icons/IconStore.svg';
@@ -25,6 +27,28 @@ const appList: AppDefinition[] = [
     initialSize: { width: 640, height: 480 },
     showOnDesktop: false,
     showInLauncher: true,
+  },
+  {
+    id: 'files',
+    name: 'Files',
+    icon: IconFiles,
+    component: <Files />,
+    initialSize: { width: 800, height: 550 },
+    showOnDesktop: true,
+    showInLauncher: true,
+    sidebar: {
+      items: [
+        { id: 'favorites', label: 'Favorites', type: 'section' },
+        { id: 'desktop', label: 'Desktop', icon: Monitor },
+        { id: 'documents', label: 'Documents', icon: FileText },
+        { id: 'downloads', label: 'Downloads', icon: Download },
+        { id: 'applications', label: 'Applications', icon: LayoutGrid },
+        { id: 'locations', label: 'Locations', type: 'section' },
+        { id: 'home', label: 'Home', icon: Home },
+        { id: 'root', label: 'Macintosh HD', icon: HardDrive },
+      ],
+      initialActiveId: 'home',
+    },
   },
   {
     id: 'resume',
