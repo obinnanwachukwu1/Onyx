@@ -41,6 +41,14 @@ const appList: AppDefinition[] = [
     initialSize: { width: 640, height: 600 },
     showOnDesktop: true,
     showInLauncher: true,
+    sidebar: {
+      items: [
+        { id: 'home', label: 'Home', icon: Home },
+        { id: 'all-apps', label: 'All Apps', icon: Info }, // Using Info as placeholder, maybe Grid or AppWindow would be better if available
+        { id: 'updates', label: 'Updates', icon: Bell },
+      ],
+      initialActiveId: 'home',
+    },
   },
   {
     id: 'contactme',

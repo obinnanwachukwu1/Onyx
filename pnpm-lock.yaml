@@ -53,6 +53,9 @@ importers:
       react-responsive:
         specifier: ^10.0.0
         version: 10.0.1(react@18.3.1)
+      simple-icons:
+        specifier: ^15.21.0
+        version: 15.21.0
       web-vitals:
         specifier: ^2.1.4
         version: 2.1.4
@@ -1692,6 +1695,10 @@ packages:
   side-channel@1.1.0:
     resolution: {integrity: sha512-ZX99e6tRweoUXqR+VBrslhda51Nh5MTQwou5tnUDgbtyM0dBgmhEDtWGP/xbKn6hqfPRHujUNwz5fy/wbbhnpw==}
     engines: {node: '>= 0.4'}
+
+  simple-icons@15.21.0:
+    resolution: {integrity: sha512-xEKtyjl3bmmnyxZIsxNlN4RnN/BaP2tecQCSxOj1C6llJKt0TG4u+ZNJKSA82yBGrkO0CWW10UBTFMkH6tVKzQ==}
+    engines: {node: '>=0.12.18'}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -3398,6 +3405,8 @@ snapshots:
       side-channel-list: 1.0.0
       side-channel-map: 1.0.1
       side-channel-weakmap: 1.0.2
+
+  simple-icons@15.21.0: {}
 
   slash@3.0.0: {}
 

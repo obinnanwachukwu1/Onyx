@@ -1,28 +1,29 @@
-// @ts-nocheck
-import React, { useState, useEffect, useRef } from "react";
-import "./AppCenter.css";
+import React, { useState, useEffect } from "react";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
+import "./AppCenter.animations.css";
+import "./AppCenter.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFaceFrown } from '@fortawesome/free-regular-svg-icons';
-import { faChevronLeft, faStar, faCalendarAlt, faCode, faDownload, faChevronRight, faSearch, faRefresh } from "@fortawesome/free-solid-svg-icons";
+import { faFaceFrown, faSearch, faRefresh } from "@fortawesome/free-solid-svg-icons";
+import { useWindowChrome } from "../../Components/WindowChromeContext";
+import FeaturedCarousel from "./components/FeaturedCarousel";
+import AppGrid from "./components/AppGrid";
+import AppDetail from "./components/AppDetail";
+import { App } from "./types";
 
 const AppCenter = () => {
-  const [apps, setApps] = useState([]);
-  const [currentApp, setCurrentApp] = useState(null);
-  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [apps, setApps] = useState<App[]>([]);
+  const [currentApp, setCurrentApp] = useState<App | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [transitionType, setTransitionType] = useState(""); // "to-detail" or "to-main"
-  const containerRef = useRef(null)
-  const [landingScrollPos, setLandingScrollPos] = useState(0);
+  const [prevSidebarId, setPrevSidebarId] = useState<string | null>(null);
+
+  // Get sidebar state from Window context
+  const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
 
   useEffect(() => {
-    // Use a relative path so the request stays same-origin
-    // regardless of whether the site is served from www or apex domain.
-    fetch('/projects/project_list.json', {cache: "no-cache"})
+    fetch('/projects/project_list.json', { cache: "no-cache" })
       .then(response => {
         if (!response.ok) throw new Error('Failed to fetch projects');
         return response.json();
@@ -35,53 +36,32 @@ const AppCenter = () => {
         setError(err.message);
         setLoading(false);
       });
-  }, [loading]);
+  }, []);
 
+  // Reset view when sidebar tab changes
   useEffect(() => {
-    if (apps.length === 0) return;
-    const interval = setInterval(() => {
-      setCarouselIndex((prevIndex) => (prevIndex + 1) % apps.length);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [apps]);
+    if (sidebarActiveId) {
+      setCurrentApp(null);
+      setSearchTerm("");
+      if (sidebarActiveId === 'all-apps') {
+        setSelectedCategory("All");
+      }
+    }
+  }, [sidebarActiveId]);
 
-  const openApp = (app) => {
-    setTransitionType("to-detail");
-    setIsTransitioning(true);
-    
-    // Delay setting the current app to allow animation to start
-    setTimeout(() => {
-      setCurrentApp(app);
-      window.scrollTo(0, 0);
-      
-      // End the transition after animation completes
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }, 300);
+  const openApp = (app: App) => {
+    setCurrentApp(app);
+    // Remember current sidebar tab and clear highlight while viewing details
+    setPrevSidebarId(sidebarActiveId ?? null);
+    setSidebarActiveId?.(null as any);
   };
 
   const goBack = () => {
-    setTransitionType("to-main");
-    setIsTransitioning(true);
-    
-    // Delay clearing the current app to allow animation to start
-    setTimeout(() => {
-      setCurrentApp(null);
-      
-      // End the transition after animation completes
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
-    }, 300);
-  };
-
-  const nextCarouselSlide = () => {
-    setCarouselIndex((prevIndex) => (prevIndex + 1) % apps.length);
-  };
-
-  const prevCarouselSlide = () => {
-    setCarouselIndex((prevIndex) => (prevIndex === 0 ? apps.length - 1 : prevIndex - 1));
+    setCurrentApp(null);
+    if (prevSidebarId) {
+      setSidebarActiveId?.(prevSidebarId as any);
+      setPrevSidebarId(null);
+    }
   };
 
   const getCategories = () => {
@@ -90,243 +70,152 @@ const AppCenter = () => {
     return ["All", ...new Set(categories)];
   };
 
-  const filteredApps = apps.filter(app => {
-    const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         app.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || app.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  if (loading) return <LoadingScreen />;
 
-  const featuredApps = apps.filter(app => app.featured);
+  if (error) {
+    return (
+      <div className="error-state">
+        <div className="error-icon">
+          <FontAwesomeIcon icon={faFaceFrown} size="3x" />
+        </div>
+        <h2>Something Went Wrong</h2>
+        <p>We're having trouble loading the App Center right now.</p>
+        <p className="error-code">Error: {error}</p>
+        <button className="app-primary-button" onClick={() => window.location.reload()}>
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
-  // Add a function to handle image load errors
-  const handleImageError = (e) => {
-    e.target.parentNode.style.backgroundColor = '#0066cc';
+  // If an app is selected, show the detail view regardless of the tab
+  if (currentApp) {
+    return <AppDetail app={currentApp} onBack={goBack} />;
   }
 
   return (
-    <div className="app-center">
-      {loading ? (
-        <LoadingScreen />
-      ) : error ? (
-        <div className="error-state">
-          <div className="error-icon">
-            <FontAwesomeIcon icon={faFaceFrown} size="3x" />
-          </div>
-          <h2>Something Went Wrong</h2>
-          <p>We're having trouble loading the App Center right now.</p>
-          <p className="error-code">Error: {error}</p>
-          <button className="app-primary-button" onClick={() => window.location.reload()}>
-            Try Again
-          </button>
-        </div>
-      ) : (
-        <div ref={containerRef} className="app-center-container">
-          <div className={`app-center-main ${currentApp ? 'hidden' : 'visible'} ${
-            isTransitioning && transitionType === "to-detail" ? 'fade-out' : 
-            isTransitioning && transitionType === "to-main" ? 'fade-in' : ''
-          }`}>
-            <header className="app-center-header">
-              <h1>App Center</h1>
-              <div className="app-center-header-buttons">
-                <FontAwesomeIcon icon={faRefresh} className="refresh-icon" onClick={() => {setLoading(true)}}/>
-                <div className="app-center-search">
-                  <div className="search-input-container">
-                    <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                    <input 
-                      type="text" 
-                      placeholder="Search apps..." 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </header>
-            
-            {/* Featured Carousel Section with Error Handling */}
-            {apps.length > 0 && searchTerm.length === 0 && (
-              <div className="app-featured-section">
-                <h2 className="section-heading">Featured</h2>
-                <div className="featured-carousel-container">
-                  <button className="carousel-nav prev" onClick={prevCarouselSlide}>
-                    <FontAwesomeIcon icon={faChevronLeft} />
-                  </button>
-                  <div className="featured-carousel">
-                    <div
-                      className="featured-item"
-                      style={{ 
-                        backgroundImage: apps[carouselIndex].image ? `url(${apps[carouselIndex].image})` : 'none',
-                        backgroundColor: apps[carouselIndex].image ? 'transparent' : '#0066cc'
-                      }}
-                    >
-                      <div className="featured-content">
-                        <span className="featured-badge">Featured App</span>
-                        <h2>{apps[carouselIndex].name}</h2>
-                        <p>{apps[carouselIndex].description}</p>
-                        <button
-                          className="app-primary-button"
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent bubbling
-                            openApp(apps[carouselIndex]);
-                          }}
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    </div>
-                    <div className="carousel-indicators">
-                      {apps.slice(0, Math.min(5, apps.length)).map((_, idx) => (
-                        <span 
-                          key={idx} 
-                          className={`indicator ${idx === carouselIndex ? 'active' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCarouselIndex(idx);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <button className="carousel-nav next" onClick={nextCarouselSlide}>
-                    <FontAwesomeIcon icon={faChevronRight} />
-                  </button>
-                </div>
-              </div>
-            )}
+    <div className="app-center-container bg-white h-full overflow-y-auto overflow-x-hidden">
+      <div className="px-5 sm:px-8 md:px-10 lg:px-12 py-6 md:py-8 lg:py-10 max-w-6xl mx-auto">
 
-            {/* Category Navigation */}
-            <div className="category-navigation">
-              <div className="category-scroll">
-                {getCategories().map(category => (
-                  <button 
-                    key={category}
-                    className={`category-button ${selectedCategory === category ? 'active' : ''}`}
-                    onClick={() => setSelectedCategory(category)}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-  
-            {/* App Grid Section */}
-            <div className="app-grid-section">
-              <h2 className="section-heading">
-                {selectedCategory === "All" ? "All Apps" : selectedCategory}
-                {searchTerm && ` • Search results for "${searchTerm}"`}
-              </h2>
-              
-              {filteredApps.length === 0 ? (
-                <div className="no-results">
-                  <FontAwesomeIcon icon={faSearch} size="3x" />
-                  <h3>No apps found</h3>
-                  <p>Try adjusting your search or filters</p>
-                </div>
-              ) : (
-                <div className="app-grid">
-                  {filteredApps.map((app) => (
-                    <div
-                      key={app.id}
-                      className="app-card"
-                      onClick={() => openApp(app)}
-                    >
-                      <img className="app-card-icon" src={app.icon}/>
-                      <div className="app-card-content">
-                        <h3 className="app-card-title">{app.name}</h3>
-                        <p className="app-card-category">{app.category || "Application"}</p>
-                        <p className="app-card-description">{app.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        {/* Header with Search - Common across tabs unless hidden */}
+        <header className="flex flex-col md:flex-row md:flex-wrap md:items-end justify-between mb-6 lg:mb-8 gap-4 md:gap-6">
+          <div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight mb-1 sm:mb-2">
+              {sidebarActiveId === 'home' ? 'Discover' :
+                sidebarActiveId === 'all-apps' ? 'All Apps' :
+                  sidebarActiveId === 'updates' ? 'Updates' : 'App Center'}
+            </h1>
+            <p className="text-base sm:text-lg text-gray-500 font-medium max-w-2xl">
+              {sidebarActiveId === 'home' ? 'Explore the best apps for you' :
+                sidebarActiveId === 'all-apps' ? 'Browse the complete catalog' :
+                  'Latest changes and improvements'}
+            </p>
           </div>
-          
-          <div className={`app-detail-page ${!currentApp ? 'hidden' : 'visible'} ${
-            isTransitioning && transitionType === "to-detail" ? 'fade-in' : 
-            isTransitioning && transitionType === "to-main" ? 'fade-out' : ''
-          }`}>
-            <div className="app-detail-header">
-              <button className="app-center-back-button" onClick={goBack}>
-                <FontAwesomeIcon icon={faChevronLeft} />
-                <span>Back to Apps</span>
+
+          <div className="w-full md:w-auto flex flex-row items-center gap-3 md:gap-4">
+            <div className="relative flex-1 min-w-0 group">
+              <FontAwesomeIcon icon={faSearch} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              <input
+                type="text"
+                placeholder="Search apps..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex min-w-0 pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent focus:bg-white focus:border-blue-500 rounded-2xl transition-all outline-none font-medium text-gray-700 placeholder-gray-400"
+              />
+            </div>
+            <div className="">
+              <button
+                className="p-3 text-gray-500 hover:text-blue-600 bg-white border border-gray-200 hover:border-blue-200 rounded-xl transition-colors duration-200 outline-none shadow-sm"
+                onClick={() => setLoading(true)}
+                title="Refresh"
+              >
+                <FontAwesomeIcon icon={faRefresh} className="text-lg" />
               </button>
             </div>
-            
-            {currentApp && (
-              <div className="app-detail-content">
-                <div className="app-detail-hero">
-                  <div className="app-detail-icon-container">
-                    <div className="app-detail-icon">
-                      {currentApp.icon && <img src={currentApp.icon} className="app-icon-large"/>}
-                    </div>
-                  </div>
-                  
-                  <div className="app-detail-info">
-                    <h1 className="app-detail-name">{currentApp.name}</h1>
-                    <div className="app-detail-meta">
-                      <span className="app-detail-category">{currentApp.category || 'Application'}</span>
-                      {currentApp.tags && (
-                        <div className="app-detail-tags">
-                          {currentApp.tags.map((tag, idx) => (
-                            <span key={idx} className="app-tag">{tag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="app-action-buttons">
-                      {currentApp.canTry && (
-                        <button className="app-primary-button" onClick={() => window.open(currentApp.trial)}>
-                          <FontAwesomeIcon icon={faDownload} /> Try Now
-                        </button>
-                      )}
-                      {currentApp.github && (
-                        <button className="app-secondary-button" onClick={() => window.open(currentApp.github)}>
-                          <FontAwesomeIcon icon={faCode} /> View Source
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="app-screenshots-section">
-                  <h3 className="section-title">Screenshots</h3>
-                  <div className="app-screenshots-gallery">
-                    {currentApp.screenshots.map((src, index) => (
-                      <div key={index} className="screenshot-item">
-                        <img src={src} alt={`${currentApp.name} screenshot ${index + 1}`} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="app-description-section">
-                  <h3 className="section-title">About this project</h3>
-                  <div className="app-description">
-                    <p>{currentApp.fullDescription}</p>
-                  </div>
-                  
-                  <div className="app-additional-info">
-                    <div className="info-item">
-                      <FontAwesomeIcon icon={faCalendarAlt} />
-                      <span>Released: {currentApp.releaseDate || 'N/A'}</span>
-                    </div>
-                    {currentApp.technologies && (
-                      <div className="info-item">
-                        <FontAwesomeIcon icon={faCode} />
-                        <span>Built with: {currentApp.technologies.join(', ')}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
-      )}
+        </header>
+
+        {/* Home Tab Content */}
+        {sidebarActiveId === 'home' && (
+          <div className="space-y-10 lg:space-y-12 animate-in fade-in duration-500">
+            {!searchTerm && <FeaturedCarousel apps={apps} onOpenApp={openApp} />}
+
+            <div>
+              <div className="flex items-center justify-between mb-4 sm:mb-6 px-1">
+                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Recommended for You</h2>
+                <button
+                  className="group flex items-center gap-1 px-4 py-2 rounded-full bg-gray-50 text-blue-600 text-sm font-semibold hover:bg-blue-50 hover:pr-3 transition-all duration-300 outline-none"
+                  onClick={() => setSidebarActiveId?.('all-apps')}
+                >
+                  View All
+                  <span className="w-0 overflow-hidden group-hover:w-4 transition-all duration-300">→</span>
+                </button>
+              </div>
+              <AppGrid
+                apps={apps.slice(0, 6)} // Show first 6 as recommended
+                onOpenApp={openApp}
+                searchTerm={searchTerm}
+                selectedCategory="All"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* All Apps Tab Content */}
+        {sidebarActiveId === 'all-apps' && (
+          <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Categories */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {getCategories().map(category => (
+                <button
+                  key={category}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            <AppGrid
+              apps={apps}
+              onOpenApp={openApp}
+              searchTerm={searchTerm}
+              selectedCategory={selectedCategory}
+            />
+          </div>
+        )}
+
+        {/* Updates Tab Content */}
+        {sidebarActiveId === 'updates' && (
+          <div className="max-w-2xl mx-auto animate-in fade-in duration-500">
+            <div className="space-y-8">
+              <div className="relative pl-8 border-l-2 border-blue-500">
+                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow-sm"></div>
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1 block">Just Now</span>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">App Center Redesign</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Welcome to the new App Center! We've completely overhauled the design to provide a better browsing experience.
+                  Enjoy the new sidebar navigation, improved search, and beautiful app details.
+                </p>
+              </div>
+
+              <div className="relative pl-8 border-l-2 border-gray-200">
+                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-300 border-4 border-white"></div>
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 block">Previous</span>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Performance Improvements</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Optimized loading times and smoother transitions across the system.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 };
