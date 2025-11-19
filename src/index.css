@@ -1,3 +1,5 @@
+/* Include Tailwind v4 preflight to normalize elements (fixes default button/input borders/margins) */
+@import "tailwindcss/preflight";
 @import "tailwindcss/theme";
 @import "tailwindcss/utilities";
 
@@ -12,6 +14,18 @@ html, body, #root {
 }
 
 :root {
+  /* Global sizing to keep UI consistent */
+  --titlebar-height: 40px;
+  --titlebar-padding-x: 10px;
+  --caption-size: 14px; /* dot diameter */
+  --caption-gap: 8px;
+  --window-icon-size: 18px;
+  --sidebar-width: 220px;
+  /* Desktop icons */
+  --desktop-icon-size: 56px;
+  --desktop-icon-padding: 10px;
+  --desktop-icon-width: 96px;
+  --desktop-icon-font: 14px;
   /* Light theme (default) */
   --window-bg: white;
   --window-border-active: #e7e7e7;
@@ -88,3 +102,9 @@ html, body, #root {
   --sidebar-item-active-bg: #4a4a4a;
   --sidebar-item-active-text: #ffffff;
 }
+
+/* App-wide element normalizations after Tailwind preflight */
+button { margin: 0; line-height: 1; }
+input, textarea, select { margin: 0; line-height: 1.25; }
+img { display: block; }
+svg { vertical-align: middle; }

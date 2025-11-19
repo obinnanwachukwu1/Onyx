@@ -182,8 +182,8 @@
     justify-content: space-between;
     align-items: center;
     border: none;
-    padding: 10px;
-    height: 30px;
+    padding: 0 var(--titlebar-padding-x);
+    height: var(--titlebar-height);
     user-select: none;
     color: var(--text-color);
     position: relative;
@@ -207,8 +207,8 @@
   }
 
   .window-header .window-icon {
-    width: 20px;
-    height: 20px;
+    width: var(--window-icon-size);
+    height: var(--window-icon-size);
     padding: 0px;
     margin: 0;
     z-index: 2;
@@ -220,7 +220,9 @@
 
   .window-controls {
     display: flex;
-    /* gap: 2px; */
+    gap: var(--caption-gap); /* explicit spacing between caption buttons */
+    align-items: center;
+    padding-right: 4px;
     z-index: 2;
   }
 
@@ -281,6 +283,14 @@
 
   .caption-button {
     color: white;
+    width: var(--caption-size);
+    height: var(--caption-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; /* prevent preflight from altering size */
+    border: 0;
+    background: transparent;
     transition: opacity 0.1s ease;
   }
 
