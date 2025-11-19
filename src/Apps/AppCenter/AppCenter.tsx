@@ -94,18 +94,18 @@ const AppCenter = () => {
   }
 
   return (
-    <div className="app-center-container bg-white h-full overflow-y-auto overflow-x-hidden">
+    <div className="app-center-container h-full overflow-y-auto overflow-x-hidden">
       <div className="px-5 sm:px-8 md:px-10 lg:px-12 py-6 md:py-8 lg:py-10 max-w-6xl mx-auto">
 
         {/* Header with Search - Common across tabs unless hidden */}
         <header className="flex flex-col md:flex-row md:flex-wrap md:items-end justify-between mb-6 lg:mb-8 gap-4 md:gap-6">
           <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight mb-1 sm:mb-2">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-heading tracking-tight mb-1 sm:mb-2">
               {sidebarActiveId === 'home' ? 'Discover' :
                 sidebarActiveId === 'all-apps' ? 'All Apps' :
                   sidebarActiveId === 'updates' ? 'Updates' : 'App Center'}
             </h1>
-            <p className="text-base sm:text-lg text-gray-500 font-medium max-w-2xl">
+            <p className="text-base sm:text-lg text-muted font-medium max-w-2xl">
               {sidebarActiveId === 'home' ? 'Explore the best apps for you' :
                 sidebarActiveId === 'all-apps' ? 'Browse the complete catalog' :
                   'Latest changes and improvements'}
@@ -114,18 +114,18 @@ const AppCenter = () => {
 
           <div className="w-full md:w-auto flex flex-row items-center gap-3 md:gap-4">
             <div className="relative flex-1 min-w-0 group">
-              <FontAwesomeIcon icon={faSearch} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              <FontAwesomeIcon icon={faSearch} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-2 group-focus-within:text-blue-500 transition-colors" />
               <input
                 type="text"
                 placeholder="Search apps..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex min-w-0 pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent focus:bg-white focus:border-blue-500 rounded-2xl transition-all outline-none font-medium text-gray-700 placeholder-gray-400"
+                className="flex min-w-0 pl-11 pr-4 py-3 input-bg border-2 border-transparent focus:bg-card focus:border-blue-500 rounded-2xl transition-all outline-none font-medium text-body"
               />
             </div>
             <div className="">
               <button
-                className="p-3 text-gray-500 hover:text-blue-600 bg-white border border-gray-200 hover:border-blue-200 rounded-xl transition-colors duration-200 outline-none shadow-sm"
+                className="p-3 text-muted hover:text-blue-600 bg-card border border-card hover:border-blue-200 rounded-xl transition-colors duration-200 outline-none shadow-sm"
                 onClick={() => setLoading(true)}
                 title="Refresh"
               >
@@ -142,9 +142,9 @@ const AppCenter = () => {
 
             <div>
               <div className="flex items-center justify-between mb-4 sm:mb-6 px-1">
-                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Recommended for You</h2>
+                <h2 className="text-2xl font-bold text-heading tracking-tight">Recommended for You</h2>
                 <button
-                  className="group flex items-center gap-1 px-4 py-2 rounded-full bg-gray-50 text-blue-600 text-sm font-semibold hover:bg-blue-50 hover:pr-3 transition-all duration-300 outline-none"
+                  className="group flex items-center gap-1 px-4 py-2 rounded-full bg-subtle text-blue-600 text-sm font-semibold hover:pr-3 transition-all duration-300 outline-none"
                   onClick={() => setSidebarActiveId?.('all-apps')}
                 >
                   View All
@@ -171,7 +171,7 @@ const AppCenter = () => {
                   key={category}
                   className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-subtle text-muted hover:brightness-110'
                     }`}
                   onClick={() => setSelectedCategory(category)}
                 >
@@ -196,8 +196,8 @@ const AppCenter = () => {
               <div className="relative pl-8 border-l-2 border-blue-500">
                 <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow-sm"></div>
                 <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1 block">Just Now</span>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">App Center Redesign</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-lg font-bold text-heading mb-2">App Center Redesign</h3>
+                <p className="text-muted leading-relaxed">
                   Welcome to the new App Center! We've completely overhauled the design to provide a better browsing experience.
                   Enjoy the new sidebar navigation, improved search, and beautiful app details.
                 </p>
@@ -205,9 +205,9 @@ const AppCenter = () => {
 
               <div className="relative pl-8 border-l-2 border-gray-200">
                 <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-300 border-4 border-white"></div>
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 block">Previous</span>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Performance Improvements</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-2 mb-1 block">Previous</span>
+                <h3 className="text-lg font-bold text-heading mb-2">Performance Improvements</h3>
+                <p className="text-muted leading-relaxed">
                   Optimized loading times and smoother transitions across the system.
                 </p>
               </div>

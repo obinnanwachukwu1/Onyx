@@ -3,7 +3,31 @@
 .app-center-container {
     width: 100%;
     height: 100%;
-    /* Tailwind classes in JSX handle bg and overflow */
+    /* Make background/text theme-aware via global CSS variables */
+    background-color: var(--window-bg);
+    color: var(--text-color);
+    /* Tailwind classes in JSX handle overflow */
+}
+
+/* Theme utility helpers scoped to App Center */
+.app-center-container .text-heading { color: var(--heading-text); }
+.app-center-container .text-body { color: var(--text-color); }
+.app-center-container .text-muted { color: var(--muted-text); }
+.app-center-container .text-muted-2 { color: var(--muted-text-2); }
+.app-center-container .bg-card { background-color: var(--card-bg); }
+.app-center-container .bg-subtle { background-color: var(--subtle-bg); }
+.app-center-container .border-card { border-color: var(--card-border); }
+.app-center-container .input-bg { background-color: var(--input-bg); }
+.app-center-container .input-border { border-color: var(--input-border); }
+
+/* Inputs */
+.app-center-container input,
+.app-center-container textarea {
+  color: var(--text-color);
+}
+.app-center-container input::placeholder,
+.app-center-container textarea::placeholder {
+  color: var(--muted-text-2);
 }
 
 .app-detail-page {
@@ -11,11 +35,12 @@
     height: 100dvh;
     min-height: 100dvh;
     width: 100%;
-    background-color: white;
+    background-color: var(--window-bg);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    margin-top: 10px;
+    /* Avoid margin collapse creating a light strip with parent */
+    margin-top: 0;
 }
 
 @supports not (height: 100dvh) {
@@ -99,9 +124,9 @@ button {
     justify-content: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background-color: white;
-    color: #374151;
-    border: 1px solid #E5E7EB;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--card-border);
     border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.2s;
@@ -110,8 +135,8 @@ button {
 }
 
 .app-secondary-button:hover {
-    background-color: #F9FAFB;
-    border-color: #D1D5DB;
+    background-color: var(--subtle-bg);
+    border-color: var(--card-border);
 }
 
 .app-secondary-button:active {
@@ -142,7 +167,7 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: #6B7280; /* gray-500 */
+    color: var(--muted-text);
     font-weight: 500;
     padding: 0.25rem 0;
     background: transparent;
@@ -152,7 +177,7 @@ button {
 }
 
 .app-detail-back:hover {
-    color: #2563EB; /* blue-600 */
+    color: #2563EB; /* keep accent */
 }
 
 .app-detail-back span {
@@ -187,58 +212,18 @@ button {
 }
 
 /* Typography for App Description (mimicking prose) */
-.app-description {
-    color: #4B5563;
-    line-height: 1.75;
-}
-
-.app-description p {
-    margin-bottom: 1.25em;
-}
-
+.app-description { color: var(--text-color); line-height: 1.75; }
+.app-description p { margin-bottom: 1.25em; }
 .app-description h1,
 .app-description h2,
 .app-description h3,
-.app-description h4 {
-    color: #111827;
-    font-weight: 600;
-    margin-top: 2em;
-    margin-bottom: 1em;
-}
-
+.app-description h4 { color: var(--heading-text); font-weight: 600; margin-top: 2em; margin-bottom: 1em; }
 .app-description ul,
-.app-description ol {
-    margin-bottom: 1.25em;
-    padding-left: 1.625em;
-}
-
-.app-description li {
-    margin-bottom: 0.5em;
-}
-
-.app-description a {
-    color: #2563EB;
-    text-decoration: underline;
-    font-weight: 500;
-}
-
-.app-description code {
-    color: #111827;
-    font-weight: 600;
-    font-size: 0.875em;
-    background-color: #F3F4F6;
-    padding: 0.25em 0.5em;
-    border-radius: 0.375rem;
-}
-
-.app-description pre {
-    background-color: #1F2937;
-    color: #E5E7EB;
-    padding: 1em;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin-bottom: 1.5em;
-}
+.app-description ol { margin-bottom: 1.25em; padding-left: 1.625em; }
+.app-description li { margin-bottom: 0.5em; }
+.app-description a { color: #2563EB; text-decoration: underline; font-weight: 500; }
+.app-description code { color: var(--heading-text); font-weight: 600; font-size: 0.875em; background-color: var(--subtle-bg); padding: 0.25em 0.5em; border-radius: 0.375rem; }
+.app-description pre { background-color: #1F2937; color: #E5E7EB; padding: 1em; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1.5em; }
 
 /* Fallback Icon State */
 .fallback-icon {

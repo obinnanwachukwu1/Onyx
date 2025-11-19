@@ -17,7 +17,7 @@ html, body, #root {
   /* Global sizing to keep UI consistent */
   --titlebar-height: 40px;
   --titlebar-padding-x: 10px;
-  --caption-size: 14px; /* dot diameter */
+  --caption-size: 16px; /* dot diameter */
   --caption-gap: 8px;
   --window-icon-size: 18px;
   --sidebar-width: 220px;
@@ -54,6 +54,15 @@ html, body, #root {
   --welcome-accent-rose-soft: rgba(190, 18, 60, 0.12);
   --welcome-accent-emerald: #0f766e;
   --welcome-accent-emerald-soft: rgba(15, 118, 110, 0.12);
+  /* Surfaces + text for apps */
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --subtle-bg: #f3f4f6;
+  --heading-text: #111827;
+  --muted-text: #6b7280;
+  --muted-text-2: #9ca3af;
+  --input-bg: #f3f4f6;
+  --input-border: #d1d5db;
   /* Sidebar */
   --sidebar-bg: #eaeaea;
   --sidebar-border: #dcdcdc;
@@ -93,6 +102,15 @@ html, body, #root {
   --welcome-accent-rose-soft: rgba(249, 168, 212, 0.18);
   --welcome-accent-emerald: #6ee7b7;
   --welcome-accent-emerald-soft: rgba(110, 231, 183, 0.18);
+  /* Surfaces + text for apps */
+  --card-bg: #262626;
+  --card-border: #3a3a3a;
+  --subtle-bg: #1f1f1f;
+  --heading-text: #f3f4f6;
+  --muted-text: #a3a3a3;
+  --muted-text-2: #9ca3af;
+  --input-bg: #2a2a2a;
+  --input-border: #3a3a3a;
   /* Sidebar */
   --sidebar-bg: #2b2b2b;
   --sidebar-border: #3a3a3a;
