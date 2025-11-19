@@ -3,12 +3,19 @@ const STORAGE_KEY = 'theme-preference';
 
 const isDarkPreferred = (): boolean => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
 
-export default function toggleTheme(): void {
-  const currentTheme = document.documentElement.getAttribute(THEME_ATTRIBUTE);
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+export function setTheme(theme: 'light' | 'dark'): void {
+  document.documentElement.setAttribute(THEME_ATTRIBUTE, theme);
+  localStorage.setItem(STORAGE_KEY, theme);
+}
 
-  document.documentElement.setAttribute(THEME_ATTRIBUTE, newTheme);
-  localStorage.setItem(STORAGE_KEY, newTheme);
+export function getTheme(): 'light' | 'dark' {
+  return document.documentElement.getAttribute(THEME_ATTRIBUTE) as 'light' | 'dark' || (isDarkPreferred() ? 'dark' : 'light');
+}
+
+export default function toggleTheme(): void {
+  const currentTheme = getTheme();
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
 }
 
 export const initializeTheme = (): void => {

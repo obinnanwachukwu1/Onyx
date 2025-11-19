@@ -4,14 +4,16 @@ import IconNewWindow from '../assets/icons/IconNewWindow.svg';
 import IconTerminal from '../assets/icons/IconTerminal.svg';
 import WelcomeCenter from './WelcomeCenter/WelcomeCenter';
 import StatusPill from './WelcomeCenter/StatusPill';
-import { Home, Info, Bell } from 'lucide-react';
+import { Home, Info, Bell, Palette } from 'lucide-react';
 import Terminal from './Terminal/Terminal';
 import Resume from './Resume/Resume';
 import IconResume from '../assets/icons/IconResume.svg';
 import IconStore from '../assets/icons/IconStore.svg';
 import IconContact from '../assets/icons/IconContact.svg';
+import IconSettings from '../assets/icons/IconSettings.svg';
 import AppCenter from './AppCenter/AppCenter';
 import ContactMe from './ContactMe/ContactMe';
+import Settings from './Settings/Settings';
 import { AppDefinition, WindowStartPosition } from '../types/windows';
 
 const appList: AppDefinition[] = [
@@ -67,6 +69,22 @@ const appList: AppDefinition[] = [
     initialSize: { width: 600, height: 400 },
     showOnDesktop: false,
     showInLauncher: true,
+  },
+  {
+    id: 'settings',
+    name: 'Settings',
+    icon: IconSettings,
+    component: <Settings />,
+    initialSize: { width: 700, height: 500 },
+    showOnDesktop: false,
+    showInLauncher: true,
+    sidebar: {
+      items: [
+        { id: 'personalization', label: 'Personalization', icon: Palette },
+        { id: 'about', label: 'About', icon: Info },
+      ],
+      initialActiveId: 'personalization',
+    },
   },
   {
     id: 'welcome-center',

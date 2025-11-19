@@ -7,13 +7,13 @@
     cursor: default;
     transition: background-color 0.3s;
     color: white;
-    width: 64pt;
+    width: var(--desktop-icon-width);
 }
 
 .icon-button img {
-    width: 32pt;
-    height: 32pt;
-    padding: 8pt;
+    width: var(--desktop-icon-size);
+    height: var(--desktop-icon-size);
+    padding: var(--desktop-icon-padding);
     background-color: transparent;
     -webkit-filter: drop-shadow(3px 3px 3px #000000bf);
     filter: drop-shadow(3px 3px 3px #000000bf);
@@ -21,8 +21,9 @@
 }
 
 .icon-button span {
-    padding-top: 8pt;
-    padding-bottom: 8pt;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: var(--desktop-icon-font);
     background-color: transparent;
     -webkit-filter: drop-shadow(3px 3px 5px #000000);
     filter: drop-shadow(3px 3px 5px #000000);
