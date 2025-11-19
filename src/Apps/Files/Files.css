@@ -2,7 +2,7 @@
   display: flex;
   width: 100%;
   height: 100%;
-  background-color: var(--bg-color);
+  background-color: var(--window-bg);
   color: var(--text-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
@@ -13,7 +13,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-color);
+  background-color: var(--window-bg);
 }
 
 .files-toolbar {
@@ -22,7 +22,7 @@
   align-items: center;
   padding: 0 15px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  background-color: var(--bg-color);
+  background-color: var(--header-bg-active);
 }
 
 [data-theme='dark'] .files-toolbar {
@@ -107,7 +107,7 @@
 }
 
 .view-btn.active {
-  background-color: var(--bg-color);
+  background-color: var(--window-bg);
   opacity: 1;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }

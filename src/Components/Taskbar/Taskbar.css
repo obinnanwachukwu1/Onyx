@@ -1,70 +1,244 @@
-
-
+/* General Taskbar Layout */
 .taskbar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.taskbar-items-container {
+  display: flex;
+  align-items: center;
+}
+
+.taskbar-items {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.taskbar-item {
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  padding: 0;
+}
+
+.taskbar-item-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    height: 50px;
-    background-color: var(--taskbar-bg);
-    color: black;
+    height: 100%;
+    position: relative;
+}
+
+.taskbar-item img.taskbar-icon {
+  pointer-events: none;
+  display: block;
+}
+
+/* =========================================
+   Windows 11 Style
+   ========================================= */
+.taskbar.windows {
+  background-color: var(--taskbar-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  justify-content: space-between;
+  padding: 0 12px;
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+[data-theme="dark"] .taskbar.windows {
+    background-color: rgba(30, 30, 30, 0.85);
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+[data-theme="light"] .taskbar.windows {
+    background-color: rgba(243, 243, 243, 0.85);
+}
+
+/* Center the apps */
+.taskbar.windows .taskbar-items-container {
+  flex-grow: 1;
+  justify-content: center;
+}
+
+/* Clock Tray */
+.taskbar.windows .taskbar-tray {
+  display: flex;
+  align-items: center;
+  min-width: 100px;
+  justify-content: flex-end;
+}
+
+/* Item Sizing */
+.taskbar.windows .taskbar-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.taskbar.windows .taskbar-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme="light"] .taskbar.windows .taskbar-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.taskbar.windows .taskbar-item.active {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="light"] .taskbar.windows .taskbar-item.active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.taskbar.windows .taskbar-item img.taskbar-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Indicators */
+.taskbar.windows .taskbar-indicator {
+  position: absolute;
+  bottom: 2px;
+  width: 6px;
+  height: 3px;
+  background-color: var(--muted-text-2);
+  border-radius: 3px;
+  transition: width 0.2s, background-color 0.2s;
+}
+
+.taskbar.windows .taskbar-indicator-group {
+    position: absolute;
+    bottom: 2px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* padding: 0 10px; */
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
-    z-index: 100;
-  }
+    justify-content: center;
+    width: 100%;
+}
 
-  .taskbar-items {
-    flex-grow: 1;
+/* Minimized / Open but Inactive State */
+.taskbar.windows .taskbar-indicator.minimized-indicator {
+  width: 6px;
+  background-color: var(--muted-text-2); /* Grey dot for open but inactive/minimized */
+}
+
+/* Active State */
+.taskbar.windows .taskbar-indicator.active {
+  width: 16px;
+  background-color: var(--welcome-accent-blue); /* Blue pill for active */
+}
+
+/* Override Launch Button in Windows Mode */
+.taskbar.windows .launch-button {
+    margin: 0 !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 4px !important;
+    background-color: transparent !important;
+    padding: 0 !important;
     display: flex;
-    justify-content: left;
-    overflow:auto;
-  }
-  
-  .taskbar-item {
+    justify-content: center;
+}
+.taskbar.windows .launch-button:hover, .taskbar.windows .launch-button.clicked {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-theme="light"] .taskbar.windows .launch-button:hover, [data-theme="light"] .taskbar.windows .launch-button.clicked {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* =========================================
+   macOS Dock Style
+   ========================================= */
+.taskbar.mac {
+  background-color: transparent;
+  justify-content: center;
+  height: 80px; /* Taller hit area */
+  padding-bottom: 12px;
+  align-items: flex-end;
+  pointer-events: none; /* Pass through clicks outside dock */
+}
+
+.taskbar.mac .taskbar-items-container {
+  pointer-events: auto;
+}
+
+.taskbar.mac .taskbar-items {
+  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+[data-theme="dark"] .taskbar.mac .taskbar-items {
+    background-color: rgba(40, 40, 40, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.taskbar.mac .taskbar-item {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.taskbar.mac .taskbar-item:hover {
+  transform: scale(1.15) translateY(-10px);
+  margin: 0 4px; /* Push neighbors */
+}
+
+.taskbar.mac .taskbar-item img.taskbar-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px; /* Soften icon edges if square */
+}
+
+.taskbar.mac .dock-indicator {
+  position: absolute;
+  bottom: -6px;
+  width: 4px;
+  height: 4px;
+  background-color: var(--text-color);
+  opacity: 0.6;
+  border-radius: 50%;
+}
+
+/* Override Launch Button in Mac Mode */
+.taskbar.mac .launch-button {
+    margin: 0 !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+    background-color: transparent !important;
+    padding: 0 !important;
     display: flex;
-    box-sizing: border-box;
-    justify-content: left;
-    align-items: center;
-    background-color: var(--taskbar-item-bg);
-    height: 50px;
-    color: var(--text-color);
-    border: none;
-    outline: none;
-    box-shadow: inset 0 -4px 0 var(--taskbar-item-border);
-    /* margin-right: 10px; */
-    padding: 10px;
-    cursor: pointer;
-    /* border-radius: 5px; */
-    outline: none;
-    flex-shrink: 0;
-    width: 180px;
-    font-size: 14px;
-
-  }
-
-  .taskbar-item .taskbar-icon {
-    height: 20px;
-    width: 20px;
-    margin-right: 10px;
-  }
-
-
-  
-  .taskbar-item:hover {
-    background-color: var(--taskbar-item-hover-bg);
-  }
-  
-  .taskbar-item.minimized {
-    opacity: 0.4;
-    background-color: var(--taskbar-item-minimized-bg);
-    box-shadow: none;
-  }
-  
-  .taskbar-item.inactive {
-    opacity: 0.8;
-    background-color: var(--taskbar-item-inactive-bg);
-    box-shadow: none;
-  }
+    justify-content: center;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.taskbar.mac .launch-button:hover {
+  transform: scale(1.15) translateY(-10px);
+  background-color: transparent !important;
+  margin: 0 4px;
+}
+.taskbar.mac .launch-button img {
+    width: 42px;
+    height: 42px;
+}

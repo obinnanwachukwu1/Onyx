@@ -114,11 +114,11 @@
     flex-direction: column;
     border: 2px solid black;
     border-radius: 10pt;
-    background-color: white;
+    background-color: var(--window-bg);
     transform: perspective(1000px) rotateY(0);
     transition: transform 0.5s ease;
     overflow: hidden;
-    color: black;
+    color: var(--text-color);
   }
 
   .window-mobile {
