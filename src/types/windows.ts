@@ -21,6 +21,7 @@ export interface SidebarItem {
   // Icon is optional; when provided it's a React component (e.g., from lucide-react)
   // Use `any` to avoid coupling types to specific icon packages.
   icon?: any;
+  type?: 'item' | 'section'; // Defaults to 'item'
 }
 
 export interface WindowData {
@@ -72,7 +73,7 @@ export interface AppDefinition {
 export interface WindowContextValue {
   closingWindowID: number;
   launcherVisible: boolean;
-  launchApp: (appId: string) => void;
+  launchApp: (appId: string, props?: any) => void;
   activateWindow: (id: number) => void;
   setWindowPosition: (id: number, position: Coordinates) => void;
   setWindowSize: (id: number, size: Dimensions) => void;
