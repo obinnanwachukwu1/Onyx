@@ -3,7 +3,9 @@
 @import "tailwindcss/theme";
 @import "tailwindcss/utilities";
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -17,10 +19,12 @@ html, body, #root {
   /* Global sizing to keep UI consistent */
   --titlebar-height: 40px;
   --titlebar-padding-x: 10px;
-  --caption-size: 16px; /* dot diameter */
+  --caption-size: 16px;
+  /* dot diameter */
   --caption-gap: 8px;
   --window-icon-size: 18px;
   --sidebar-width: 220px;
+  --caption-inactive: #d4d4d4;
   /* Desktop icons */
   --desktop-icon-size: 56px;
   --desktop-icon-padding: 10px;
@@ -37,7 +41,8 @@ html, body, #root {
   --text-color: black;
   --launch-button-bg: #e7e7e7;
   --launch-button-hover: #d6d6d6;
-  --launch-icon-filter: none; /* No filter needed for light theme */
+  --launch-icon-filter: none;
+  /* No filter needed for light theme */
   --launch-icon-opacity: 1;
   --taskbar-bg: #e7e7e7;
   --taskbar-item-bg: #dbdbdb;
@@ -66,7 +71,8 @@ html, body, #root {
   /* Sidebar */
   --sidebar-bg: #eaeaea;
   --sidebar-border: #dcdcdc;
-  --sidebar-item-text: #111827; /* near-black for readability */
+  --sidebar-item-text: #111827;
+  /* near-black for readability */
   --sidebar-item-bg: transparent;
   --sidebar-item-hover-bg: #e1e1e1;
   --sidebar-item-active-bg: #d6d6d6;
@@ -85,7 +91,8 @@ html, body, #root {
   --text-color: #e0e0e0;
   --launch-button-bg: #333333;
   --launch-button-hover: #555555;
-  --launch-icon-filter: invert(1) brightness(1.7); /* Invert black to white and brighten */
+  --launch-icon-filter: invert(1) brightness(1.7);
+  /* Invert black to white and brighten */
   --launch-icon-opacity: 1;
   --taskbar-bg: #333333;
   --taskbar-item-bg: #444444;
@@ -111,10 +118,12 @@ html, body, #root {
   --muted-text-2: #9ca3af;
   --input-bg: #2a2a2a;
   --input-border: #3a3a3a;
+  --caption-inactive: #4d4d4d;
   /* Sidebar */
   --sidebar-bg: #2b2b2b;
   --sidebar-border: #3a3a3a;
-  --sidebar-item-text: #f3f4f6; /* near-white */
+  --sidebar-item-text: #f3f4f6;
+  /* near-white */
   --sidebar-item-bg: transparent;
   --sidebar-item-hover-bg: #3a3a3a;
   --sidebar-item-active-bg: #4a4a4a;
@@ -122,7 +131,22 @@ html, body, #root {
 }
 
 /* App-wide element normalizations after Tailwind preflight */
-button { margin: 0; line-height: 1; }
-input, textarea, select { margin: 0; line-height: 1.25; }
-img { display: block; }
-svg { vertical-align: middle; }
+button {
+  margin: 0;
+  line-height: 1;
+}
+
+input,
+textarea,
+select {
+  margin: 0;
+  line-height: 1.25;
+}
+
+img {
+  display: block;
+}
+
+svg {
+  vertical-align: middle;
+}

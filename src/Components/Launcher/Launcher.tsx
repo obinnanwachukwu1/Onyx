@@ -1,26 +1,35 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import LauncherIcon from './LauncherIcon';
 import { useWindowContext } from '../WindowContext';
 import { useDeviceContext } from '../DeviceContext';
+import { useTaskbar } from '../Taskbar/TaskbarContext';
 import appList from '../../Apps/AppList';
 import { Search, Home, Grid, Power, User, Settings } from 'lucide-react';
+import { ContextMenu, ContextMenuItemConfig } from '../ContextMenu';
 
 const Launcher = (): JSX.Element | null => {
   const { launcherVisible, closeLauncher, launchApp } = useWindowContext();
   const { isMobile } = useDeviceContext();
-  const [shouldRender, setShouldRender] = useState<boolean>(launcherVisible);
+  // Keep launcher mounted; animate by toggling classes
+  const [panelVisible, setPanelVisible] = useState<boolean>(launcherVisible);
   const [activeTab, setActiveTab] = useState<'home' | 'all'>('home');
   const [searchTerm, setSearchTerm] = useState('');
+  const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; appId: string | null }>({
+    visible: false,
+    x: 0,
+    y: 0,
+    appId: null,
+  });
 
   useEffect(() => {
+    // Sync panel visibility with context flag
+    setPanelVisible(launcherVisible);
+    // Reset search when opening
     if (launcherVisible) {
-      setShouldRender(true);
-      setSearchTerm(''); // Reset search on open
-      return;
+      setSearchTerm('');
+    } else {
+      setContextMenu({ visible: false, x: 0, y: 0, appId: null });
     }
-
-    const timer = window.setTimeout(() => setShouldRender(false), 300); // Match CSS animation
-    return () => window.clearTimeout(timer);
   }, [launcherVisible]);
 
   const filteredApps = useMemo(() => {
@@ -30,25 +39,45 @@ const Launcher = (): JSX.Element | null => {
     );
   }, [searchTerm]);
 
+  const { pinnedAppIds, togglePin, isPinned } = useTaskbar();
+
+  const handleContextMenu = (e: React.MouseEvent, appId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      appId,
+    });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu({ ...contextMenu, visible: false });
+  };
+
   const pinnedApps = useMemo(() => {
-    return appList.filter(app => app.showInLauncher).slice(0, 8); // Simulate pinned apps
-  }, []);
+    return pinnedAppIds
+      .map(id => appList.find(app => app.id === id))
+      .filter((app): app is typeof appList[0] => !!app);
+  }, [pinnedAppIds]);
 
   const recentApps = useMemo(() => {
     return appList.filter(app => app.showInLauncher).slice(0, 4); // Simulate recent apps
   }, []);
 
-  if (!shouldRender) {
-    return null;
-  }
+  // Always mounted for smooth transitions
 
-  // Mobile Launcher
+  // Mobile Launcher (no blur)
   if (isMobile) {
     return (
-      <div 
-        className={`fixed inset-0 bg-black/80 backdrop-blur-2xl z-9999 flex flex-col transition-all duration-300 ${
-          launcherVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'
-        }`}
+      <div
+        className={`launcher fixed inset-0 bg-black/70 z-9999 flex flex-col transform-gpu ${panelVisible ? 'translate-y-0' : 'translate-y-full'
+          }`}
+        style={{
+          pointerEvents: launcherVisible ? 'auto' : 'none',
+          transition: 'transform 200ms ease-out',
+        }}
       >
         <div className="p-6 pt-12 border-b border-white/10">
           <h2 className="text-3xl font-bold text-white tracking-tight">Launcher</h2>
@@ -70,35 +99,37 @@ const Launcher = (): JSX.Element | null => {
     );
   }
 
-  // Desktop Launcher
+  // Desktop Launcher (centered, no screen blur)
   return (
-    <div 
-      className={`fixed bottom-14 left-4 w-[750px] h-[500px] flex rounded-2xl overflow-hidden border border-[var(--window-border-active)] shadow-[0_0_10px_var(--window-shadow-active)] z-[9999] transition-all duration-300 ease-out origin-bottom-left ${
-        launcherVisible 
-          ? 'opacity-100 translate-y-0 scale-100' 
-          : 'opacity-0 translate-y-8 scale-95 pointer-events-none'
-      }`}
+    <div
+      className={`launcher fixed bottom-16 left-1/2 w-[780px] max-w-[90vw] h-[520px] flex rounded-2xl overflow-hidden border border-[var(--window-border-active)] shadow-[0_12px_40px_rgba(0,0,0,0.28)] z-[9998] origin-bottom ${panelVisible
+        ? 'opacity-100'
+        : 'opacity-100 pointer-events-none'
+        }`}
+      style={{
+        transform: `translate(-50%, ${panelVisible ? '0px' : '120%'}) translateZ(0)`,
+        transition: 'transform 450ms cubic-bezier(0.19, 1, 0.22, 1)',
+      }}
+      onClick={(e) => e.stopPropagation()}
     >
-      {/* Sidebar Navigation Rail */}
+
       <div className="w-16 bg-[var(--header-bg-active)] border-r border-[var(--window-border-active)] flex flex-col items-center py-6 gap-6">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg ring-2 ring-white/10 shrink-0">
           <User size={20} className="text-white" />
         </div>
 
         <div className="flex-1 flex flex-col gap-3 w-full px-2 items-center">
-          <button 
-            className={`p-3 rounded-xl transition-all duration-200 flex flex-col items-center gap-1 group w-full aspect-square justify-center ${
-              activeTab === 'home' ? 'bg-[var(--sidebar-item-active-bg)] text-[var(--sidebar-item-active-text)] shadow-inner' : 'text-[var(--text-color)] opacity-60 hover:bg-[var(--sidebar-item-hover-bg)] hover:text-[var(--text-color)] hover:opacity-100 bg-transparent'
-            }`}
+          <button
+            className={`p-3 rounded-xl transition-all duration-200 flex flex-col items-center gap-1 group w-full aspect-square justify-center ${activeTab === 'home' ? 'bg-[var(--sidebar-item-active-bg)] text-[var(--sidebar-item-active-text)] shadow-inner' : 'text-[var(--text-color)] opacity-60 hover:bg-[var(--sidebar-item-hover-bg)] hover:text-[var(--text-color)] hover:opacity-100 bg-transparent'
+              }`}
             onClick={() => setActiveTab('home')}
             title="Home"
           >
             <Home size={22} className="group-active:scale-90 transition-transform" />
           </button>
-          <button 
-            className={`p-3 rounded-xl transition-all duration-200 flex flex-col items-center gap-1 group w-full aspect-square justify-center ${
-              activeTab === 'all' ? 'bg-[var(--sidebar-item-active-bg)] text-[var(--sidebar-item-active-text)] shadow-inner' : 'text-[var(--text-color)] opacity-60 hover:bg-[var(--sidebar-item-hover-bg)] hover:text-[var(--text-color)] hover:opacity-100 bg-transparent'
-            }`}
+          <button
+            className={`p-3 rounded-xl transition-all duration-200 flex flex-col items-center gap-1 group w-full aspect-square justify-center ${activeTab === 'all' ? 'bg-[var(--sidebar-item-active-bg)] text-[var(--sidebar-item-active-text)] shadow-inner' : 'text-[var(--text-color)] opacity-60 hover:bg-[var(--sidebar-item-hover-bg)] hover:text-[var(--text-color)] hover:opacity-100 bg-transparent'
+              }`}
             onClick={() => setActiveTab('all')}
             title="All Apps"
           >
@@ -110,9 +141,9 @@ const Launcher = (): JSX.Element | null => {
           <button className="p-3 text-[var(--text-color)] opacity-60 hover:text-[var(--text-color)] hover:opacity-100 hover:bg-[var(--sidebar-item-hover-bg)] rounded-xl transition-colors bg-transparent w-full aspect-square flex items-center justify-center" title="Settings">
             <Settings size={20} />
           </button>
-          <button 
-            className="p-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors bg-transparent w-full aspect-square flex items-center justify-center" 
-            onClick={() => window.location.reload()} 
+          <button
+            className="p-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors bg-transparent w-full aspect-square flex items-center justify-center"
+            onClick={() => window.location.reload()}
             title="Restart System"
           >
             <Power size={20} />
@@ -120,14 +151,14 @@ const Launcher = (): JSX.Element | null => {
         </div>
       </div>
 
-      {/* Main Content Area */}
+
       <div className="flex-1 flex flex-col bg-[var(--window-bg)]">
         <div className="p-5 border-b border-[var(--window-border-active)]">
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-color)] opacity-40 group-focus-within:text-blue-400 transition-colors" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search apps, files, and settings..." 
+            <input
+              type="text"
+              placeholder="Search apps, files, and settings..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               autoFocus
@@ -150,6 +181,7 @@ const Launcher = (): JSX.Element | null => {
                       launchApp(app.id);
                       closeLauncher();
                     }}
+                    onContextMenu={(e) => handleContextMenu(e, app.id)}
                   />
                 ))}
                 {filteredApps.length === 0 && <p className="col-span-full text-(--text-color)/40 text-center py-8">No apps found.</p>}
@@ -169,6 +201,7 @@ const Launcher = (): JSX.Element | null => {
                         launchApp(app.id);
                         closeLauncher();
                       }}
+                      onContextMenu={(e) => handleContextMenu(e, app.id)}
                     />
                   ))}
                 </div>
@@ -187,6 +220,7 @@ const Launcher = (): JSX.Element | null => {
                         launchApp(app.id);
                         closeLauncher();
                       }}
+                      onContextMenu={(e) => handleContextMenu(e, app.id)}
                     />
                   ))}
                 </div>
@@ -205,6 +239,7 @@ const Launcher = (): JSX.Element | null => {
                       launchApp(app.id);
                       closeLauncher();
                     }}
+                    onContextMenu={(e) => handleContextMenu(e, app.id)}
                   />
                 ))}
               </div>
@@ -212,6 +247,22 @@ const Launcher = (): JSX.Element | null => {
           )}
         </div>
       </div>
+      {contextMenu.visible && contextMenu.appId && (
+        <ContextMenu
+          position={{ x: contextMenu.x, y: contextMenu.y }}
+          onClose={closeContextMenu}
+          contextMenuItems={[
+            {
+              label: isPinned(contextMenu.appId) ? 'Unpin from Taskbar' : 'Pin to Taskbar',
+              onClick: () => {
+                if (contextMenu.appId) {
+                  togglePin(contextMenu.appId);
+                }
+              },
+            },
+          ]}
+        />
+      )}
     </div>
   );
 };

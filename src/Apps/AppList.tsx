@@ -45,7 +45,7 @@ const appList: AppDefinition[] = [
         { id: 'applications', label: 'Applications', icon: LayoutGrid },
         { id: 'locations', label: 'Locations', type: 'section' },
         { id: 'home', label: 'Home', icon: Home },
-        { id: 'root', label: 'Macintosh HD', icon: HardDrive },
+        { id: 'root', label: 'Onyx HD', icon: HardDrive },
       ],
       initialActiveId: 'home',
     },
