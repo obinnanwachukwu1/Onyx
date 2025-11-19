@@ -4,6 +4,7 @@ import WindowManager from './Components/WindowManager';
 import { useDeviceContext } from './Components/DeviceContext';
 import { initializeTheme } from './Components/toggleTheme';
 import { FileSystemProvider } from './Apps/Files/FileSystem';
+import { TaskbarProvider } from './Components/Taskbar/TaskbarContext';
 import appList from './Apps/AppList';
 
 const App = (): JSX.Element => {
@@ -18,7 +19,9 @@ const App = (): JSX.Element => {
 
   return (
     <FileSystemProvider apps={fsApps}>
-      {isMobile ? <AppManager /> : <WindowManager windowSize={windowSize} />}
+      <TaskbarProvider>
+        {isMobile ? <AppManager /> : <WindowManager windowSize={windowSize} />}
+      </TaskbarProvider>
     </FileSystemProvider>
   );
 };

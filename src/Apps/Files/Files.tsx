@@ -6,8 +6,7 @@ import {
   Monitor, Download, File, Trash2, Plus, Edit2, ArrowUp
 } from 'lucide-react';
 import { useWindowChrome } from '../../Components/WindowChromeContext';
-import { WindowManagerContext } from '../../Components/WindowManagerContext';
-import { WindowContextValue } from '../../types/windows';
+import { useWindowContext } from '../../Components/WindowContext';
 import appList from '../AppList';
 import { getAppIconMap, filesIconFor, filesListIconFor } from './fileAssociations';
 
@@ -23,13 +22,7 @@ const Files = () => {
   const [renameValue, setRenameValue] = useState('');
 
   const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
-  const windowManager = useContext(WindowManagerContext);
-  
-  if (!windowManager) {
-    throw new Error('Files app must be used within a WindowManager');
-  }
-  
-  const { launchApp } = windowManager;
+  const { launchApp } = useWindowContext();
 
   const containerRef = useRef<HTMLDivElement>(null);
 
