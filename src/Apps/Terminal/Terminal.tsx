@@ -1,204 +1,215 @@
 // @ts-nocheck
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import './Terminal.css';
 import useLockedState from '../../hooks/useLockedState';
 import details from '../../EnvironmentDetails';
 import toggleTheme from '../../Components/toggleTheme';
 
 const Terminal = () => {
-    const terminalInputRef = useRef(null);
-    const [value, setValue] = useLockedState("");
+    const inputRef = useRef(null);
+    const containerRef = useRef(null);
+    const initStartedRef = useRef(false);
+    
+    // Terminal State
+    const [output, setOutput] = useState([]);
+    const [inputVal, setInputVal] = useState("");
+    const [cursorPos, setCursorPos] = useState(0);
+    const [prompt, setPrompt] = useState("~$ ");
+    
+    // System State
     const [init, doneInit] = useLockedState(false);
     const [ip, setIp] = useLockedState("");
-    const [identifier, setIdentifier] = useLockedState("");
-    const [cwd, setCwd] = useLockedState("~");
-    const [minCursorPosition, setMinCursorPosition] = useLockedState(0);
-    const [cursorPosition, setCursorPosition] = useLockedState(0);
-    const [caret, setCaret] = useLockedState("█");
-    const [isEditable, setIsEditable] = useLockedState(true);
+    const [user, setUser] = useState("root");
+    
+    // History State
+    const [history, setHistory] = useState([]);
+    const [historyIndex, setHistoryIndex] = useState(null);
 
-    const printQueue = [];
-    let isPrinting = false;
-
-    const processQueue = async () => {
-        if (isPrinting) return;
-        isPrinting = true;
-        while (printQueue.length > 0) {
-            const { str, resolve } = printQueue.shift();
-            await new Promise((res) => {
-                setValue((prevValue) => {
-                    const updatedValue = prevValue.slice(0, prevValue.length) + "\n" + str;
-                    setMinCursorPosition(updatedValue.length);
-                    setCursorPosition(updatedValue.length);
-                    res(updatedValue);
-                    return updatedValue; 
-                });
-            });
-            resolve();
+    // Scroll to bottom when output changes
+    useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.scrollTop = containerRef.current.scrollHeight;
         }
-        isPrinting = false;
+    }, [output, inputVal]);
+
+    // Focus input on click
+    const handleContainerClick = () => {
+        inputRef.current?.focus();
     };
 
-    const consolePrint = (str) => {
-        return new Promise((resolve) => {
-            setCaret("█");
-            printQueue.push({ str, resolve });
-            processQueue();
-        });
-    }
-
+    // Initialize
     useEffect(() => {
         const initTerminal = async () => {
-            try {
-                if (!init) {
-                    setValue("Terminal application starting...\n")
+            if (!init && !initStartedRef.current) {
+                initStartedRef.current = true;
+                addToOutput("Terminal application starting...\n");
+                try {
                     const response = await fetch("https://api.ipify.org?format=json");
                     const data = await response.json();
                     setIp(data.ip);
-                    const idtf = "root@" + data.ip + ":~$ ";
-                    const msg = details.name + " Environment v" + details.version_major + "." + details.version_minor + "\n\nroot@" + data.ip + ":~$ ";
-                    setIdentifier(idtf);
-                    setValue(msg)
-                    setMinCursorPosition(msg.length)
-                    setCursorPosition(msg.length)
-                    terminalInputRef.current.focus();
-                    doneInit(true);
+                    const newPrompt = `root@${data.ip}:~$ `;
+                    setPrompt(newPrompt);
+                    
+                    const welcomeMsg = `${details.name} Environment v${details.version_major}.${details.version_minor}`;
+                    setOutput([welcomeMsg]);
+                } catch (e) {
+                    console.error(e);
+                    setPrompt("root@localhost:~$ ");
                 }
-            } catch (error) {
-                console.log(error)
+                doneInit(true);
             }
-        }
+        };
         initTerminal();
     }, [init]);
 
-    const consoleMoveCaret = (str) => {
-        setCursorPosition((prevPos) => {
-            if (prevPos >= minCursorPosition) {
-                setValue((prevValue) => {
-                    return prevValue.slice(0, prevPos) + str + prevValue.slice(prevPos, prevValue.length)
-                })
-                return prevPos + str.length;
-            }
-            return prevPos;
-        });
-    }
+    const addToOutput = (text) => {
+        setOutput(prev => [...prev, text]);
+    };
 
-    const consoleMoveCaretLeft = () => {
-        if (extractCommand() === "") {
-            return;
-        }
-        setCaret("│");
-        setCursorPosition((prevPos) => {
-            if (prevPos - 1 >= minCursorPosition) {
-                return prevPos - 1;
-            }
-            return prevPos;
-        });
-    }
+    const handleInputChange = (e) => {
+        setInputVal(e.target.value);
+        setCursorPos(e.target.selectionStart);
+    };
 
-    const consoleMoveCaretRight = () => {
-        setCursorPosition((prevPos) => {
-            if (prevPos + 1 <= value.length) {
-                if (prevPos + 1 == value.length) {
-                    setCaret("█");
-                } else {
-                    setCaret("│");
-                }
-                return prevPos + 1;
-            }
-            return prevPos;
-        });
-    }
+    const handleInputSelect = (e) => {
+        setCursorPos(e.target.selectionStart);
+    };
 
-    const extractCommand = () => {
-        return value.slice(minCursorPosition, value.length);
-    }
+    const navigateHistory = (direction) => {
+        if (history.length === 0) return;
 
-    useEffect(() => {
-        if (terminalInputRef.current) {
-            terminalInputRef.current.scrollTop = terminalInputRef.current.scrollHeight;
-        }
-    }, [value]);
-
-    const handleKeyDown = (event) => {
-        const terminalInput = terminalInputRef.current;
-        if (terminalInput) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                runCommand(extractCommand());
-            } else if (event.ctrlKey) {
-                if (event.key === "c") {
-                    event.preventDefault();
-                    consolePrint("[^C] Terminated\n");
-                }
-            } else if (event.key === "Backspace") {
-                event.preventDefault();
-                if (cursorPosition - 1 >= minCursorPosition) {
-                setCursorPosition((prevPos) => {
-                    setValue((prevValue) => {
-                        const updatedValue = prevValue.slice(0, prevPos - 1) + prevValue.slice(prevPos, prevValue.length)
-                        return updatedValue;
-                    });
-                    return prevPos - 1;
-                });
-                }
-            } else if (event.key === "ArrowLeft") {
-                event.preventDefault();
-                consoleMoveCaretLeft();
-            } else if (event.key === "ArrowRight") {
-                event.preventDefault();
-                consoleMoveCaretRight();
-            } else if (event.key === "Shift" || event.key === "Alt" || event.key === "Meta") {
-                event.preventDefault();
+        let newIndex;
+        if (historyIndex === null) {
+            if (direction === 'up') {
+                newIndex = history.length - 1;
             } else {
-                event.preventDefault();
-                consoleMoveCaret(event.key)
+                return;
             }
+        } else {
+            if (direction === 'up') {
+                newIndex = historyIndex > 0 ? historyIndex - 1 : 0;
+            } else {
+                newIndex = historyIndex < history.length - 1 ? historyIndex + 1 : null;
+            }
+        }
+
+        setHistoryIndex(newIndex);
+        
+        const newVal = newIndex === null ? "" : history[newIndex];
+        setInputVal(newVal);
+        // Move cursor to end of new value
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.selectionStart = inputRef.current.selectionEnd = newVal.length;
+                setCursorPos(newVal.length);
+            }
+        }, 0);
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            runCommand(inputVal);
+            setInputVal("");
+            setCursorPos(0);
+            setHistoryIndex(null);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateHistory('up');
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateHistory('down');
+        } else if (e.ctrlKey && e.key === 'c') {
+            e.preventDefault();
+            addToOutput(`${prompt}${inputVal}^C`);
+            setInputVal("");
+            setCursorPos(0);
         }
     };
 
-    const runCommand = async (command) => {
-        if (command !== "") {
-            const args = command.split(" ");
-            switch (args[0]) {
-                case "help":
-                    await consolePrint("List of commands:\n'help' - Shows this page\n'ip' - Prints your IP address to the console\n'version'- Prints the version of the environemnt to the console\n'toggleTheme' - Changes the color scheme of the system")
-                    break;
-                case "ip":
-                    await consolePrint(ip)
-                    break;
-                case "version":
-                    await consolePrint(details.name + " Environment v" + details.version_major + "." + details.version_minor)
-                    break;
-                case "toggleTheme":
-                    toggleTheme()
-                    await consolePrint("Theme changed")
-                    break;
-                default:
-                    await consolePrint("\"" + args[0] + "\" - bad command or file name");
-            }
+    const runCommand = async (cmd) => {
+        // Echo the command to output
+        addToOutput(`${prompt}${cmd}`);
+        
+        if (!cmd.trim()) return;
+
+        setHistory(prev => [...prev, cmd]);
+        
+        const args = cmd.trim().split(/\s+/);
+        const command = args[0];
+
+        switch (command) {
+            case "help":
+                addToOutput("List of commands:\n'help' - Shows this page\n'ip' - Prints your IP address\n'version' - Prints version\n'toggleTheme' - Changes theme\n'clear' - Clears terminal\n'echo' - Prints text\n'date' - Prints date\n'whoami' - Prints user");
+                break;
+            case "ip":
+                addToOutput(ip || "Loading...");
+                break;
+            case "version":
+                addToOutput(`${details.name} Environment v${details.version_major}.${details.version_minor}`);
+                break;
+            case "toggleTheme":
+                toggleTheme();
+                addToOutput("Theme changed");
+                break;
+            case "clear":
+                setOutput([]);
+                break;
+            case "echo":
+                addToOutput(args.slice(1).join(" "));
+                break;
+            case "date":
+                addToOutput(new Date().toString());
+                break;
+            case "whoami":
+                addToOutput(user);
+                break;
+            default:
+                addToOutput(`"${command}" - command not found`);
         }
-        await consolePrint(identifier);
-    }
+    };
+
+    // Render the input line with custom cursor
+    const renderInputLine = () => {
+        const beforeCursor = inputVal.slice(0, cursorPos);
+        const atCursor = inputVal[cursorPos] || " "; // Space if at end
+        const afterCursor = inputVal.slice(cursorPos + 1);
+
+        return (
+            <div className="terminal-input-line">
+                <span className="terminal-prompt">{prompt}</span>
+                <span className="terminal-input-content">
+                    <span>{beforeCursor}</span>
+                    <span className="terminal-cursor">{atCursor}</span>
+                    <span>{afterCursor}</span>
+                </span>
+            </div>
+        );
+    };
 
     return (
-        <div className = "terminal">
-            <textarea 
-                className='terminal-input'
-                // style={{ caretColor: "transparent" }} 
-                ref={terminalInputRef}
-                value={value}
+        <div className="terminal" ref={containerRef} onClick={handleContainerClick}>
+            <div className="terminal-output">
+                {output.map((line, i) => (
+                    <div key={i} className="terminal-line">{line}</div>
+                ))}
+            </div>
+            {renderInputLine()}
+            <input
+                ref={inputRef}
+                className="hidden-input"
+                type="text"
+                value={inputVal}
+                onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                onChange={(e) => setValue(e.target.value)}
-                spellCheck={false}
-                autoCorrect='false'
-                autoComplete='false'
-                readOnly={!isEditable}
+                onSelect={handleInputSelect}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
+                autoFocus
             />
         </div>
-    )
-}
+    );
+};
 
 export default Terminal;
-
-
