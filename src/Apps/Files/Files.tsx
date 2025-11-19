@@ -25,6 +25,8 @@ const Files = () => {
   const { launchApp } = useWindowContext();
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const isTouchRef = useRef<boolean>(false);
+  const lastTapRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
 
   // Map app id -> icon path for rendering .app shortcuts
   const appIconMap = useRef<Record<string, string>>(getAppIconMap());
@@ -101,6 +103,28 @@ const Files = () => {
 
   const handleFileClick = (file: FileNode) => {
     setSelectedId(file.id);
+  };
+
+  // On touch devices, consider a fast second tap on the same item as a double-click
+  useEffect(() => {
+    try {
+      isTouchRef.current = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    } catch {
+      isTouchRef.current = false;
+    }
+  }, []);
+
+  const handleItemTapOrClick = (file: FileNode) => {
+    handleFileClick(file);
+    if (!isTouchRef.current) return;
+    const now = Date.now();
+    if (lastTapRef.current.id === file.id && now - lastTapRef.current.time < 300) {
+      // Treat as double-click
+      handleFileDoubleClick(file);
+      lastTapRef.current = { id: null, time: 0 };
+    } else {
+      lastTapRef.current = { id: file.id, time: now };
+    }
   };
 
   const handleFileDoubleClick = (file: FileNode) => {
@@ -278,7 +302,7 @@ const Files = () => {
                 <div 
                   key={file.id}
                   className={`file-item-grid ${selectedId === file.id ? 'selected' : ''}`}
-                  onClick={(e) => { e.stopPropagation(); handleFileClick(file); }}
+                  onClick={(e) => { e.stopPropagation(); handleItemTapOrClick(file); }}
                   onDoubleClick={(e) => { e.stopPropagation(); handleFileDoubleClick(file); }}
                   onContextMenu={(e) => handleContextMenu(e, file.id)}
                 >
@@ -306,7 +330,7 @@ const Files = () => {
                 <div 
                   key={file.id}
                   className={`file-item-list ${selectedId === file.id ? 'selected' : ''}`}
-                  onClick={(e) => { e.stopPropagation(); handleFileClick(file); }}
+                  onClick={(e) => { e.stopPropagation(); handleItemTapOrClick(file); }}
                   onDoubleClick={(e) => { e.stopPropagation(); handleFileDoubleClick(file); }}
                   onContextMenu={(e) => handleContextMenu(e, file.id)}
                 >

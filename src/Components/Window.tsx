@@ -96,7 +96,7 @@ const Window = ({
       } else if (isRestoring && restoreSize?.width) {
         predictiveWidth = restoreSize.width;
       }
-    } catch {}
+    } catch { }
 
     const shouldBeMobileSidebar = isMobileViewport || predictiveWidth <= breakpoint;
     setIsSidebarMobileLayout(shouldBeMobileSidebar);
@@ -415,9 +415,9 @@ const Window = ({
           {/* On mobile, hide caption buttons */}
           {!renderMobile ? (
             <div className="window-controls">
-              <button className="caption-button" onClick={toggleMaximizing}><FontAwesomeIcon icon={faCircle} style={{ color: '#28C840' }} /></button>
-              <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faCircle} style={{ color: '#FDBC2E' }} /></button>
-              <button className="caption-button" onClick={handleClosing}> <FontAwesomeIcon icon={faCircle} style={{ color: '#FF5E57' }} /></button>
+              <button className="caption-button" onClick={toggleMaximizing}><FontAwesomeIcon icon={faCircle} style={{ color: isActive ? '#28C840' : 'var(--caption-inactive)' }} /></button>
+              <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faCircle} style={{ color: isActive ? '#FDBC2E' : 'var(--caption-inactive)' }} /></button>
+              <button className="caption-button" onClick={handleClosing}> <FontAwesomeIcon icon={faCircle} style={{ color: isActive ? '#FF5E57' : 'var(--caption-inactive)' }} /></button>
             </div>
           ) : (
             <div className="window-controls" />
