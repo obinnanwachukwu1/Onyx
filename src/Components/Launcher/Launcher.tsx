@@ -39,7 +39,7 @@ const Launcher = (): JSX.Element | null => {
     );
   }, [searchTerm]);
 
-  const { pinnedAppIds, togglePin, isPinned } = useTaskbar();
+  const { pinnedAppIds, togglePin, isPinned, taskbarStyle } = useTaskbar();
 
   const handleContextMenu = (e: React.MouseEvent, appId: string) => {
     e.preventDefault();
@@ -102,7 +102,7 @@ const Launcher = (): JSX.Element | null => {
   // Desktop Launcher (centered, no screen blur)
   return (
     <div
-      className={`launcher fixed bottom-16 left-1/2 w-[780px] max-w-[90vw] h-[520px] flex rounded-2xl overflow-hidden border border-[var(--window-border-active)] shadow-[0_12px_40px_rgba(0,0,0,0.28)] z-[9998] origin-bottom ${panelVisible
+      className={`launcher fixed ${taskbarStyle === 'mac' ? 'bottom-24' : 'bottom-16'} left-1/2 w-[780px] max-w-[90vw] h-[520px] flex rounded-2xl overflow-hidden border border-(--window-border-active) shadow-[0_12px_40px_rgba(0,0,0,0.28)] z-9998 origin-bottom ${panelVisible
         ? 'opacity-100'
         : 'opacity-100 pointer-events-none'
         }`}
@@ -114,8 +114,8 @@ const Launcher = (): JSX.Element | null => {
     >
 
       <div className="w-16 bg-[var(--header-bg-active)] border-r border-[var(--window-border-active)] flex flex-col items-center py-6 gap-6">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg ring-2 ring-white/10 shrink-0">
-          <User size={20} className="text-white" />
+        <div className="w-10 h-10 rounded-full bg-[var(--sidebar-item-hover-bg)] flex items-center justify-center shadow-sm ring-1 ring-[var(--window-border-active)] shrink-0">
+          <User size={20} className="text-[var(--text-color)] opacity-80" />
         </div>
 
         <div className="flex-1 flex flex-col gap-3 w-full px-2 items-center">

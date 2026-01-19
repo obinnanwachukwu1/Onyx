@@ -13,8 +13,14 @@ const Clock = (): JSX.Element => {
   }, []);
 
   const formattedTime = time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const formattedDate = time.toLocaleDateString([], { month: 'numeric', day: 'numeric', year: 'numeric' });
 
-  return <div className="taskbar-clock clock" style={{ userSelect: 'none' }}>{formattedTime}</div>;
+  return (
+    <div className="taskbar-clock clock" style={{ userSelect: 'none' }}>
+      <div className="clock-time">{formattedTime}</div>
+      <div className="clock-date">{formattedDate}</div>
+    </div>
+  );
 };
 
 export default Clock;
