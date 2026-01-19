@@ -25,19 +25,20 @@ const Window = ({
   renderMobile,
   zIndex,
   sidebar,
-  sidebarActiveId: sidebarActiveIdProp
+  sidebarActiveId: sidebarActiveIdProp,
+  focusMode
 }) => {
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [rel, setRel] = useState({ x: 0, y: 0 });
-  const [isOpening, setIsOpening] = useState(!isRestoringFromTaskbar);
+  const [isOpening, setIsOpening] = useState(!isRestoringFromTaskbar && !isMaximized);
   const [isClosing, setIsClosing] = useState(false);
   const [isMinimizing, setIsMinimizing] = useState(false);
   const [isMaximizing, setIsMaximizing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [initialPosition, setInitialPosition] = useState(null);
   const [resizeDirection, setResizeDirection] = useState(null);
-  const { closingWindowID, activateWindow, setWindowPosition, setWindowSize, sendIntentToClose, sendIntentToMaximize, sendIntentToRestore, notifyClose, notifyMaximize, notifyMinimize, notifyRestore, getTaskbarTransformPos, afterRestoreFromTaskbar } = useWindowContext();
+  const { closingWindowID, activateWindow, setWindowPosition, setWindowSize, sendIntentToClose, sendIntentToMaximize, sendIntentToRestore, notifyClose, notifyMaximize, notifyMinimize, notifyRestore, getTaskbarTransformPos, afterRestoreFromTaskbar, exitFocusMode } = useWindowContext();
   const [sidebarActiveId, setSidebarActiveId] = useState(sidebarActiveIdFromProps());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -170,19 +171,26 @@ const Window = ({
 
   const toggleMaximizing = (e) => {
     if (!isMaximized) {
-      sendIntentToMaximize(id);
+      // Add transition class, then immediately update state to trigger animated transition
       setIsMaximizing(true);
-      setTimeout(() => {
+      // Use requestAnimationFrame to ensure class is applied before state change
+      requestAnimationFrame(() => {
         notifyMaximize(id);
-        setIsMaximizing(false);
-      }, 250)
-    } else {
-      sendIntentToRestore(id);
-      setIsRestoring(true);
+      });
+      // Remove transition class after animation completes
       setTimeout(() => {
+        setIsMaximizing(false);
+      }, 200);
+    } else {
+      // Add transition class, then immediately update state to trigger animated transition
+      setIsRestoring(true);
+      requestAnimationFrame(() => {
         notifyRestore(id);
+      });
+      // Remove transition class after animation completes
+      setTimeout(() => {
         setIsRestoring(false);
-      }, 250)
+      }, 200);
     }
   }
 
@@ -342,6 +350,7 @@ const Window = ({
   }, [initialPosition, dragging, resizing]);
 
   const handleResizeStart = (e, direction) => {
+    exitFocusMode?.(); // Exit focus mode on resize start
     e.stopPropagation();
     setResizing(true);
     setResizeDirection(direction);
@@ -405,7 +414,7 @@ const Window = ({
           {/* On mobile, omit icon/title entirely */}
           {!renderMobile ? (
             <div className="window-header-center">
-              <img src={appIcon} className="window-icon" />
+              {appIcon && <img src={appIcon} className="window-icon" />}
               <span className="window-title">{title}</span>
             </div>
           ) : (

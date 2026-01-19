@@ -56,33 +56,7 @@
     }
   }
 
-  @keyframes maximize {
-    0% {
-      transform: scale(1);
-    }
-
-    100% {
-      top: 0;
-      left: 0;
-      width: var(--width);
-      height: var(--height);
-      transform: scale(1);
-    }
-  }
-
-  @keyframes restore {
-    0% {
-      transform: scale(1);
-    }
-
-    100% {
-      top: var(--dy);
-      left: var(--dx);
-      width: var(--width);
-      height: var(--height);
-      transform: scale(1);
-    }
-  }
+  /* Maximize/restore animations removed - using CSS transitions instead */
 
   @keyframes slideUp {
     from {
@@ -147,6 +121,12 @@
 
   .window.maximized {
     border-radius: 0pt;
+    /* CSS-based sizing for SSR - prevents hydration flash */
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: calc(100% - var(--taskbar-height, 54px)) !important;
   }
 
   .window-opening {
@@ -164,12 +144,9 @@
     transform-origin: top left;
   }
 
-  .window-maximizing {
-    animation: maximize 0.25s ease-in-out forwards;
-  }
-
+  .window-maximizing,
   .window-restoring {
-    animation: restore 0.25s ease-in-out forwards;
+    transition: top 0.2s ease-out, left 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out, border-radius 0.2s ease-out;
   }
 
   .window-restoring-from-taskbar {

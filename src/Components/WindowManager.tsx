@@ -9,14 +9,24 @@ import Launcher from './Launcher/Launcher';
 import { WindowManagerContext } from './WindowManagerContext';
 import { WindowStartPosition } from '../types/windows';
 
-const WindowManager = ({ windowSize }) => {
+const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocusMode = false }) => {
     const taskbarRef = useRef(null)
-    const [windows, setWindows] = useState([]);
+    const [windows, setWindows] = useState(initialWindows);
     const [activeWindowId, setActiveWindowId] = useState(null);
     const [closingWindowID, setClosingWindowID] = useState(-1);
     const [buttonPositions, setButtonPositions] = useState({});
     const [launcherVisible, setLauncherVisible] = useState(false);
     const [zIndexCounter, setZIndexCounter] = useState(1);
+    
+    // Focus mode state - can be exited by user interaction
+    const [focusMode, setFocusMode] = useState(initialFocusMode);
+    
+    // Exit focus mode and enable animations
+    const exitFocusMode = useCallback(() => {
+        if (focusMode) {
+            setFocusMode(false);
+        }
+    }, [focusMode]);
 
     const launchApp = (appId, props = {}) => {
         const app = appList.find((a) => a.id === appId);
@@ -179,6 +189,7 @@ const WindowManager = ({ windowSize }) => {
     }
 
     const notifyMinimize = (id) => {
+        exitFocusMode();
         setWindows((prevWindows) =>
             prevWindows.map((window) =>
                 window.id === id ? { ...window, isMinimized: true, minimizing: false } : window
@@ -187,6 +198,7 @@ const WindowManager = ({ windowSize }) => {
     };
 
     const notifyRestore = (id) => {
+        exitFocusMode();
         setWindows((prevWindows) =>
             prevWindows.map((w) =>
                 w.id === id ? { ...w, isMaximized: false, size: w.restoreSize, position: w.restorePosition } : w
@@ -195,6 +207,7 @@ const WindowManager = ({ windowSize }) => {
     }
 
     const notifyClose = (id) => {
+        exitFocusMode();
         setWindows((prevWindows) => prevWindows.filter((window) => window.id !== id));
         if (id === activeWindowId) setActiveWindowId(null);
         setClosingWindowID(-1);
@@ -248,8 +261,8 @@ const WindowManager = ({ windowSize }) => {
     };
 
     return (
-        <WindowManagerContext.Provider value={{ closingWindowID, launcherVisible, launchApp, activateWindow, deactivateAll, setWindowPosition, setWindowSize, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, toggleLauncherVisibility, closeLauncher }}>
-            <Desktop />
+        <WindowManagerContext.Provider value={{ closingWindowID, launcherVisible, focusMode, exitFocusMode, launchApp, activateWindow, deactivateAll, setWindowPosition, setWindowSize, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, toggleLauncherVisibility, closeLauncher }}>
+            <Desktop focusMode={focusMode} disableAutoStart={initialWindows.length > 0} />
             {[...windows] // Create a copy of windows array
                 .sort((a, b) => a.zIndex - b.zIndex) // Sort by zIndex
                 .map((window) =>
@@ -257,6 +270,7 @@ const WindowManager = ({ windowSize }) => {
                         <Window
                             key={window.id}
                             {...window}
+                            focusMode={focusMode}
                         />
                     ) : null
                 )}
