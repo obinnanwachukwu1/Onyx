@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 
 export type FileType = 'file' | 'folder';
 
@@ -20,6 +20,10 @@ export interface FileSystemState {
 
 const STORAGE_KEY = 'onyx_filesystem';
 type AppShortcut = { id: string; name: string };
+
+// Global flag that persists across component remounts
+// Once hydrated, stays true for the entire session
+let globalFsHydrated = false;
 
 const createInitialGhostFs = (apps?: AppShortcut[]): FileNode => {
   const now = Date.now();
@@ -173,7 +177,7 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     const initialGhost = createInitialGhostFs(apps);
     return { root: initialGhost };
   });
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(globalFsHydrated);
 
   // Load from localStorage after mount (client only)
   useEffect(() => {
@@ -189,6 +193,7 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
         console.error('Failed to parse filesystem from localStorage', e);
       }
     }
+    globalFsHydrated = true;
     setIsHydrated(true);
   }, [apps]);
 

@@ -28,9 +28,15 @@
 
 /* Desktop icons container with fade-in for hydration */
 .desktop-icons {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  padding: 16px;
+  height: calc(100% - 50px); /* Account for taskbar */
   opacity: 0;
-  transition: opacity 0.3s ease-out;
+  transition: opacity 0.15s ease-out;
 }
 
 .desktop-icons.hydrated {
