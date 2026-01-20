@@ -1,4 +1,5 @@
 import Notepad from './Notepad/Notepad';
+import BlogApp from './Blog/Blog';
 import IconNotepad from '../assets/icons/IconNotepad.svg';
 import IconNewWindow from '../assets/icons/IconNewWindow.svg';
 import IconTerminal from '../assets/icons/IconTerminal.svg';
@@ -82,6 +83,15 @@ const appList: AppDefinition[] = [
     icon: IconContact,
     component: <ContactMe />,
     initialSize: { width: 640, height: 600 },
+    showOnDesktop: true,
+    showInLauncher: true,
+  },
+  {
+    id: 'blog',
+    name: 'Blog',
+    icon: IconNotepad,
+    component: <BlogApp />,
+    initialSize: { width: 800, height: 600 },
     showOnDesktop: true,
     showInLauncher: true,
   },
