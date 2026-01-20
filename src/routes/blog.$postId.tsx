@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import App from '../App'
 import { getPost } from '../utils/posts'
-import IconNotepad from '../assets/icons/IconNotepad.svg'
+import ReaderView from '../components/ReaderView'
+import { useBlogWindowTitle } from '../utils/BlogWindowContext'
 
 export const Route = createFileRoute('/blog/$postId')({
   loader: ({ params }) => {
@@ -12,37 +12,11 @@ export const Route = createFileRoute('/blog/$postId')({
 })
 
 function BlogPage() {
-  const { content, postId } = Route.useLoaderData()
+  const { content } = Route.useLoaderData()
+  const { title, subtitle, content: markdownContent } = content;
 
-  // Use a stable ID to prevent hydration mismatches
-  const windowId = 999999999; 
+  // Update the window title to the post title
+  useBlogWindowTitle(title || 'Blog Post')
 
-  // For maximized windows, we use CSS-based sizing (100% width/height)
-  // The JS values here are only used as fallbacks for restore operations
-  // Using consistent values ensures server/client render identically
-  const initialWindows = [
-    {
-      id: windowId,
-      appId: 'blog',
-      appIcon: IconNotepad,
-      title: `Blog - ${postId}`,
-      content: content,
-      position: { x: 0, y: 0 },
-      restorePosition: { x: 100, y: 100 },
-      // These values are ignored when maximized (CSS handles sizing)
-      // They're only used if user restores the window
-      size: { width: 800, height: 600 },
-      restoreSize: { width: 800, height: 600 },
-      isMaximized: true,
-      isMinimized: false,
-      isRestoringFromTaskbar: false,
-      showInTaskbar: true,
-      isActive: true,
-      renderMobile: false,
-      zIndex: 1,
-    },
-  ]
-
-  // Use focusMode=true to hide desktop icons and dim background
-  return <App initialWindows={initialWindows} focusMode={true} />
+  return <ReaderView title={title} subtitle={subtitle} content={markdownContent} />
 }

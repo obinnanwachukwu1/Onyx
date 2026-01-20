@@ -1,35 +1,17 @@
-import { createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
-import App from './App';
-import GPAPage from './Pages/GPAPage';
-import { DeviceProvider } from './Components/DeviceContext';
+import { createRouter } from '@tanstack/react-router'
 
-const rootRoute = createRootRoute({
-  component: () => (
-    <DeviceProvider>
-      <Outlet />
-    </DeviceProvider>
-  ),
-});
+// Import the generated route tree
+import { routeTree } from './routeTree.gen'
 
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: App,
-});
+// Create a new router instance
+export const getRouter = () => {
+  const router = createRouter({
+    routeTree,
+    context: {},
 
-const gpaRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/gpa',
-  component: GPAPage,
-});
+    scrollRestoration: true,
+    defaultPreloadStaleTime: 0,
+  })
 
-const routeTree = rootRoute.addChildren([
-  indexRoute,
-  gpaRoute,
-]);
-
-const router = createRouter({
-  routeTree,
-});
-
-export default router;
+  return router
+}
