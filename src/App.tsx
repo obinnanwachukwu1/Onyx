@@ -6,8 +6,14 @@ import { initializeTheme } from './Components/toggleTheme';
 import { FileSystemProvider } from './Apps/Files/FileSystem';
 import { TaskbarProvider } from './Components/Taskbar/TaskbarContext';
 import appList from './Apps/AppList';
+import { WindowData } from './types/windows';
 
-const App = (): JSX.Element => {
+interface AppProps {
+  initialWindows?: WindowData[];
+  focusMode?: boolean;
+}
+
+const App = ({ initialWindows, focusMode }: AppProps): JSX.Element => {
   const { isMobile, windowSize } = useDeviceContext();
 
   useEffect(() => {
@@ -20,7 +26,11 @@ const App = (): JSX.Element => {
   return (
     <FileSystemProvider apps={fsApps}>
       <TaskbarProvider>
-        {isMobile ? <AppManager /> : <WindowManager windowSize={windowSize} />}
+        {isMobile ? (
+          <AppManager initialWindows={initialWindows} />
+        ) : (
+          <WindowManager windowSize={windowSize} initialWindows={initialWindows} focusMode={focusMode} />
+        )}
       </TaskbarProvider>
     </FileSystemProvider>
   );

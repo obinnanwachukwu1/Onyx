@@ -168,12 +168,29 @@ const mergeFileSystems = (ghost: FileNode, stored: FileNode | null): FileNode =>
 
 // Internal hook for state management
 const useFileSystemState = (apps?: AppShortcut[]) => {
+  // Always start with ghost FS for SSR consistency
   const [fs, setFs] = useState<FileSystemState>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const storedFs = stored ? JSON.parse(stored) : null;
     const initialGhost = createInitialGhostFs(apps);
-    return { root: mergeFileSystems(initialGhost, storedFs?.root) };
+    return { root: initialGhost };
   });
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Load from localStorage after mount (client only)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const storedFs = JSON.parse(stored);
+        const initialGhost = createInitialGhostFs(apps);
+        setFs({ root: mergeFileSystems(initialGhost, storedFs?.root) });
+      } catch (e) {
+        console.error('Failed to parse filesystem from localStorage', e);
+      }
+    }
+    setIsHydrated(true);
+  }, [apps]);
 
   const saveFs = useCallback((newFs: FileSystemState) => {
     setFs(newFs);
@@ -339,7 +356,8 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     rm,
     rename,
     updateFileContent,
-    isEditable
+    isEditable,
+    isHydrated
   };
 };
 

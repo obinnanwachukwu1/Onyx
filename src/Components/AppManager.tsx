@@ -7,9 +7,13 @@ import Launcher from './Launcher/Launcher';
 import { AppManagerContext } from './AppManagerContext';
 import { WindowData } from '../types/windows';
 
-const AppManager = (): JSX.Element => {
+interface AppManagerProps {
+  initialWindows?: WindowData[];
+}
+
+const AppManager = ({ initialWindows = [] }: AppManagerProps): JSX.Element => {
   const navigationBarRef = useRef<HTMLDivElement | null>(null);
-  const [windows, setWindows] = useState<WindowData[]>([]);
+  const [windows, setWindows] = useState<WindowData[]>(initialWindows);
   const [activeWindowId, setActiveWindowId] = useState<number | null>(null);
   const [closingWindowID, setClosingWindowID] = useState<number>(-1);
   const [launcherVisible, setLauncherVisible] = useState<boolean>(false);

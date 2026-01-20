@@ -18,13 +18,13 @@ export const useDeviceContext = (): DeviceContextValue => {
   return context;
 };
 
-const isMobileViewport = () => window.innerWidth <= 768 || window.innerHeight <= 800;
+const isMobileViewport = () => typeof window !== 'undefined' ? (window.innerWidth <= 768 || window.innerHeight <= 800) : false;
 
 export const DeviceProvider = ({ children }: { children: ReactNode }): JSX.Element => {
   const [isMobile, setIsMobile] = useState<boolean>(isMobileViewport());
   const [windowSize, setWindowSize] = useState<Dimensions>({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    height: typeof window !== 'undefined' ? window.innerHeight : 1080,
   });
 
   useEffect(() => {
