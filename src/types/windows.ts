@@ -77,6 +77,7 @@ export interface WindowContextValue {
   activateWindow: (id: number) => void;
   setWindowPosition: (id: number, position: Coordinates) => void;
   setWindowSize: (id: number, size: Dimensions) => void;
+  setWindowTitle: (id: number, title: string) => void;
   sendIntentToClose: (id: number) => void;
   sendIntentToMaximize: (id: number) => void;
   sendIntentToRestore: (id: number) => void;
