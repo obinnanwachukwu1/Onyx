@@ -23,4 +23,26 @@
   filter: blur(1px);
   transform: scale(1.05);
   overflow: hidden;
+  transition: filter 0.3s ease-out;
+}
+
+/* Desktop icons container with fade-in for hydration */
+.desktop-icons {
+  display: contents;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.desktop-icons.hydrated {
+  opacity: 1;
+}
+
+/* Focus mode: hide icons, darken background */
+.desktop.focus-mode .desktop-icons {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.desktop.focus-mode::before {
+  filter: blur(3px) brightness(0.7);
 }
