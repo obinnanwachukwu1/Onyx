@@ -16,6 +16,13 @@
 .taskbar-items-container {
   display: flex;
   align-items: center;
+  /* Start invisible, fade in after hydration to prevent flash */
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+.taskbar-items-container.hydrated {
+  opacity: 1;
 }
 
 .taskbar-items {

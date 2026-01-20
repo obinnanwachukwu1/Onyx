@@ -16,7 +16,7 @@ interface TaskbarProps {
 
 const Taskbar = forwardRef<HTMLDivElement, TaskbarProps>(({ windows, setButtonPosition }, ref) => {
   const { toggleLauncherVisibility, launcherVisible } = useWindowContext();
-  const { taskbarStyle, pinnedAppIds } = useTaskbar();
+  const { taskbarStyle, pinnedAppIds, isHydrated } = useTaskbar();
   
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
@@ -48,7 +48,7 @@ const Taskbar = forwardRef<HTMLDivElement, TaskbarProps>(({ windows, setButtonPo
   return (
     <div ref={ref} className={`taskbar ${taskbarStyle}`} onContextMenu={handleContextMenu}>
       
-      <div className="taskbar-items-container">
+      <div className={`taskbar-items-container ${isHydrated ? 'hydrated' : ''}`}>
         <div className="taskbar-items">
            {/* Start Button / Launchpad */}
            <LaunchButton launcherVisible={launcherVisible} onClick={toggleLauncherVisibility} />
