@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import NavigationBar from './NavigationBar/NavigationBar';
 import MobileDesktop from './MobileDesktop/MobileDesktop';
 import appList from '../Apps/AppList';
@@ -9,11 +9,14 @@ import { WindowData } from '../types/windows';
 
 interface AppManagerProps {
   initialWindows?: WindowData[];
+  blogFullscreen?: boolean;
 }
 
-const AppManager = ({ initialWindows = [] }: AppManagerProps): JSX.Element => {
+const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerProps): JSX.Element => {
   const navigationBarRef = useRef<HTMLDivElement | null>(null);
-  const [windows, setWindows] = useState<WindowData[]>(initialWindows);
+  const [windows, setWindows] = useState<WindowData[]>(
+    initialWindows.map((window) => ({ ...window, renderMobile: true }))
+  );
   const [activeWindowId, setActiveWindowId] = useState<number | null>(null);
   const [closingWindowID, setClosingWindowID] = useState<number>(-1);
   const [launcherVisible, setLauncherVisible] = useState<boolean>(false);
@@ -23,7 +26,7 @@ const AppManager = ({ initialWindows = [] }: AppManagerProps): JSX.Element => {
     const desktop = document.querySelector<HTMLElement>('.mobile-desktop');
     // Navigation bar is fixed height (see NavigationBar.css)
     const FALLBACK_NAV_HEIGHT = 50;
-    const navigationBarHeight = navigationBarRef.current?.clientHeight ?? FALLBACK_NAV_HEIGHT;
+    const navigationBarHeight = blogFullscreen ? 0 : (navigationBarRef.current?.clientHeight ?? FALLBACK_NAV_HEIGHT);
 
     if (!desktop) {
       return;
@@ -136,6 +139,28 @@ const AppManager = ({ initialWindows = [] }: AppManagerProps): JSX.Element => {
     // Mobile view does not support taskbar restore animations
   };
 
+  useEffect(() => {
+    const desktop = document.querySelector<HTMLElement>('.mobile-desktop');
+    if (!desktop || windows.length === 0) {
+      return;
+    }
+
+    const FALLBACK_NAV_HEIGHT = 50;
+    const navigationBarHeight = blogFullscreen ? 0 : (navigationBarRef.current?.clientHeight ?? FALLBACK_NAV_HEIGHT);
+    const desktopBounds = desktop.getBoundingClientRect();
+
+    setWindows((previousWindows) =>
+      previousWindows.map((window) => ({
+        ...window,
+        renderMobile: true,
+        position: { x: 0, y: 0 },
+        restorePosition: { x: 0, y: 0 },
+        size: { width: desktopBounds.width, height: desktopBounds.height - navigationBarHeight },
+        restoreSize: { width: desktopBounds.width, height: desktopBounds.height - navigationBarHeight },
+      }))
+    );
+  }, [blogFullscreen]);
+
   return (
     <AppManagerContext.Provider
       value={{
@@ -162,8 +187,8 @@ const AppManager = ({ initialWindows = [] }: AppManagerProps): JSX.Element => {
       <MobileDesktop />
       {[...windows]
         .sort((a, b) => a.zIndex - b.zIndex)
-        .map((window) => (!window.isMinimized ? <Window key={window.id} {...window} /> : null))}
-      <NavigationBar ref={navigationBarRef} />
+        .map((window) => (!window.isMinimized ? <Window key={window.id} {...window} renderMobile={true} /> : null))}
+      <NavigationBar ref={navigationBarRef} minimal={blogFullscreen} />
       <Launcher />
     </AppManagerContext.Provider>
   );

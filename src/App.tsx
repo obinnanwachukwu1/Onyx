@@ -8,13 +8,17 @@ import { TaskbarProvider } from './Components/Taskbar/TaskbarContext';
 import appList from './Apps/AppList';
 import { WindowData } from './types/windows';
 
+export type AppMode = 'default' | 'blogFullscreen';
+
 interface AppProps {
   initialWindows?: WindowData[];
   focusMode?: boolean;
+  mode?: AppMode;
 }
 
-const App = ({ initialWindows, focusMode }: AppProps): JSX.Element => {
+const App = ({ initialWindows, focusMode, mode = 'default' }: AppProps): JSX.Element => {
   const { isMobile, windowSize } = useDeviceContext();
+  const isBlogFullscreen = mode === 'blogFullscreen';
 
   useEffect(() => {
     initializeTheme();
@@ -27,9 +31,14 @@ const App = ({ initialWindows, focusMode }: AppProps): JSX.Element => {
     <FileSystemProvider apps={fsApps}>
       <TaskbarProvider>
         {isMobile ? (
-          <AppManager initialWindows={initialWindows} />
+          <AppManager initialWindows={initialWindows} blogFullscreen={isBlogFullscreen} />
         ) : (
-          <WindowManager windowSize={windowSize} initialWindows={initialWindows} focusMode={focusMode} />
+          <WindowManager
+            windowSize={windowSize}
+            initialWindows={initialWindows}
+            focusMode={focusMode}
+            blogFullscreen={isBlogFullscreen}
+          />
         )}
       </TaskbarProvider>
     </FileSystemProvider>

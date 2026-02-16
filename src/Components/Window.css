@@ -129,6 +129,44 @@
     height: calc(100% - var(--taskbar-height, 54px)) !important;
   }
 
+  .window.maximized.full-viewport {
+    height: 100% !important;
+  }
+
+  .window.immersive-window {
+    border-radius: 0;
+  }
+
+  .window-immersive-hotspot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    z-index: 30;
+  }
+
+  .window-header-immersive {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 25;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .window-header-immersive-hidden {
+    transform: translateY(calc(-1 * var(--titlebar-height)));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .window-header-immersive-visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .window-opening {
     animation: flipIn 0.25s ease-out forwards;
     /* Apply the flip animation */

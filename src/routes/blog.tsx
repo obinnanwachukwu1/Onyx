@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useMatches, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useMatches } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import App from '../App'
 import IconNotepad from '../assets/icons/IconNotepad.svg'
@@ -12,7 +12,6 @@ export const Route = createFileRoute('/blog')({
 const BLOG_WINDOW_ID = 999999999;
 
 function BlogLayout() {
-  const navigate = useNavigate()
   const hasNavigatedRef = useRef(false)
   
   // Get child route's loader data to determine the correct title upfront
@@ -62,8 +61,10 @@ function BlogLayout() {
       isActive: true,
       renderMobile: false,
       zIndex: 1,
+      hideDesktopChrome: true,
+      fullViewportWhenMaximized: true,
     },
   ]
 
-  return <App initialWindows={initialWindows} focusMode={true} />
+  return <App initialWindows={initialWindows} focusMode={true} mode="blogFullscreen" />
 }

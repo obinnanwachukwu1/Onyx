@@ -41,6 +41,10 @@ export interface WindowData {
   isActive: boolean;
   renderMobile: boolean;
   zIndex: number;
+  // Optional immersive mode: hide desktop chrome and reveal it from top edge.
+  hideDesktopChrome?: boolean;
+  // When maximized, fill the full viewport height (ignore taskbar offset).
+  fullViewportWhenMaximized?: boolean;
   // Optional window-managed sidebar
   sidebar?: {
     items: SidebarItem[];

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowMinimize } from '@fortawesome/free-solid-svg-icons/faWindowMinimize';
 import './Window.css';
@@ -26,7 +26,9 @@ const Window = ({
   zIndex,
   sidebar,
   sidebarActiveId: sidebarActiveIdProp,
-  focusMode
+  focusMode,
+  hideDesktopChrome = false,
+  fullViewportWhenMaximized = false
 }) => {
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
@@ -44,7 +46,10 @@ const Window = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [drawerAnimatingOut, setDrawerAnimatingOut] = useState(false);
   const [drawerOpenActive, setDrawerOpenActive] = useState(false);
+  const immersiveHideTimerRef = useRef(null);
   const isMobileViewport = !!renderMobile;
+  const useImmersiveDesktopChrome = !isMobileViewport && !!hideDesktopChrome;
+  const [immersiveChromeVisible, setImmersiveChromeVisible] = useState(!useImmersiveDesktopChrome);
   const [isSidebarMobileLayout, setIsSidebarMobileLayout] = useState(
     isMobileViewport || (size?.width ?? 0) <= 640
   );
@@ -82,6 +87,50 @@ const Window = ({
       }, 250);
     }
   }, [closingWindowID])
+
+  const clearImmersiveHideTimer = () => {
+    if (immersiveHideTimerRef.current !== null) {
+      window.clearTimeout(immersiveHideTimerRef.current);
+      immersiveHideTimerRef.current = null;
+    }
+  };
+
+  const showImmersiveChrome = () => {
+    if (!useImmersiveDesktopChrome) return;
+    clearImmersiveHideTimer();
+    setImmersiveChromeVisible(true);
+  };
+
+  const scheduleImmersiveChromeHide = (delay = 900) => {
+    if (!useImmersiveDesktopChrome) return;
+    clearImmersiveHideTimer();
+    immersiveHideTimerRef.current = window.setTimeout(() => {
+      setImmersiveChromeVisible(false);
+      immersiveHideTimerRef.current = null;
+    }, delay);
+  };
+
+  useEffect(() => {
+    setImmersiveChromeVisible(!useImmersiveDesktopChrome);
+    clearImmersiveHideTimer();
+  }, [useImmersiveDesktopChrome]);
+
+  useEffect(() => {
+    return () => clearImmersiveHideTimer();
+  }, []);
+
+  useEffect(() => {
+    if (!useImmersiveDesktopChrome) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && appId === 'blog') {
+        window.location.href = '/';
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [useImmersiveDesktopChrome, appId]);
 
   // Automatically switch sidebar into "mobile" layout when the window is narrow.
   // Still respect an explicit `renderMobile` (mobile viewport) from parents.
@@ -157,6 +206,10 @@ const Window = ({
   };
 
   const handleClosing = (e) => {
+    if (useImmersiveDesktopChrome && appId === 'blog') {
+      window.location.href = '/';
+      return;
+    }
     sendIntentToClose(id);
   }
 
@@ -373,12 +426,12 @@ const Window = ({
   }, [initialPosition, dragging, resizing]);
 
   const hasSidebar = !!(sidebar && sidebar.items?.length);
-  const showHeader = !renderMobile || (renderMobile && hasSidebar);
+  const showHeader = renderMobile ? hasSidebar : true;
   const SidebarIcon = mobileMenuOpen ? PanelLeftOpen : PanelLeft;
 
   return (
     <div
-      className={`window ${renderMobile && isOpening ? 'window-mobile window-mobile-opening' : renderMobile && isClosing ? 'window-mobile window-mobile-closing' : renderMobile ? 'window-mobile' : isOpening ? 'window-opening' : isClosing ? 'window-closing' : isRestoringFromTaskbar ? 'window-restoring-from-taskbar' : isMinimizing ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : ''} ${isMaximized || isMaximizing ? 'maximized' : ''} ${renderMobile ? '' : isActive ? 'active' : 'inactive'}`}
+      className={`window ${renderMobile && isOpening ? 'window-mobile window-mobile-opening' : renderMobile && isClosing ? 'window-mobile window-mobile-closing' : renderMobile ? 'window-mobile' : isOpening ? 'window-opening' : isClosing ? 'window-closing' : isRestoringFromTaskbar ? 'window-restoring-from-taskbar' : isMinimizing ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : ''} ${isMaximized || isMaximizing ? 'maximized' : ''} ${renderMobile ? '' : isActive ? 'active' : 'inactive'} ${fullViewportWhenMaximized ? 'full-viewport' : ''} ${useImmersiveDesktopChrome ? 'immersive-window' : ''}`}
       style={{
         top: position.y,
         left: position.x,
@@ -389,12 +442,21 @@ const Window = ({
       onMouseDown={handleWindowClick} // Notify App.js to bring this window to the front
     // onContextMenu={(e) => {e.stopPropagation(); e.preventDefault()}}
     >
+      {useImmersiveDesktopChrome ? (
+        <div
+          className="window-immersive-hotspot"
+          onMouseEnter={showImmersiveChrome}
+          onMouseLeave={() => scheduleImmersiveChromeHide(600)}
+        />
+      ) : null}
       {showHeader ? (
         <div
-          className={`window-header ${isActive ? 'active' : 'inactive'}`}
+          className={`window-header ${isActive ? 'active' : 'inactive'} ${useImmersiveDesktopChrome ? `window-header-immersive ${immersiveChromeVisible ? 'window-header-immersive-visible' : 'window-header-immersive-hidden'}` : ''}`}
           onMouseDown={handleMouseDown}
           onDoubleClick={toggleMaximizing}
           onTouchStart={handleMouseDown}
+          onMouseEnter={showImmersiveChrome}
+          onMouseLeave={() => scheduleImmersiveChromeHide()}
         >
           <div className="window-header-left">
             {hasSidebar && isSidebarMobileLayout ? (
@@ -425,7 +487,7 @@ const Window = ({
           {!renderMobile ? (
             <div className="window-controls">
               <button className="caption-button" onClick={toggleMaximizing}><FontAwesomeIcon icon={faCircle} style={{ color: isActive ? '#28C840' : 'var(--caption-inactive)' }} /></button>
-              <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faCircle} style={{ color: isActive ? '#FDBC2E' : 'var(--caption-inactive)' }} /></button>
+              {!useImmersiveDesktopChrome ? <button className="caption-button" onClick={handleMinimizing}><FontAwesomeIcon icon={faCircle} style={{ color: isActive ? '#FDBC2E' : 'var(--caption-inactive)' }} /></button> : null}
               <button className="caption-button" onClick={handleClosing}> <FontAwesomeIcon icon={faCircle} style={{ color: isActive ? '#FF5E57' : 'var(--caption-inactive)' }} /></button>
             </div>
           ) : (

@@ -9,9 +9,10 @@ import Launcher from './Launcher/Launcher';
 import { WindowManagerContext } from './WindowManagerContext';
 import { WindowStartPosition } from '../types/windows';
 
-const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocusMode = false }) => {
+const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocusMode = false, blogFullscreen = false }) => {
     const taskbarRef = useRef(null)
     const [windows, setWindows] = useState(initialWindows);
+    const [immersiveMode, setImmersiveMode] = useState(blogFullscreen);
     const [activeWindowId, setActiveWindowId] = useState(null);
     const [closingWindowID, setClosingWindowID] = useState(-1);
     const [buttonPositions, setButtonPositions] = useState({});
@@ -50,6 +51,8 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
                 isActive: true,
                 renderMobile: false,
                 zIndex: zIndexCounter,
+                hideDesktopChrome: immersiveMode,
+                fullViewportWhenMaximized: immersiveMode,
                 sidebar: app.sidebar ? { items: app.sidebar.items, footer: app.sidebar.footer } : undefined,
                 sidebarActiveId: app.sidebar?.initialActiveId || (app.sidebar?.items?.[0]?.id ?? undefined),
             };
@@ -159,8 +162,9 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
     const sendIntentToMaximize = () => {
         const desktop = document.querySelector('.desktop');
         const desktopBounds = desktop.getBoundingClientRect();
+        const taskbarHeight = taskbarRef.current?.clientHeight || 0;
         document.documentElement.style.setProperty('--width', `${desktopBounds.width}px`);
-        document.documentElement.style.setProperty('--height', `${desktopBounds.height - taskbarRef.current.clientHeight}px`);
+        document.documentElement.style.setProperty('--height', `${desktopBounds.height - taskbarHeight}px`);
     }
 
     const sendIntentToRestore = (id) => {
@@ -189,9 +193,10 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
 
 
     const notifyMaximize = (id) => {
+        const taskbarHeight = taskbarRef.current?.clientHeight || 0;
         setWindows((prevWindows) =>
             prevWindows.map((w) =>
-                w.id === id ? { ...w, isMaximized: true, size: { width: window.innerWidth, height: (window.innerHeight - taskbarRef.current.clientHeight) }, position: { x: 0, y: 0 } } : w
+                w.id === id ? { ...w, isMaximized: true, size: { width: window.innerWidth, height: (window.innerHeight - taskbarHeight) }, position: { x: 0, y: 0 } } : w
             )
         );
     }
@@ -207,11 +212,27 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
 
     const notifyRestore = (id) => {
         exitFocusMode();
+        const restoredWindow = windows.find((w) => w.id === id);
+        const shouldExitImmersive = immersiveMode || !!(restoredWindow?.hideDesktopChrome || restoredWindow?.fullViewportWhenMaximized);
         setWindows((prevWindows) =>
             prevWindows.map((w) =>
-                w.id === id ? { ...w, isMaximized: false, size: w.restoreSize, position: w.restorePosition } : w
+                w.id === id
+                    ? (() => {
+                        return {
+                            ...w,
+                            isMaximized: false,
+                            size: w.restoreSize,
+                            position: w.restorePosition,
+                            hideDesktopChrome: false,
+                            fullViewportWhenMaximized: false,
+                        };
+                    })()
+                    : w
             )
         );
+        if (shouldExitImmersive) {
+            setImmersiveMode(false);
+        }
     }
 
     const notifyClose = (id) => {
@@ -279,11 +300,13 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
                             key={window.id}
                             {...window}
                             focusMode={focusMode}
+                            hideDesktopChrome={window.hideDesktopChrome || immersiveMode}
+                            fullViewportWhenMaximized={window.fullViewportWhenMaximized || immersiveMode}
                         />
                     ) : null
                 )}
-            <Taskbar ref={taskbarRef} windows={windows} setButtonPosition={setButtonPosition} />
-            <Launcher />
+            {!immersiveMode ? <Taskbar ref={taskbarRef} windows={windows} setButtonPosition={setButtonPosition} /> : null}
+            {!immersiveMode ? <Launcher /> : null}
         </WindowManagerContext.Provider>
     );
 };

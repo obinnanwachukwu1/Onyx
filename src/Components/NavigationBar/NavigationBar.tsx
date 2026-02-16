@@ -3,7 +3,11 @@ import './NavigationBar.css';
 import LaunchButton from './LaunchButton';
 import { useWindowContext } from '../WindowContext';
 
-const NavigationBar = forwardRef<HTMLDivElement>((_props, ref) => {
+interface NavigationBarProps {
+  minimal?: boolean;
+}
+
+const NavigationBar = forwardRef<HTMLDivElement, NavigationBarProps>(({ minimal = false }, ref) => {
   const { toggleLauncherVisibility } = useWindowContext();
 
   const handleContextMenu: MouseEventHandler<HTMLDivElement> = (event) => {
@@ -12,8 +16,22 @@ const NavigationBar = forwardRef<HTMLDivElement>((_props, ref) => {
   };
 
   return (
-    <div ref={ref} className="navigation-bar" onContextMenu={handleContextMenu}>
-      <LaunchButton onClick={toggleLauncherVisibility} />
+    <div
+      ref={ref}
+      className={`navigation-bar ${minimal ? 'navigation-bar-minimal' : ''}`}
+      onContextMenu={handleContextMenu}
+    >
+      {minimal ? (
+        <button
+          className="navigation-launcher-handle"
+          onClick={toggleLauncherVisibility}
+          aria-label="Open launcher"
+        >
+          <span className="navigation-launcher-pill" />
+        </button>
+      ) : (
+        <LaunchButton onClick={toggleLauncherVisibility} />
+      )}
     </div>
   );
 });
