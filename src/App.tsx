@@ -9,16 +9,21 @@ import appList from './Apps/AppList';
 import { WindowData } from './types/windows';
 
 export type AppMode = 'default' | 'blogFullscreen';
+export type DeviceModeOverride = 'mobile' | 'desktop';
 
 interface AppProps {
   initialWindows?: WindowData[];
   focusMode?: boolean;
   mode?: AppMode;
+  deviceOverride?: DeviceModeOverride;
 }
 
-const App = ({ initialWindows, focusMode, mode = 'default' }: AppProps): JSX.Element => {
+const App = ({ initialWindows, focusMode, mode = 'default', deviceOverride }: AppProps): JSX.Element => {
   const { isMobile, windowSize } = useDeviceContext();
   const isBlogFullscreen = mode === 'blogFullscreen';
+  const effectiveIsMobile = deviceOverride
+    ? deviceOverride === 'mobile'
+    : isMobile;
 
   useEffect(() => {
     initializeTheme();
@@ -30,7 +35,7 @@ const App = ({ initialWindows, focusMode, mode = 'default' }: AppProps): JSX.Ele
   return (
     <FileSystemProvider apps={fsApps}>
       <TaskbarProvider>
-        {isMobile ? (
+        {effectiveIsMobile ? (
           <AppManager initialWindows={initialWindows} blogFullscreen={isBlogFullscreen} />
         ) : (
           <WindowManager

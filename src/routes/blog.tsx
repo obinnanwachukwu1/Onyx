@@ -1,10 +1,25 @@
 import { createFileRoute, Outlet, useMatches } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
+import { createServerFn } from '@tanstack/react-start'
+import { getRequestHeader } from '@tanstack/react-start/server'
 import App from '../App'
 import IconNotepad from '../assets/icons/IconNotepad.svg'
 import { BlogWindowProvider } from '../utils/BlogWindowContext'
 
+const isMobileUserAgent = (userAgent: string) =>
+  /(android|iphone|ipad|ipod|iemobile|opera mini|mobile)/i.test(userAgent)
+
+const getBlogInitialIsMobile = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  const userAgent = getRequestHeader('user-agent') ?? ''
+  return isMobileUserAgent(userAgent)
+})
+
 export const Route = createFileRoute('/blog')({
+  loader: async () => ({
+    initialIsMobile: await getBlogInitialIsMobile(),
+  }),
   component: BlogLayout,
 })
 
@@ -13,6 +28,7 @@ const BLOG_WINDOW_ID = 999999999;
 
 function BlogLayout() {
   const hasNavigatedRef = useRef(false)
+  const { initialIsMobile } = Route.useLoaderData()
   
   // Get child route's loader data to determine the correct title upfront
   const matches = useMatches()
@@ -66,5 +82,12 @@ function BlogLayout() {
     },
   ]
 
-  return <App initialWindows={initialWindows} focusMode={true} mode="blogFullscreen" />
+  return (
+    <App
+      initialWindows={initialWindows}
+      focusMode={true}
+      mode="blogFullscreen"
+      deviceOverride={initialIsMobile ? 'mobile' : 'desktop'}
+    />
+  )
 }
