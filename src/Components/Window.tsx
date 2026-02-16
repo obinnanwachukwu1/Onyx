@@ -101,13 +101,21 @@ const Window = ({
     setImmersiveChromeVisible(true);
   };
 
-  const scheduleImmersiveChromeHide = (delay = 900) => {
+  const isImmersiveElement = (target) => {
+    return (
+      target instanceof Element &&
+      !!target.closest('.window-immersive-hotspot, .window-header-immersive')
+    );
+  };
+
+  const hideImmersiveChromeImmediately = (event) => {
     if (!useImmersiveDesktopChrome) return;
+    const nextTarget = event?.relatedTarget;
+    if (isImmersiveElement(nextTarget)) {
+      return;
+    }
     clearImmersiveHideTimer();
-    immersiveHideTimerRef.current = window.setTimeout(() => {
-      setImmersiveChromeVisible(false);
-      immersiveHideTimerRef.current = null;
-    }, delay);
+    setImmersiveChromeVisible(false);
   };
 
   useEffect(() => {
@@ -446,7 +454,7 @@ const Window = ({
         <div
           className="window-immersive-hotspot"
           onMouseEnter={showImmersiveChrome}
-          onMouseLeave={() => scheduleImmersiveChromeHide(600)}
+          onMouseLeave={hideImmersiveChromeImmediately}
         />
       ) : null}
       {showHeader ? (
@@ -456,7 +464,7 @@ const Window = ({
           onDoubleClick={toggleMaximizing}
           onTouchStart={handleMouseDown}
           onMouseEnter={showImmersiveChrome}
-          onMouseLeave={() => scheduleImmersiveChromeHide()}
+          onMouseLeave={hideImmersiveChromeImmediately}
         >
           <div className="window-header-left">
             {hasSidebar && isSidebarMobileLayout ? (

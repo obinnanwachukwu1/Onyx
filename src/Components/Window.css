@@ -146,22 +146,23 @@
     z-index: 30;
   }
 
-  .window-header-immersive {
+  .window-header.window-header-immersive {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     z-index: 25;
-    transition: transform 180ms ease, opacity 180ms ease;
+    will-change: transform, opacity;
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease;
   }
 
-  .window-header-immersive-hidden {
-    transform: translateY(calc(-1 * var(--titlebar-height)));
+  .window-header.window-header-immersive.window-header-immersive-hidden {
+    transform: translateY(calc(-1 * (var(--titlebar-height) + 6px)));
     opacity: 0;
     pointer-events: none;
   }
 
-  .window-header-immersive-visible {
+  .window-header.window-header-immersive.window-header-immersive-visible {
     transform: translateY(0);
     opacity: 1;
     pointer-events: auto;

@@ -1,4 +1,4 @@
-import { forwardRef, type MouseEventHandler } from 'react';
+import { forwardRef, useEffect, useState, type MouseEventHandler } from 'react';
 import './NavigationBar.css';
 import LaunchButton from './LaunchButton';
 import { useWindowContext } from '../WindowContext';
@@ -8,7 +8,15 @@ interface NavigationBarProps {
 }
 
 const NavigationBar = forwardRef<HTMLDivElement, NavigationBarProps>(({ minimal = false }, ref) => {
-  const { toggleLauncherVisibility } = useWindowContext();
+  const { toggleLauncherVisibility, launcherVisible } = useWindowContext();
+  const [isExpanded, setIsExpanded] = useState(!minimal);
+  const showFullBar = !minimal || isExpanded || launcherVisible;
+
+  useEffect(() => {
+    if (!minimal) {
+      setIsExpanded(true);
+    }
+  }, [minimal]);
 
   const handleContextMenu: MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
@@ -18,14 +26,14 @@ const NavigationBar = forwardRef<HTMLDivElement, NavigationBarProps>(({ minimal 
   return (
     <div
       ref={ref}
-      className={`navigation-bar ${minimal ? 'navigation-bar-minimal' : ''}`}
+      className={`navigation-bar ${minimal && !showFullBar ? 'navigation-bar-minimal' : ''} ${minimal ? 'navigation-bar-overlay-control' : ''}`}
       onContextMenu={handleContextMenu}
     >
-      {minimal ? (
+      {!showFullBar ? (
         <button
           className="navigation-launcher-handle"
-          onClick={toggleLauncherVisibility}
-          aria-label="Open launcher"
+          onClick={() => setIsExpanded(true)}
+          aria-label="Show navigation bar"
         >
           <span className="navigation-launcher-pill" />
         </button>

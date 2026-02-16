@@ -2,12 +2,16 @@ import { useEffect, useRef } from 'react';
 import './MobileDesktop.css';
 import { useWindowContext } from '../WindowContext';
 
-const MobileDesktop = (): JSX.Element => {
+interface MobileDesktopProps {
+  disableAutoStart?: boolean;
+}
+
+const MobileDesktop = ({ disableAutoStart = false }: MobileDesktopProps): JSX.Element => {
   const { launchApp } = useWindowContext();
   const hasLaunched = useRef<boolean>(false);
 
   useEffect(() => {
-    if (hasLaunched.current) {
+    if (hasLaunched.current || disableAutoStart) {
       return;
     }
 
@@ -19,7 +23,7 @@ const MobileDesktop = (): JSX.Element => {
     return () => {
       window.clearTimeout(timer);
     };
-  }, [launchApp]);
+  }, [launchApp, disableAutoStart]);
 
   return <div className="mobile-desktop" />;
 };
