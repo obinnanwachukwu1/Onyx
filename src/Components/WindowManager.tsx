@@ -7,7 +7,7 @@ import appList from '../Apps/AppList';
 import Launcher from './Launcher/Launcher';
 
 import { WindowManagerContext } from './WindowManagerContext';
-import { WindowStartPosition } from '../types/windows';
+import { LauncherView, WindowStartPosition } from '../types/windows';
 
 const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocusMode = false, blogFullscreen = false }) => {
     const taskbarRef = useRef(null)
@@ -17,6 +17,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
     const [closingWindowID, setClosingWindowID] = useState(-1);
     const [buttonPositions, setButtonPositions] = useState({});
     const [launcherVisible, setLauncherVisible] = useState(false);
+    const [launcherView, setLauncherView] = useState<LauncherView>('apps');
     const [zIndexCounter, setZIndexCounter] = useState(1);
     
     // Focus mode state - can be exited by user interaction
@@ -46,6 +47,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
                 restoreSize: app.initialSize || { width: 500, height: 500 },
                 isMaximized: false,
                 isMinimized: false,
+                minimizing: false,
                 isRestoringFromTaskbar: false,
                 showInTaskbar: true,
                 isActive: true,
@@ -106,8 +108,8 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
         setWindows((prevWindows) =>
             prevWindows.map((window) =>
                 window.id === id ? (window.isMinimized ?
-                    { ...window, isRestoringFromTaskbar: true, isMinimized: false, isActive: true, zIndex: zIndexCounter }
-                    : { ...window, isActive: true, zIndex: zIndexCounter }
+                    { ...window, isRestoringFromTaskbar: true, isMinimized: false, minimizing: false, isActive: true, zIndex: zIndexCounter }
+                    : { ...window, minimizing: false, isActive: true, zIndex: zIndexCounter }
                 )
                     : { ...window, isActive: false }
             )
@@ -201,13 +203,51 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
         );
     }
 
-    const notifyMinimize = (id) => {
+    const notifyMinimize = (id, animateFromTaskbar = false) => {
         exitFocusMode();
-        setWindows((prevWindows) =>
-            prevWindows.map((window) =>
-                window.id === id ? { ...window, isMinimized: true, minimizing: false } : window
-            )
-        );
+        const setNextActiveWindow = (windowList) => {
+            const nextActiveWindow = [...windowList]
+                .filter((window) => !window.isMinimized && !window.minimizing)
+                .sort((a, b) => b.zIndex - a.zIndex)[0];
+            const nextActiveId = nextActiveWindow?.id ?? null;
+            setActiveWindowId(nextActiveId);
+            return windowList.map((window) => ({
+                ...window,
+                isActive: nextActiveId !== null && window.id === nextActiveId,
+            }));
+        };
+
+        if (animateFromTaskbar) {
+            setWindows((prevWindows) => {
+                const animatingWindows = prevWindows.map((window) =>
+                    window.id === id
+                        ? { ...window, minimizing: true, isActive: false }
+                        : window
+                );
+                return setNextActiveWindow(animatingWindows);
+            });
+
+            window.setTimeout(() => {
+                setWindows((prevWindows) => {
+                    const minimizedWindows = prevWindows.map((window) =>
+                        window.id === id
+                            ? { ...window, isMinimized: true, minimizing: false, isActive: false }
+                            : window
+                    );
+                    return setNextActiveWindow(minimizedWindows);
+                });
+            }, 250);
+            return;
+        }
+
+        setWindows((prevWindows) => {
+            const minimizedWindows = prevWindows.map((window) =>
+                window.id === id
+                    ? { ...window, isMinimized: true, minimizing: false, isActive: false }
+                    : window
+            );
+            return setNextActiveWindow(minimizedWindows);
+        });
     };
 
     const notifyRestore = (id) => {
@@ -279,18 +319,27 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
         );
     }
 
-    const toggleLauncherVisibility = () => {
+    const openLauncher = (view: LauncherView = 'apps') => {
+        setLauncherView(view);
         if (!launcherVisible) {
             deactivateAll();
         }
-        setLauncherVisible(!launcherVisible);
+        setLauncherVisible(true);
+    };
+
+    const toggleLauncherVisibility = () => {
+        if (launcherVisible) {
+            setLauncherVisible(false);
+            return;
+        }
+        openLauncher('apps');
     };
     const closeLauncher = () => {
         setLauncherVisible(false);
     };
 
     return (
-        <WindowManagerContext.Provider value={{ closingWindowID, launcherVisible, focusMode, exitFocusMode, launchApp, activateWindow, deactivateAll, setWindowPosition, setWindowSize, setWindowTitle, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, toggleLauncherVisibility, closeLauncher }}>
+        <WindowManagerContext.Provider value={{ closingWindowID, launcherVisible, launcherView, windows, activeWindowId, focusMode, exitFocusMode, launchApp, activateWindow, deactivateAll, setWindowPosition, setWindowSize, setWindowTitle, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, openLauncher, toggleLauncherVisibility, closeLauncher }}>
             <Desktop focusMode={focusMode} disableAutoStart={initialWindows.length > 0} />
             {[...windows] // Create a copy of windows array
                 .sort((a, b) => a.zIndex - b.zIndex) // Sort by zIndex

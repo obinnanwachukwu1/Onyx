@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
 
-export type TaskbarStyle = 'windows' | 'mac';
+export type TaskbarStyle = 'classic' | 'modern' | 'floating';
 
 interface TaskbarContextType {
   taskbarStyle: TaskbarStyle;
@@ -24,21 +24,32 @@ const DEFAULT_PINNED = ['files', 'appcenter', 'settings'];
 // Global flag that persists across component remounts
 // Once hydrated, stays true for the entire session
 let globalHydrated = false;
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+const normalizeTaskbarStyle = (storedStyle: string | null): TaskbarStyle | null => {
+  if (storedStyle === 'windows') return 'modern';
+  if (storedStyle === 'mac') return 'floating';
+  if (storedStyle === 'classic' || storedStyle === 'modern' || storedStyle === 'floating') {
+    return storedStyle;
+  }
+  return null;
+};
 
 export const TaskbarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Start with defaults that match what the server will render
-  const [taskbarStyle, setTaskbarStyleState] = useState<TaskbarStyle>('windows');
+  const [taskbarStyle, setTaskbarStyleState] = useState<TaskbarStyle>('modern');
   const [pinnedAppIds, setPinnedAppIds] = useState<string[]>(DEFAULT_PINNED);
   // Use global flag - if we've hydrated before, skip the animation on remount
   const [isHydrated, setIsHydrated] = useState(globalHydrated);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     // Only run on client after mount
     if (typeof window === 'undefined') return;
 
-    const savedStyle = localStorage.getItem(STORAGE_KEY_STYLE) as TaskbarStyle;
+    const savedStyle = normalizeTaskbarStyle(localStorage.getItem(STORAGE_KEY_STYLE));
     if (savedStyle) {
       setTaskbarStyleState(savedStyle);
+      localStorage.setItem(STORAGE_KEY_STYLE, savedStyle);
     }
 
     const savedPinned = localStorage.getItem(STORAGE_KEY_PINNED);
@@ -119,5 +130,3 @@ export const useTaskbar = () => {
   }
   return context;
 };
-
-

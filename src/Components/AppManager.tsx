@@ -5,7 +5,7 @@ import appList from '../Apps/AppList';
 import Window from './Window';
 import Launcher from './Launcher/Launcher';
 import { AppManagerContext } from './AppManagerContext';
-import { WindowData } from '../types/windows';
+import { LauncherView, WindowData } from '../types/windows';
 
 interface AppManagerProps {
   initialWindows?: WindowData[];
@@ -14,13 +14,34 @@ interface AppManagerProps {
 
 const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerProps): JSX.Element => {
   const navigationBarRef = useRef<HTMLDivElement | null>(null);
-  const [windows, setWindows] = useState<WindowData[]>(
-    initialWindows.map((window) => ({ ...window, renderMobile: true }))
-  );
-  const [activeWindowId, setActiveWindowId] = useState<number | null>(null);
+  const [windows, setWindows] = useState<WindowData[]>(() => {
+    const hydrated = initialWindows.map((window) => ({ ...window, renderMobile: true }));
+    if (hydrated.some((window) => window.isActive)) {
+      return hydrated;
+    }
+
+    const topWindow = [...hydrated].sort((a, b) => b.zIndex - a.zIndex)[0];
+    if (!topWindow) {
+      return hydrated;
+    }
+
+    return hydrated.map((window) => ({ ...window, isActive: window.id === topWindow.id }));
+  });
+  const [activeWindowId, setActiveWindowId] = useState<number | null>(() => {
+    const active = initialWindows.find((window) => window.isActive)?.id;
+    if (typeof active === 'number') {
+      return active;
+    }
+    const topWindow = [...initialWindows].sort((a, b) => b.zIndex - a.zIndex)[0];
+    return topWindow?.id ?? null;
+  });
   const [closingWindowID, setClosingWindowID] = useState<number>(-1);
   const [launcherVisible, setLauncherVisible] = useState<boolean>(false);
-  const [zIndexCounter, setZIndexCounter] = useState<number>(1);
+  const [launcherView, setLauncherView] = useState<LauncherView>('apps');
+  const [zIndexCounter, setZIndexCounter] = useState<number>(() => {
+    const maxZIndex = initialWindows.reduce((max, window) => Math.max(max, window.zIndex), 0);
+    return maxZIndex + 1;
+  });
 
   const launchApp = (appId: string) => {
     const desktop = document.querySelector<HTMLElement>('.mobile-desktop');
@@ -36,6 +57,16 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
     const app = appList.find((entry) => entry.id === appId);
 
     if (!app) {
+      return;
+    }
+
+    // Mobile launcher opens a single instance per app; re-focus existing window.
+    const existingWindow = [...windows]
+      .filter((window) => window.appId === appId)
+      .sort((a, b) => b.zIndex - a.zIndex)[0];
+
+    if (existingWindow) {
+      activateWindow(existingWindow.id);
       return;
     }
 
@@ -65,28 +96,49 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
       if (previousWindows.some((window) => window.id === newWindow.id)) {
         return previousWindows;
       }
-      return [...previousWindows, newWindow];
+      return [
+        ...previousWindows.map((window) => ({ ...window, isActive: false })),
+        newWindow,
+      ];
     });
-    if (activeWindowId !== null) {
-      setClosingWindowID(activeWindowId);
-    }
     setActiveWindowId(newWindow.id);
   };
 
-  const toggleLauncherVisibility = () => {
-    setLauncherVisible((previous) => !previous);
+  const openLauncher = (view: LauncherView = 'apps') => {
+    setLauncherView(view);
+    setLauncherVisible(true);
   };
 
   const closeLauncher = () => {
     setLauncherVisible(false);
   };
 
+  const toggleLauncherVisibility = () => {
+    if (launcherVisible) {
+      closeLauncher();
+      return;
+    }
+    openLauncher('apps');
+  };
+
   const deactivateAll = () => {
     setLauncherVisible(false);
   };
 
-  const activateWindow = (_windowId: number) => {
-    // Mobile windows occupy the entire viewport, so activation is a no-op
+  const activateWindow = (windowId: number) => {
+    setLauncherVisible(false);
+    setZIndexCounter((previous) => {
+      const nextZIndex = previous + 1;
+      setWindows((previousWindows) =>
+        previousWindows.map((window) =>
+          window.id === windowId
+            ? { ...window, isActive: true, isMinimized: false, zIndex: nextZIndex }
+            : { ...window, isActive: false }
+        )
+      );
+      return nextZIndex;
+    });
+    setActiveWindowId(windowId);
   };
 
   const setWindowPosition = (_windowId: number, _position: WindowData['position']) => {
@@ -95,6 +147,12 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
 
   const setWindowSize = (_windowId: number, _size: WindowData['size']) => {
     // Mobile windows are always fullscreen; size changes are ignored
+  };
+
+  const setWindowTitle = (windowId: number, title: string) => {
+    setWindows((previousWindows) =>
+      previousWindows.map((window) => (window.id === windowId ? { ...window, title } : window))
+    );
   };
 
   const sendIntentToClose = (id: number) => {
@@ -112,10 +170,20 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
   };
 
   const notifyClose = (id: number) => {
-    setWindows((previousWindows) => previousWindows.filter((window) => window.id !== id));
-    if (id === activeWindowId) {
-      setActiveWindowId(null);
-    }
+    setWindows((previousWindows) => {
+      const remainingWindows = previousWindows.filter((window) => window.id !== id);
+      const nextActiveWindow = [...remainingWindows]
+        .filter((window) => !window.isMinimized)
+        .sort((a, b) => b.zIndex - a.zIndex)[0];
+      const nextActiveId = nextActiveWindow?.id ?? null;
+
+      setActiveWindowId(nextActiveId);
+
+      return remainingWindows.map((window) => ({
+        ...window,
+        isActive: nextActiveId !== null && window.id === nextActiveId,
+      }));
+    });
     setClosingWindowID(-1);
   };
 
@@ -123,8 +191,24 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
     // Mobile windows are already maximized
   };
 
-  const notifyMinimize = (_windowId: number) => {
-    // Mobile windows cannot be minimized
+  const notifyMinimize = (windowId: number, _animateFromTaskbar = false) => {
+    setWindows((previousWindows) => {
+      const updatedWindows = previousWindows.map((window) =>
+        window.id === windowId ? { ...window, isMinimized: true, isActive: false } : window
+      );
+
+      const nextActiveWindow = [...updatedWindows]
+        .filter((window) => !window.isMinimized)
+        .sort((a, b) => b.zIndex - a.zIndex)[0];
+      const nextActiveId = nextActiveWindow?.id ?? null;
+
+      setActiveWindowId(nextActiveId);
+
+      return updatedWindows.map((window) => ({
+        ...window,
+        isActive: nextActiveId !== null && window.id === nextActiveId,
+      }));
+    });
   };
 
   const notifyRestore = (_windowId: number) => {
@@ -166,12 +250,17 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
       value={{
         launchApp,
         launcherVisible,
+        launcherView,
+        windows,
+        activeWindowId,
+        openLauncher,
         closeLauncher,
         toggleLauncherVisibility,
         closingWindowID,
         activateWindow,
         setWindowPosition,
         setWindowSize,
+        setWindowTitle,
         sendIntentToClose,
         sendIntentToMaximize,
         sendIntentToRestore,
@@ -188,7 +277,15 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
       {[...windows]
         .sort((a, b) => a.zIndex - b.zIndex)
         .map((window) => (!window.isMinimized ? <Window key={window.id} {...window} renderMobile={true} /> : null))}
-      <NavigationBar ref={navigationBarRef} minimal={blogFullscreen} />
+      <NavigationBar
+        ref={navigationBarRef}
+        minimal={blogFullscreen}
+        windows={windows}
+        activeWindowId={activeWindowId}
+        onActivateWindow={activateWindow}
+        onCloseWindow={sendIntentToClose}
+        onMinimizeWindow={notifyMinimize}
+      />
       <Launcher />
     </AppManagerContext.Provider>
   );

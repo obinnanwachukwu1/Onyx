@@ -4,14 +4,23 @@ import { useWindowContext } from '../WindowContext';
 import { useDeviceContext } from '../DeviceContext';
 import { useTaskbar } from '../Taskbar/TaskbarContext';
 import appList from '../../Apps/AppList';
-import { Search, Home, Grid, Power, User, Settings } from 'lucide-react';
-import { ContextMenu, ContextMenuItemConfig } from '../ContextMenu';
+import { Search, Home, Grid, Settings, X } from 'lucide-react';
+import { ContextMenu } from '../ContextMenu';
 
 const Launcher = (): JSX.Element | null => {
-  const { launcherVisible, closeLauncher, launchApp } = useWindowContext();
+  const {
+    launcherVisible,
+    launcherView,
+    closeLauncher,
+    launchApp,
+    windows = [],
+    activeWindowId = null,
+    activateWindow,
+    notifyMinimize,
+    sendIntentToClose,
+  } = useWindowContext();
   const { isMobile } = useDeviceContext();
-  // Keep launcher mounted; animate by toggling classes
-  const [panelVisible, setPanelVisible] = useState<boolean>(launcherVisible);
+  const [displayedLauncherView, setDisplayedLauncherView] = useState(launcherView);
   const [activeTab, setActiveTab] = useState<'home' | 'all'>('home');
   const [searchTerm, setSearchTerm] = useState('');
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; appId: string | null }>({
@@ -22,32 +31,40 @@ const Launcher = (): JSX.Element | null => {
   });
 
   useEffect(() => {
-    // Sync panel visibility with context flag
-    setPanelVisible(launcherVisible);
-    // Reset search when opening
     if (launcherVisible) {
-      setSearchTerm('');
-    } else {
-      setContextMenu({ visible: false, x: 0, y: 0, appId: null });
+      setDisplayedLauncherView(launcherView);
+      return;
     }
-  }, [launcherVisible]);
+
+    const timeoutId = window.setTimeout(() => {
+      setContextMenu({ visible: false, x: 0, y: 0, appId: null });
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [launcherVisible, launcherView]);
+
+  useEffect(() => {
+    if (launcherVisible && displayedLauncherView === 'apps') {
+      setSearchTerm('');
+    }
+  }, [launcherVisible, displayedLauncherView]);
 
   const filteredApps = useMemo(() => {
-    if (!searchTerm) return appList.filter(app => app.showInLauncher);
+    if (!searchTerm) return appList.filter((app) => app.showInLauncher);
     return appList.filter(
-      app => app.showInLauncher && app.name.toLowerCase().includes(searchTerm.toLowerCase())
+      (app) => app.showInLauncher && app.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm]);
 
   const { pinnedAppIds, togglePin, isPinned, taskbarStyle } = useTaskbar();
 
-  const handleContextMenu = (e: React.MouseEvent, appId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleContextMenu = (event: React.MouseEvent, appId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
     setContextMenu({
       visible: true,
-      x: e.clientX,
-      y: e.clientY,
+      x: event.clientX,
+      y: event.clientY,
       appId,
     });
   };
@@ -58,66 +75,224 @@ const Launcher = (): JSX.Element | null => {
 
   const pinnedApps = useMemo(() => {
     return pinnedAppIds
-      .map(id => appList.find(app => app.id === id))
+      .map((id) => appList.find((app) => app.id === id))
       .filter((app): app is typeof appList[0] => !!app);
   }, [pinnedAppIds]);
 
   const recentApps = useMemo(() => {
-    return appList.filter(app => app.showInLauncher).slice(0, 4); // Simulate recent apps
+    const launcherApps = appList.filter((app) => app.showInLauncher);
+    const blogApp = launcherApps.find((app) => app.id === 'blog');
+    const nonBlogApps = launcherApps.filter((app) => app.id !== 'blog');
+
+    return blogApp ? [blogApp, ...nonBlogApps].slice(0, 4) : launcherApps.slice(0, 4);
   }, []);
 
-  // Always mounted for smooth transitions
+  const runningWindows = useMemo(() => {
+    return [...windows]
+      .filter((window) => window.showInTaskbar)
+      .sort((a, b) => b.zIndex - a.zIndex);
+  }, [windows]);
 
-  // Mobile Launcher (no blur)
+  const mobileStaggerStyle = (index: number): React.CSSProperties => {
+    const delay = 70 + index * 24;
+    return {
+      opacity: launcherVisible ? 1 : 0,
+      transform: launcherVisible ? 'translateY(0px)' : 'translateY(10px)',
+      transition: `opacity 220ms ease ${delay}ms, transform 260ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+    };
+  };
+
+  const renderMobileAppGrid = (apps: typeof appList) => (
+    <div className="grid grid-cols-4 gap-3">
+      {apps.map((app, index) => (
+        <button
+          key={app.id}
+          className="group flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3 transition-transform active:scale-95"
+          style={mobileStaggerStyle(index)}
+          onClick={() => {
+            launchApp(app.id);
+            closeLauncher();
+          }}
+        >
+          <img src={app.icon} alt={app.name} className="h-11 w-11 object-contain drop-shadow-sm" />
+          <span className="text-center text-[11px] leading-tight text-white/85 group-active:text-white">{app.name}</span>
+        </button>
+      ))}
+    </div>
+  );
+
   if (isMobile) {
     return (
-      <div
-        className={`launcher fixed inset-0 bg-black/70 z-9999 flex flex-col transform-gpu ${panelVisible ? 'translate-y-0' : 'translate-y-full'
-          }`}
-        style={{
-          pointerEvents: launcherVisible ? 'auto' : 'none',
-          transition: 'transform 200ms ease-out',
-        }}
-      >
-        <div className="p-6 pt-12 border-b border-white/10">
-          <h2 className="text-3xl font-bold text-white tracking-tight">Launcher</h2>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6 grid grid-cols-3 gap-4 content-start">
-          {filteredApps.map((app) => (
-            <LauncherIcon
-              key={app.id}
-              imageSrc={app.icon}
-              text={app.name}
-              onClick={() => {
-                launchApp(app.id);
-                closeLauncher();
-              }}
-            />
-          ))}
-        </div>
+      <div className={`launcher fixed inset-0 z-[10020] ${launcherVisible ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+        <button
+          className={`absolute inset-0 bg-black/45 transition-opacity duration-300 ${launcherVisible ? 'opacity-100' : 'opacity-0'}`}
+          onClick={closeLauncher}
+          aria-label="Close launcher"
+        />
+
+        <section
+          className="absolute inset-x-0 bottom-0 max-h-[84vh] rounded-t-3xl border-t border-white/15 bg-[#0f1015f2] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl transform-gpu"
+          style={{
+            transform: launcherVisible ? 'translateY(0%)' : 'translateY(100%)',
+            transition: 'transform 300ms cubic-bezier(0.22, 1, 0.36, 1)',
+            willChange: 'transform',
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-white/35" />
+
+          <div className="border-b border-white/10 px-4 pb-3 pt-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold tracking-tight text-white">{displayedLauncherView === 'running' ? 'Running Apps' : 'Launcher'}</h2>
+              <button
+                className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white"
+                onClick={closeLauncher}
+                aria-label="Close launcher"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {displayedLauncherView !== 'running' ? (
+              <>
+                <div className="relative mt-3">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/45" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search apps..."
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    className="h-10 w-full rounded-xl border border-white/15 bg-white/8 pl-10 pr-3 text-sm text-white placeholder:text-white/45 focus:border-white/35 focus:outline-none"
+                  />
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-black/20 p-1">
+                  <button
+                    className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors ${activeTab === 'home' ? 'bg-white text-black' : 'text-white/70'}`}
+                    onClick={() => setActiveTab('home')}
+                  >
+                    Home
+                  </button>
+                  <button
+                    className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors ${activeTab === 'all' ? 'bg-white text-black' : 'text-white/70'}`}
+                    onClick={() => setActiveTab('all')}
+                  >
+                    All Apps
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
+
+          <div className="overflow-y-auto px-4 pb-[calc(88px+env(safe-area-inset-bottom))] pt-4">
+            {displayedLauncherView === 'running' ? (
+              runningWindows.length ? (
+                <div className="space-y-2">
+                  {runningWindows.map((window, index) => {
+                    const app = appList.find((entry) => entry.id === window.appId);
+                    const appIcon = window.appIcon || app?.icon;
+                    const isActive = window.id === activeWindowId || window.isActive;
+
+                    return (
+                      <div
+                        key={window.id}
+                        style={mobileStaggerStyle(index)}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${isActive ? 'border-white/28 bg-white/[0.15]' : 'border-white/10 bg-white/5'}`}
+                      >
+                        <button
+                          className="flex min-w-0 flex-1 items-center gap-2 bg-transparent text-left"
+                          onClick={() => {
+                            if (isActive) {
+                              notifyMinimize(window.id);
+                            } else {
+                              activateWindow(window.id);
+                            }
+                            closeLauncher();
+                          }}
+                        >
+                          {appIcon ? <img src={appIcon} alt={window.title} className="h-8 w-8 flex-shrink-0 object-contain" /> : null}
+                          <div className="min-w-0">
+                            <div className="truncate text-sm text-white/92">{window.title}</div>
+                            <div className="truncate text-[11px] text-white/55">{isActive ? 'Active' : 'Background'}</div>
+                          </div>
+                        </button>
+                        <button
+                          className="rounded-full p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            sendIntentToClose(window.id);
+                          }}
+                          aria-label={`Close ${window.title}`}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="py-8 text-center text-sm text-white/55">No running apps.</p>
+              )
+            ) : searchTerm ? (
+              filteredApps.length ? (
+                renderMobileAppGrid(filteredApps)
+              ) : (
+                <p className="py-8 text-center text-sm text-white/55">No apps match your search.</p>
+              )
+            ) : activeTab === 'home' ? (
+              <div className="space-y-5">
+                <section>
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-white/45">Pinned</h3>
+                  {pinnedApps.length ? renderMobileAppGrid(pinnedApps) : <p className="text-sm text-white/55">No pinned apps yet.</p>}
+                </section>
+
+                <section>
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-white/45">Recommended</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {recentApps.map((app, index) => (
+                      <button
+                        key={`recent-mobile-${app.id}`}
+                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2 text-left hover:bg-white/10"
+                        style={mobileStaggerStyle(index)}
+                        onClick={() => {
+                          launchApp(app.id);
+                          closeLauncher();
+                        }}
+                      >
+                        <img src={app.icon} alt={app.name} className="h-8 w-8 object-contain" />
+                        <span className="truncate text-sm text-white/90">{app.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            ) : (
+              renderMobileAppGrid(filteredApps)
+            )}
+          </div>
+        </section>
       </div>
     );
   }
 
   // Desktop Launcher (centered, no screen blur)
+  const isClassicTaskbar = taskbarStyle === 'classic';
+  const launcherAnchorClass = isClassicTaskbar ? 'left-4 origin-bottom-left' : 'left-1/2 origin-bottom';
+  const launcherTranslateX = isClassicTaskbar ? '0px' : '-50%';
+
   return (
     <div
-      className={`launcher fixed ${taskbarStyle === 'mac' ? 'bottom-24' : 'bottom-16'} left-1/2 w-[780px] max-w-[90vw] h-[520px] flex rounded-2xl overflow-hidden border border-(--window-border-active) shadow-[0_12px_40px_rgba(0,0,0,0.28)] z-9998 origin-bottom ${panelVisible
+      className={`launcher fixed ${taskbarStyle === 'floating' ? 'bottom-24' : 'bottom-16'} ${launcherAnchorClass} w-[780px] max-w-[90vw] h-[520px] flex rounded-2xl overflow-hidden border border-(--window-border-active) shadow-[0_12px_40px_rgba(0,0,0,0.28)] z-9998 ${launcherVisible
         ? 'opacity-100'
         : 'opacity-100 pointer-events-none'
         }`}
       style={{
-        transform: `translate(-50%, ${panelVisible ? '0px' : '120%'}) translateZ(0)`,
+        transform: `translate(${launcherTranslateX}, ${launcherVisible ? '0px' : '120%'}) translateZ(0)`,
         transition: 'transform 450ms cubic-bezier(0.19, 1, 0.22, 1)',
       }}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
     >
-
       <div className="w-16 bg-[var(--header-bg-active)] border-r border-[var(--window-border-active)] flex flex-col items-center py-6 gap-6">
-        <div className="w-10 h-10 rounded-full bg-[var(--sidebar-item-hover-bg)] flex items-center justify-center shadow-sm ring-1 ring-[var(--window-border-active)] shrink-0">
-          <User size={20} className="text-[var(--text-color)] opacity-80" />
-        </div>
-
         <div className="flex-1 flex flex-col gap-3 w-full px-2 items-center">
           <button
             className={`p-3 rounded-xl transition-all duration-200 flex flex-col items-center gap-1 group w-full aspect-square justify-center ${activeTab === 'home' ? 'bg-[var(--sidebar-item-active-bg)] text-[var(--sidebar-item-active-text)] shadow-inner' : 'text-[var(--text-color)] opacity-60 hover:bg-[var(--sidebar-item-hover-bg)] hover:text-[var(--text-color)] hover:opacity-100 bg-transparent'
@@ -141,16 +316,8 @@ const Launcher = (): JSX.Element | null => {
           <button className="p-3 text-[var(--text-color)] opacity-60 hover:text-[var(--text-color)] hover:opacity-100 hover:bg-[var(--sidebar-item-hover-bg)] rounded-xl transition-colors bg-transparent w-full aspect-square flex items-center justify-center" title="Settings">
             <Settings size={20} />
           </button>
-          <button
-            className="p-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors bg-transparent w-full aspect-square flex items-center justify-center"
-            onClick={() => window.location.reload()}
-            title="Restart System"
-          >
-            <Power size={20} />
-          </button>
         </div>
       </div>
-
 
       <div className="flex-1 flex flex-col bg-[var(--window-bg)]">
         <div className="p-5 border-b border-[var(--window-border-active)]">
@@ -160,7 +327,7 @@ const Launcher = (): JSX.Element | null => {
               type="text"
               placeholder="Search apps, files, and settings..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(event) => setSearchTerm(event.target.value)}
               autoFocus
               className="w-full bg-[var(--taskbar-item-bg)] border border-[var(--window-border-active)] rounded-xl py-3 pl-10 pr-4 text-[var(--text-color)] placeholder:text-[var(--text-color)] placeholder:opacity-30 focus:outline-none focus:bg-[var(--taskbar-item-hover-bg)] focus:border-blue-500/30 transition-all"
             />
@@ -181,7 +348,7 @@ const Launcher = (): JSX.Element | null => {
                       launchApp(app.id);
                       closeLauncher();
                     }}
-                    onContextMenu={(e) => handleContextMenu(e, app.id)}
+                    onContextMenu={(event) => handleContextMenu(event, app.id)}
                   />
                 ))}
                 {filteredApps.length === 0 && <p className="col-span-full text-(--text-color)/40 text-center py-8">No apps found.</p>}
@@ -201,7 +368,7 @@ const Launcher = (): JSX.Element | null => {
                         launchApp(app.id);
                         closeLauncher();
                       }}
-                      onContextMenu={(e) => handleContextMenu(e, app.id)}
+                      onContextMenu={(event) => handleContextMenu(event, app.id)}
                     />
                   ))}
                 </div>
@@ -220,7 +387,7 @@ const Launcher = (): JSX.Element | null => {
                         launchApp(app.id);
                         closeLauncher();
                       }}
-                      onContextMenu={(e) => handleContextMenu(e, app.id)}
+                      onContextMenu={(event) => handleContextMenu(event, app.id)}
                     />
                   ))}
                 </div>
@@ -239,7 +406,7 @@ const Launcher = (): JSX.Element | null => {
                       launchApp(app.id);
                       closeLauncher();
                     }}
-                    onContextMenu={(e) => handleContextMenu(e, app.id)}
+                    onContextMenu={(event) => handleContextMenu(event, app.id)}
                   />
                 ))}
               </div>
@@ -247,6 +414,7 @@ const Launcher = (): JSX.Element | null => {
           )}
         </div>
       </div>
+
       {contextMenu.visible && contextMenu.appId && (
         <ContextMenu
           position={{ x: contextMenu.x, y: contextMenu.y }}

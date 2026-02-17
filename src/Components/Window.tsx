@@ -8,6 +8,7 @@ import { PanelLeft, PanelLeftOpen, X as LucideX } from 'lucide-react';
 import { faWindowMaximize, faWindowRestore } from '@fortawesome/free-regular-svg-icons';
 import { useWindowContext } from './WindowContext';
 import { WindowChromeProvider } from './WindowChromeContext';
+import { WindowModalHost, WindowModalProvider } from './WindowModalContext';
 
 const Window = ({
   id,
@@ -18,6 +19,7 @@ const Window = ({
   position,
   size,
   isMaximized,
+  minimizing = false,
   showInTaskbar,
   isActive,
   restoreSize,
@@ -438,8 +440,9 @@ const Window = ({
   const SidebarIcon = mobileMenuOpen ? PanelLeftOpen : PanelLeft;
 
   return (
-    <div
-      className={`window ${renderMobile && isOpening ? 'window-mobile window-mobile-opening' : renderMobile && isClosing ? 'window-mobile window-mobile-closing' : renderMobile ? 'window-mobile' : isOpening ? 'window-opening' : isClosing ? 'window-closing' : isRestoringFromTaskbar ? 'window-restoring-from-taskbar' : isMinimizing ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : ''} ${isMaximized || isMaximizing ? 'maximized' : ''} ${renderMobile ? '' : isActive ? 'active' : 'inactive'} ${fullViewportWhenMaximized ? 'full-viewport' : ''} ${useImmersiveDesktopChrome ? 'immersive-window' : ''}`}
+    <WindowModalProvider>
+      <div
+      className={`window ${renderMobile && isOpening ? 'window-mobile window-mobile-opening' : renderMobile && isClosing ? 'window-mobile window-mobile-closing' : renderMobile ? 'window-mobile' : isOpening ? 'window-opening' : isClosing ? 'window-closing' : isRestoringFromTaskbar ? 'window-restoring-from-taskbar' : (isMinimizing || minimizing) ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : ''} ${isMaximized || isMaximizing ? 'maximized' : ''} ${renderMobile ? '' : isActive ? 'active' : 'inactive'} ${fullViewportWhenMaximized ? 'full-viewport' : ''} ${useImmersiveDesktopChrome ? 'immersive-window' : ''}`}
       style={{
         top: position.y,
         left: position.x,
@@ -596,6 +599,7 @@ const Window = ({
           </WindowChromeProvider>
         </div>
       </div>
+      <WindowModalHost />
       {/* Corner + edge resize handles */}
       <div
         className="resize-handle resize-handle-bottom-right"
@@ -613,7 +617,8 @@ const Window = ({
         className="resize-handle resize-handle-top-left"
         onMouseDown={(e) => handleResizeStart(e, 'top-left')}
       />
-    </div>
+      </div>
+    </WindowModalProvider>
   );
 };
 

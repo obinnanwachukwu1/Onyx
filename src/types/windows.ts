@@ -74,9 +74,14 @@ export interface AppDefinition {
   };
 }
 
+export type LauncherView = 'apps' | 'running';
+
 export interface WindowContextValue {
   closingWindowID: number;
   launcherVisible: boolean;
+  launcherView: LauncherView;
+  windows?: WindowData[];
+  activeWindowId?: number | null;
   launchApp: (appId: string, props?: any) => void;
   activateWindow: (id: number) => void;
   setWindowPosition: (id: number, position: Coordinates) => void;
@@ -87,10 +92,11 @@ export interface WindowContextValue {
   sendIntentToRestore: (id: number) => void;
   notifyClose: (id: number) => void;
   notifyMaximize: (id: number) => void;
-  notifyMinimize: (id: number) => void;
+  notifyMinimize: (id: number, animateFromTaskbar?: boolean) => void;
   notifyRestore: (id: number) => void;
   getTaskbarTransformPos: (id: number) => void;
   afterRestoreFromTaskbar: (id: number) => void;
+  openLauncher: (view?: LauncherView) => void;
   toggleLauncherVisibility: () => void;
   closeLauncher: () => void;
   deactivateAll?: (event?: MouseEvent | TouchEvent) => void;

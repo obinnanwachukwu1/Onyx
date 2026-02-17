@@ -1,7 +1,6 @@
-import React, { forwardRef, useState, useRef, useEffect } from 'react';
+import React, { forwardRef, useState, useRef, useEffect, useCallback } from 'react';
 import { useWindowContext } from '../WindowContext';
 import { useTaskbar } from './TaskbarContext';
-import { createPortal } from 'react-dom';
 import { ContextMenu, ContextMenuItemConfig } from '../ContextMenu';
 
 interface TaskbarItemProps {
@@ -15,6 +14,14 @@ interface TaskbarItemProps {
     activeWindowId?: number | null; // Global active window ID to check which specific window is active
 }
 
+const HOVER_OPEN_DELAY_MS = 260;
+const HOVER_CLOSE_DELAY_MS = 180;
+
+interface MenuAnchor {
+    x: number;
+    y: number;
+}
+
 const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
     appId,
     icon,
@@ -25,10 +32,11 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
     windowIds,
     activeWindowId,
 }, ref) => {
-    const { activateWindow, notifyMinimize, launchApp } = useWindowContext();
+    const { activateWindow, notifyMinimize, launchApp, getTaskbarTransformPos } = useWindowContext();
     const { togglePin, taskbarStyle } = useTaskbar();
 
     const [menuMode, setMenuMode] = useState<'hover' | 'context' | null>(null);
+    const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null);
 
     const buttonRef = useRef<HTMLButtonElement | null>(null);
     const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,21 +50,59 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
         }
     };
 
-    const handleClick = (e: React.MouseEvent) => {
+    const clearHoverTimeout = useCallback(() => {
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+            hoverTimeoutRef.current = null;
+        }
+    }, []);
+
+    const scheduleMenuMode = useCallback((nextMode: 'hover' | 'context' | null, delay: number) => {
+        clearHoverTimeout();
+        hoverTimeoutRef.current = setTimeout(() => {
+            setMenuMode(nextMode);
+        }, delay);
+    }, [clearHoverTimeout]);
+
+    const updateMenuAnchor = useCallback(() => {
+        const button = buttonRef.current;
+        if (!button) return;
+
+        const buttonRect = button.getBoundingClientRect();
+        const taskbarRect = button.closest('.taskbar')?.getBoundingClientRect();
+        const estimatedMenuWidth = 220;
+        const viewportPadding = 8;
+        const centeredX = buttonRect.left + (buttonRect.width / 2) - (estimatedMenuWidth / 2);
+        const maxX = Math.max(viewportPadding, window.innerWidth - estimatedMenuWidth - viewportPadding);
+        const clampedX = Math.max(viewportPadding, Math.min(centeredX, maxX));
+        const anchorY = Math.max(12, (taskbarRect ? taskbarRect.top : buttonRect.top) - 8);
+
+        setMenuAnchor((previous) => {
+            if (previous && Math.abs(previous.x - clampedX) < 1 && Math.abs(previous.y - anchorY) < 1) {
+                return previous;
+            }
+            return { x: clampedX, y: anchorY };
+        });
+    }, []);
+
+    const handleClick = () => {
+        clearHoverTimeout();
+
         if (!isOpen) {
+            setMenuMode(null);
             launchApp(appId);
             return;
         }
 
-        if (menuMode) {
+        if (menuMode === 'context' || menuMode === 'hover') {
             setMenuMode(null);
-            return;
         }
 
         const activeAppWindowId = windowIds.find(id => id === activeWindowId);
 
         if (activeAppWindowId) {
-            notifyMinimize(activeAppWindowId);
+            getTaskbarTransformPos(activeAppWindowId);
+            notifyMinimize(activeAppWindowId, true);
         } else {
             const mostRecentWindowId = windowIds[windowIds.length - 1];
             if (mostRecentWindowId) {
@@ -68,6 +114,8 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        clearHoverTimeout();
+        updateMenuAnchor();
         setMenuMode('context'); // Show full menu on right click
     };
 
@@ -76,58 +124,82 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
         if (menuMode === 'context') return;
 
         // ONLY show hover menu if there is MORE THAN 1 instance
-        if (windowIds.length <= 1) return;
+        if (windowIds.length <= 1) {
+            clearHoverTimeout();
+            return;
+        }
 
-        hoverTimeoutRef.current = setTimeout(() => {
-            setMenuMode('hover');
-        }, 400);
+        scheduleMenuMode('hover', HOVER_OPEN_DELAY_MS);
     };
 
     const handleMouseLeave = () => {
-        if (hoverTimeoutRef.current) {
-            clearTimeout(hoverTimeoutRef.current);
-            hoverTimeoutRef.current = null;
+        if (menuMode === 'context') {
+            clearHoverTimeout();
+            return;
         }
 
-        hoverTimeoutRef.current = setTimeout(() => {
-            setMenuMode(null);
-        }, 300);
+        scheduleMenuMode(null, HOVER_CLOSE_DELAY_MS);
     };
 
     const handleMenuMouseEnter = () => {
-        if (hoverTimeoutRef.current) {
-            clearTimeout(hoverTimeoutRef.current);
-            hoverTimeoutRef.current = null;
-        }
+        clearHoverTimeout();
     };
 
     const handleMenuMouseLeave = () => {
-        hoverTimeoutRef.current = setTimeout(() => {
-            setMenuMode(null);
-        }, 300);
+        scheduleMenuMode(null, HOVER_CLOSE_DELAY_MS);
     };
 
     useEffect(() => {
-        const closeMenu = (e: MouseEvent) => {
-            if (buttonRef.current && buttonRef.current.contains(e.target as Node)) {
-                return;
-            }
+        return () => {
+            clearHoverTimeout();
+        };
+    }, [clearHoverTimeout]);
+
+    useEffect(() => {
+        if (!menuMode) return;
+
+        const handleOutsideInteraction = (event: Event) => {
+            const target = event.target as Node | null;
+            if (!target) return;
+
+            const isButtonInteraction = !!buttonRef.current && buttonRef.current.contains(target);
+            const isMenuInteraction = target instanceof Element && !!target.closest('.context-menu');
+
+            if (isButtonInteraction || isMenuInteraction) return;
             setMenuMode(null);
         };
 
-        if (menuMode) {
-            window.addEventListener('click', closeMenu);
-        }
+        document.addEventListener('pointerdown', handleOutsideInteraction, true);
+        document.addEventListener('contextmenu', handleOutsideInteraction, true);
+
         return () => {
-            window.removeEventListener('click', closeMenu);
-            if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+            document.removeEventListener('pointerdown', handleOutsideInteraction, true);
+            document.removeEventListener('contextmenu', handleOutsideInteraction, true);
         };
     }, [menuMode]);
+
+    useEffect(() => {
+        if (!menuMode) {
+            setMenuAnchor(null);
+            return;
+        }
+
+        updateMenuAnchor();
+        const handleViewportChange = () => updateMenuAnchor();
+
+        window.addEventListener('resize', handleViewportChange);
+        window.addEventListener('scroll', handleViewportChange, true);
+
+        return () => {
+            window.removeEventListener('resize', handleViewportChange);
+            window.removeEventListener('scroll', handleViewportChange, true);
+        };
+    }, [menuMode, updateMenuAnchor]);
 
     const displayTitle = title;
 
     const renderWindowsIndicators = () => {
-        if (taskbarStyle !== 'windows' || !isOpen) return null;
+        if (taskbarStyle === 'floating' || !isOpen) return null;
 
         if (windowIds.length <= 1) {
             return <div className={`taskbar-indicator ${isActive ? 'active' : 'minimized-indicator'}`} />;
@@ -141,20 +213,16 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
     };
 
     const renderWindowList = () => {
-        if (!menuMode || !buttonRef.current) return null;
+        if (!menuMode || !menuAnchor) return null;
 
         // Double check condition for hover mode
         if (menuMode === 'hover' && windowIds.length <= 1) return null;
 
-        const rect = buttonRef.current.getBoundingClientRect();
-
-        // Position the menu above the taskbar item
-        // We use 'bottom' instead of 'top' to let it grow upwards
         const style: React.CSSProperties = {
-            top: 'auto',
-            bottom: window.innerHeight - rect.top + 10,
-            left: rect.left,
-            transformOrigin: 'bottom left', // Animate from bottom
+            top: menuAnchor.y,
+            left: menuAnchor.x,
+            transform: 'translateY(-100%)',
+            transformOrigin: 'bottom center',
         };
 
         const items: ContextMenuItemConfig[] = [];
@@ -208,7 +276,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
         return (
             <ContextMenu
                 contextMenuItems={items}
-                position={{ x: rect.left, y: 0 }} // y is ignored due to style override
+                position={{ x: menuAnchor.x, y: menuAnchor.y }}
                 onClose={() => setMenuMode(null)}
                 style={style}
                 onMouseEnter={handleMenuMouseEnter}
@@ -221,7 +289,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
         <>
             <button
                 ref={setRefs}
-                className={`taskbar-item ${isOpen ? 'open' : ''} ${isActive ? 'active' : ''} ${isPinned ? 'pinned' : ''} ${taskbarStyle}`}
+                className={`taskbar-item ${isOpen ? 'open' : ''} ${isActive ? 'active' : ''} ${isPinned ? 'pinned' : ''} ${menuMode === 'context' ? 'context-open' : ''} ${taskbarStyle}`}
                 onClick={handleClick}
                 onContextMenu={handleContextMenu}
                 onMouseEnter={handleMouseEnter}
@@ -231,7 +299,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
                 <div className="taskbar-item-content">
                     <img src={icon} alt={title} className="taskbar-icon" />
                     {renderWindowsIndicators()}
-                    {taskbarStyle === 'mac' && isOpen && <div className="dock-indicator" />}
+                    {taskbarStyle === 'floating' && isOpen && <div className="dock-indicator" />}
                 </div>
             </button>
             {renderWindowList()}

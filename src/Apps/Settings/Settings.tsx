@@ -54,28 +54,35 @@ const Settings = () => {
       <div className="settings-section">
         <h2>Taskbar</h2>
         <div className="settings-row">
-          <span className="settings-label">Select your preferred taskbar style</span>
+          <span className="settings-label">Select your preferred taskbar layout</span>
         </div>
         <div className="theme-preview-container">
           <div 
-            className={`theme-option ${taskbarStyle === 'windows' ? 'active' : ''}`}
-            onClick={() => handleTaskbarStyleChange('windows')}
+            className={`theme-option ${taskbarStyle === 'classic' ? 'active' : ''}`}
+            onClick={() => handleTaskbarStyleChange('classic')}
           >
-             {/* Simple preview for Windows style */}
-            <div className="taskbar-preview windows">
+            <div className="taskbar-preview classic">
                 <div className="preview-bar"></div>
             </div>
-            <span>Windows 11</span>
+            <span>Classic</span>
           </div>
           <div 
-            className={`theme-option ${taskbarStyle === 'mac' ? 'active' : ''}`}
-            onClick={() => handleTaskbarStyleChange('mac')}
+            className={`theme-option ${taskbarStyle === 'modern' ? 'active' : ''}`}
+            onClick={() => handleTaskbarStyleChange('modern')}
           >
-            {/* Simple preview for Mac style */}
-            <div className="taskbar-preview mac">
+            <div className="taskbar-preview modern">
+                <div className="preview-bar"></div>
+            </div>
+            <span>Modern</span>
+          </div>
+          <div 
+            className={`theme-option ${taskbarStyle === 'floating' ? 'active' : ''}`}
+            onClick={() => handleTaskbarStyleChange('floating')}
+          >
+            <div className="taskbar-preview floating">
                 <div className="preview-dock"></div>
             </div>
-            <span>macOS Dock</span>
+            <span>Floating</span>
           </div>
         </div>
       </div>
