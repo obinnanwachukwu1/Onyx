@@ -170,6 +170,7 @@
   height: 48px;
   margin-bottom: 8px;
   color: #3B82F6; /* Blue for folders */
+  object-fit: contain;
 }
 
 .file-icon-grid.file {
@@ -223,6 +224,7 @@
   height: 20px;
   margin-right: 10px;
   color: #3B82F6;
+  object-fit: contain;
 }
 
 .file-icon-list.file {

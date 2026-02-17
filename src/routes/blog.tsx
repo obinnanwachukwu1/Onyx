@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeader } from '@tanstack/react-start/server'
 import App from '../App'
-import IconNotepad from '../assets/icons/IconNotepad.svg'
+import IconBlog from '../assets/icons/IconBlog.svg'
 import { BlogWindowProvider } from '../utils/BlogWindowContext'
 
 const isMobileUserAgent = (userAgent: string) =>
@@ -59,7 +59,7 @@ function BlogLayout() {
     {
       id: BLOG_WINDOW_ID,
       appId: 'blog',
-      appIcon: IconNotepad,
+      appIcon: IconBlog,
       title, // Use the computed title directly
       content: (
         <BlogWindowProvider windowId={BLOG_WINDOW_ID}>

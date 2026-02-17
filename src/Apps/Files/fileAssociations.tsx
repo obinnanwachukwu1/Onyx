@@ -2,7 +2,8 @@ import React from 'react';
 import appList from '../AppList';
 import IconFiles from '../../assets/icons/IconFiles.svg';
 import IconNotepad from '../../assets/icons/IconNotepad.svg';
-import { Folder, FileText } from 'lucide-react';
+import IconFolder from '../../assets/icons/IconFolder.svg';
+import { FileText } from 'lucide-react';
 
 // Build a stable appId -> icon map
 export const getAppIconMap = (): Record<string, string> =>
@@ -18,7 +19,7 @@ export const filesIconFor = (
   appIdFromContent?: string,
   appIconMap?: Record<string, string>
 ): React.ReactNode => {
-  if (isFolder) return <Folder className="file-icon-grid" fill="currentColor" />;
+  if (isFolder) return <img className="file-icon-grid" src={IconFolder} alt="Folder" />;
   if (isAppShortcut(name) && appIdFromContent && appIconMap && appIconMap[appIdFromContent]) {
     return <img className="file-icon-grid" src={appIconMap[appIdFromContent]} alt={name.replace(/\.app$/i, '')} />;
   }
@@ -33,7 +34,7 @@ export const filesListIconFor = (
   appIdFromContent?: string,
   appIconMap?: Record<string, string>
 ): React.ReactNode => {
-  if (isFolder) return <Folder className="file-icon-list" fill="currentColor" />;
+  if (isFolder) return <img className="file-icon-list" src={IconFolder} alt="Folder" />;
   if (isAppShortcut(name) && appIdFromContent && appIconMap && appIconMap[appIdFromContent]) {
     return <img className="file-icon-list" src={appIconMap[appIdFromContent]} alt={name.replace(/\.app$/i, '')} />;
   }
@@ -48,11 +49,10 @@ export const desktopIconSrcFor = (
   appIdFromContent?: string,
   appIconMap?: Record<string, string>
 ): string => {
-  if (isFolder) return IconFiles; // generic folder/file image
+  if (isFolder) return IconFolder;
   if (isAppShortcut(name) && appIdFromContent && appIconMap && appIconMap[appIdFromContent]) {
     return appIconMap[appIdFromContent];
   }
   if (isTextFile(name)) return IconNotepad;
   return IconFiles;
 };
-

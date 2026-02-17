@@ -163,3 +163,12 @@
     color: #333;
     margin-bottom: 2px;
 }
+
+.settings-link {
+  color: var(--welcome-accent-blue);
+  text-decoration: none;
+}
+
+.settings-link:hover {
+  text-decoration: underline;
+}

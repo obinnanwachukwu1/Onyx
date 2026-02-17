@@ -96,6 +96,28 @@ const Settings = () => {
           <span className="settings-label">Version 1.0.0</span>
         </div>
       </div>
+      <div className="settings-section">
+        <h2>Attribution</h2>
+        <div className="settings-row">
+          <span className="settings-label">Icon theme: Colloid Icon Theme by Vince Liuice</span>
+        </div>
+        <div className="settings-row">
+          <span className="settings-label">
+            Source:{' '}
+            <a
+              className="settings-link"
+              href="https://github.com/vinceliuice/Colloid-icon-theme"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              github.com/vinceliuice/Colloid-icon-theme
+            </a>
+          </span>
+        </div>
+        <div className="settings-row">
+          <span className="settings-label">License: GPL-3.0</span>
+        </div>
+      </div>
     </div>
   );
 
