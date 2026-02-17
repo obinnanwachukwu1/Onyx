@@ -1,17 +1,28 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import './Files.css';
 import { useFileSystem, FileNode } from './FileSystem';
 import { 
-  Folder, FileText, ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon, 
-  Monitor, Download, File, Trash2, Plus, Edit2, ArrowUp
+  ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon,
+  Monitor, File, Trash2, Plus, Edit2, ArrowUp
 } from 'lucide-react';
 import { useWindowChrome } from '../../Components/WindowChromeContext';
 import { useWindowContext } from '../../Components/WindowContext';
-import appList from '../AppList';
 import { getAppIconMap, filesIconFor, filesListIconFor } from './fileAssociations';
+import { joinPath } from './permissions';
+import { useWindowModal } from '../../components/WindowModalContext';
 
 const Files = () => {
-  const { fs, resolvePath, mkdir, touch, rm, rename, isEditable } = useFileSystem();
+  const {
+    resolvePath,
+    mkdir,
+    touch,
+    rm,
+    rename,
+    isEditable,
+    canOpenPath,
+    canDeletePath,
+    canRenamePath,
+  } = useFileSystem();
   const [currentPath, setCurrentPath] = useState('/Users/root');
   const [history, setHistory] = useState<string[]>(['/Users/root']);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -23,10 +34,11 @@ const Files = () => {
 
   const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
   const { launchApp } = useWindowContext();
+  const { showAlert, showConfirm } = useWindowModal();
 
-  const containerRef = useRef<HTMLDivElement>(null);
   const isTouchRef = useRef<boolean>(false);
   const lastTapRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
+  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   // Map app id -> icon path for rendering .app shortcuts
   const appIconMap = useRef<Record<string, string>>(getAppIconMap());
@@ -103,6 +115,7 @@ const Files = () => {
 
   const handleFileClick = (file: FileNode) => {
     setSelectedId(file.id);
+    closeContextMenu();
   };
 
   // On touch devices, consider a fast second tap on the same item as a double-click
@@ -128,9 +141,19 @@ const Files = () => {
   };
 
   const handleFileDoubleClick = (file: FileNode) => {
+    if (renamingId === file.id) return;
+    const itemPath = joinPath(currentPath, file.name);
+
     if (file.type === 'folder') {
-      const newPath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`;
-      navigate(newPath);
+      if (!canOpenPath(itemPath)) {
+        void showAlert({
+          title: 'Permission denied',
+          message: 'You cannot open this folder.',
+          tone: 'danger',
+        });
+        return;
+      }
+      navigate(itemPath);
     } else {
       if (file.name.endsWith('.app')) {
         // Launch by app id stored in content
@@ -151,11 +174,48 @@ const Files = () => {
   const handleContextMenu = (e: React.MouseEvent, fileId?: string) => {
     e.preventDefault();
     e.stopPropagation();
-    setContextMenu({ x: e.clientX, y: e.clientY, targetId: fileId });
+
+    // The window container uses transforms, so fixed-position children in this
+    // subtree are positioned relative to the window box, not the viewport.
+    const windowEl = (e.currentTarget as HTMLElement | null)?.closest('.window');
+    if (windowEl) {
+      const rect = windowEl.getBoundingClientRect();
+      setContextMenu({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        targetId: fileId,
+      });
+    } else {
+      setContextMenu({ x: e.clientX, y: e.clientY, targetId: fileId });
+    }
+
     if (fileId) setSelectedId(fileId);
   };
 
   const closeContextMenu = () => setContextMenu(null);
+  const stopEventPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
+
+  useLayoutEffect(() => {
+    if (!contextMenu) return;
+    const menuEl = contextMenuRef.current;
+    if (!menuEl) return;
+
+    const windowEl = menuEl.closest('.window') as HTMLElement | null;
+    if (!windowEl) return;
+
+    const menuRect = menuEl.getBoundingClientRect();
+    const windowRect = windowEl.getBoundingClientRect();
+    const edgePadding = 8;
+
+    const maxX = Math.max(edgePadding, windowRect.width - menuRect.width - edgePadding);
+    const maxY = Math.max(edgePadding, windowRect.height - menuRect.height - edgePadding);
+    const nextX = Math.round(Math.min(Math.max(contextMenu.x, edgePadding), maxX));
+    const nextY = Math.round(Math.min(Math.max(contextMenu.y, edgePadding), maxY));
+
+    if (nextX !== contextMenu.x || nextY !== contextMenu.y) {
+      setContextMenu((prev) => (prev ? { ...prev, x: nextX, y: nextY } : prev));
+    }
+  }, [contextMenu]);
 
   useEffect(() => {
     const handleClickOutside = () => closeContextMenu();
@@ -163,7 +223,7 @@ const Files = () => {
     return () => window.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const handleCreateFolder = () => {
+  const handleCreateFolder = async () => {
     try {
       let name = 'New Folder';
       let counter = 1;
@@ -172,12 +232,16 @@ const Files = () => {
       }
       mkdir(currentPath, name);
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Error creating folder');
+      await showAlert({
+        title: 'Unable to create folder',
+        message: e instanceof Error ? e.message : 'Error creating folder',
+        tone: 'danger',
+      });
     }
     closeContextMenu();
   };
 
-  const handleCreateFile = () => {
+  const handleCreateFile = async () => {
     try {
       let name = 'New Text Document.txt';
       let counter = 1;
@@ -186,46 +250,96 @@ const Files = () => {
       }
       touch(currentPath, name);
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Error creating file');
+      await showAlert({
+        title: 'Unable to create file',
+        message: e instanceof Error ? e.message : 'Error creating file',
+        tone: 'danger',
+      });
     }
     closeContextMenu();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!contextMenu?.targetId) return;
     const file = files.find(f => f.id === contextMenu.targetId);
     if (!file) return;
+    const filePath = joinPath(currentPath, file.name);
+    if (!canDeletePath(filePath) || file.isGhost) {
+      await showAlert({
+        title: 'Permission denied',
+        message: 'You cannot delete this item.',
+        tone: 'danger',
+      });
+      closeContextMenu();
+      return;
+    }
 
-    if (confirm(`Are you sure you want to delete "${file.name}"?`)) {
+    const confirmed = await showConfirm({
+      title: 'Delete item?',
+      message: `Are you sure you want to delete "${file.name}"?`,
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      tone: 'danger',
+    });
+
+    if (confirmed) {
       try {
-        rm(`${currentPath}/${file.name}`);
+        rm(filePath);
       } catch (e) {
-        alert(e instanceof Error ? e.message : 'Error deleting item');
+        await showAlert({
+          title: 'Unable to delete item',
+          message: e instanceof Error ? e.message : 'Error deleting item',
+          tone: 'danger',
+        });
       }
     }
     closeContextMenu();
   };
 
-  const startRename = () => {
+  const startRename = async () => {
     if (!contextMenu?.targetId) return;
     const file = files.find(f => f.id === contextMenu.targetId);
     if (!file) return;
+    const filePath = joinPath(currentPath, file.name);
+    if (!canRenamePath(filePath) || file.isGhost) {
+      await showAlert({
+        title: 'Permission denied',
+        message: 'You cannot rename this item.',
+        tone: 'danger',
+      });
+      closeContextMenu();
+      return;
+    }
     
     setRenamingId(file.id);
     setRenameValue(file.name);
     closeContextMenu();
   };
 
-  const submitRename = () => {
+  const submitRename = async () => {
     if (!renamingId) return;
     const file = files.find(f => f.id === renamingId);
     if (!file) return;
+    const oldPath = joinPath(currentPath, file.name);
 
     if (renameValue && renameValue !== file.name) {
+      if (!canRenamePath(oldPath) || file.isGhost) {
+        await showAlert({
+          title: 'Permission denied',
+          message: 'You cannot rename this item.',
+          tone: 'danger',
+        });
+        setRenamingId(null);
+        return;
+      }
       try {
-        rename(`${currentPath}/${file.name}`, renameValue);
+        rename(oldPath, renameValue);
       } catch (e) {
-        alert(e instanceof Error ? e.message : 'Error renaming item');
+        await showAlert({
+          title: 'Unable to rename item',
+          message: e instanceof Error ? e.message : 'Error renaming item',
+          tone: 'danger',
+        });
       }
     }
     setRenamingId(null);
@@ -242,9 +356,20 @@ const Files = () => {
   };
 
   const canEditCurrent = isEditable(currentPath);
+  const contextTargetFile = contextMenu?.targetId
+    ? files.find(f => f.id === contextMenu.targetId)
+    : null;
+  const contextTargetPath = contextTargetFile ? joinPath(currentPath, contextTargetFile.name) : null;
+  const canOpenContextTarget = contextTargetPath ? canOpenPath(contextTargetPath) : false;
+  const canRenameContextTarget = contextTargetPath
+    ? canRenamePath(contextTargetPath) && !contextTargetFile?.isGhost
+    : false;
+  const canDeleteContextTarget = contextTargetPath
+    ? canDeletePath(contextTargetPath) && !contextTargetFile?.isGhost
+    : false;
 
   return (
-    <div className="files-app" onClick={() => setSelectedId(null)}>
+    <div className="files-app" onClick={() => { setSelectedId(null); closeContextMenu(); }}>
       {/* Sidebar is now handled by Window.tsx */}
 
       <div className="files-main">
@@ -306,16 +431,25 @@ const Files = () => {
                   onDoubleClick={(e) => { e.stopPropagation(); handleFileDoubleClick(file); }}
                   onContextMenu={(e) => handleContextMenu(e, file.id)}
                 >
-                  {filesIconFor(file.name, file.type === 'folder', (file.content || '').trim(), appIconMap.current)}
+                  {filesIconFor(
+                    file.name,
+                    file.type === 'folder',
+                    (file.content || '').trim(),
+                    appIconMap.current,
+                    joinPath(currentPath, file.name)
+                  )}
                   {renamingId === file.id ? (
                     <input 
                       type="text" 
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
-                      onBlur={submitRename}
-                      onKeyDown={(e) => e.key === 'Enter' && submitRename()}
+                      onBlur={() => { void submitRename(); }}
+                      onKeyDown={(e) => e.key === 'Enter' && void submitRename()}
                       autoFocus
-                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={stopEventPropagation}
+                      onClick={stopEventPropagation}
+                      onDoubleClick={stopEventPropagation}
+                      onContextMenu={stopEventPropagation}
                       className="rename-input"
                     />
                   ) : (
@@ -334,16 +468,25 @@ const Files = () => {
                   onDoubleClick={(e) => { e.stopPropagation(); handleFileDoubleClick(file); }}
                   onContextMenu={(e) => handleContextMenu(e, file.id)}
                 >
-                  {filesListIconFor(file.name, file.type === 'folder', (file.content || '').trim(), appIconMap.current)}
+                  {filesListIconFor(
+                    file.name,
+                    file.type === 'folder',
+                    (file.content || '').trim(),
+                    appIconMap.current,
+                    joinPath(currentPath, file.name)
+                  )}
                   {renamingId === file.id ? (
                     <input 
                       type="text" 
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
-                      onBlur={submitRename}
-                      onKeyDown={(e) => e.key === 'Enter' && submitRename()}
+                      onBlur={() => { void submitRename(); }}
+                      onKeyDown={(e) => e.key === 'Enter' && void submitRename()}
                       autoFocus
-                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={stopEventPropagation}
+                      onClick={stopEventPropagation}
+                      onDoubleClick={stopEventPropagation}
+                      onContextMenu={stopEventPropagation}
                       className="rename-input"
                     />
                   ) : (
@@ -362,26 +505,43 @@ const Files = () => {
 
       {contextMenu && (
         <div 
+          ref={contextMenuRef}
           className="context-menu"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           {contextMenu.targetId ? (
             <>
-              <div className="context-menu-item" onClick={() => {
-                const file = files.find(f => f.id === contextMenu.targetId);
-                if (file) handleFileDoubleClick(file);
-                closeContextMenu();
-              }}>
-                <Monitor size={14} /> Open
+              <div
+                className="context-menu-item"
+                onClick={() => {
+                  if (!contextTargetFile || !canOpenContextTarget) return;
+                  handleFileDoubleClick(contextTargetFile);
+                  closeContextMenu();
+                }}
+                style={!canOpenContextTarget ? { opacity: 0.5, cursor: 'default' } : undefined}
+              >
+                <Monitor size={14} /> {canOpenContextTarget ? 'Open' : 'Locked'}
               </div>
-              {canEditCurrent && !files.find(f => f.id === contextMenu.targetId)?.isGhost && (
+              {(canRenameContextTarget || canDeleteContextTarget) && (
                 <>
                   <div className="context-menu-separator" />
-                  <div className="context-menu-item" onClick={startRename}>
-                    <Edit2 size={14} /> Rename
-                  </div>
-                  <div className="context-menu-item" onClick={handleDelete} style={{ color: '#EF4444' }}>
-                    <Trash2 size={14} /> Delete
+                  {canRenameContextTarget && (
+                    <div className="context-menu-item" onClick={() => { void startRename(); }}>
+                      <Edit2 size={14} /> Rename
+                    </div>
+                  )}
+                  {canDeleteContextTarget && (
+                    <div className="context-menu-item" onClick={() => { void handleDelete(); }} style={{ color: '#EF4444' }}>
+                      <Trash2 size={14} /> Delete
+                    </div>
+                  )}
+                </>
+              )}
+              {!canOpenContextTarget && !canRenameContextTarget && !canDeleteContextTarget && (
+                <>
+                  <div className="context-menu-separator" />
+                  <div className="context-menu-item" style={{ opacity: 0.5, cursor: 'default' }}>
+                    No Access
                   </div>
                 </>
               )}
@@ -389,10 +549,10 @@ const Files = () => {
           ) : (
             canEditCurrent ? (
               <>
-                <div className="context-menu-item" onClick={handleCreateFolder}>
+                <div className="context-menu-item" onClick={() => { void handleCreateFolder(); }}>
                   <Plus size={14} /> New Folder
                 </div>
-                <div className="context-menu-item" onClick={handleCreateFile}>
+                <div className="context-menu-item" onClick={() => { void handleCreateFile(); }}>
                   <File size={14} /> New Text File
                 </div>
               </>

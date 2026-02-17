@@ -31,9 +31,9 @@
 }
 
 .app-detail-page {
-    /* Use dynamic viewport height for mobile browsers */
-    height: 100dvh;
-    min-height: 100dvh;
+    /* Fill the app window/content area (not the entire browser viewport) */
+    height: 100%;
+    min-height: 100%;
     width: 100%;
     background-color: var(--window-bg);
     overflow: hidden;
@@ -43,19 +43,11 @@
     margin-top: 0;
 }
 
-@supports not (height: 100dvh) {
-    /* Fallback for older browsers */
-    .app-detail-page {
-        height: 100vh;
-        min-height: 100vh;
-    }
-}
-
 .app-detail-body {
     flex: 1;
     overflow-y: auto;
     /* More breathing room at the very top */
-    padding: 0rem 1.5rem 2.5rem;
+    padding: 0rem 1.5rem 3.5rem;
     display: flex;
     justify-content: center;
 }

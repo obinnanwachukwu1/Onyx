@@ -1,0 +1,139 @@
+.window-modal-overlay {
+  position: absolute;
+  top: var(--titlebar-height, 40px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  background: rgba(10, 10, 10, 0.24);
+  backdrop-filter: blur(2px);
+}
+
+.window-modal-panel {
+  width: min(320px, 100%);
+  max-height: calc(100% - 4px);
+  border-radius: 12px;
+  border: 1px solid var(--window-border-active);
+  background: var(--window-bg);
+  color: var(--text-color);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  padding: 14px 14px 12px;
+  animation: windowModalEnter 120ms ease-out;
+  overflow: hidden;
+}
+
+.window-modal-panel-default {
+  border-color: var(--window-border-active);
+}
+
+.window-modal-panel-info {
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.window-modal-panel-success {
+  border-color: rgba(16, 185, 129, 0.55);
+}
+
+.window-modal-panel-warning {
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
+.window-modal-panel-danger {
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.window-modal-content-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.window-modal-icon-wrap {
+  width: 74px;
+  min-width: 74px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.window-modal-icon {
+  width: 64px;
+  height: 64px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.window-modal-copy {
+  min-width: 0;
+}
+
+.window-modal-title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.window-modal-message {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0.9;
+  max-height: 220px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.window-modal-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.window-modal-btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.12s ease;
+}
+
+.window-modal-btn:hover {
+  filter: brightness(1.05);
+}
+
+.window-modal-btn-primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.window-modal-btn-danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.window-modal-btn-secondary {
+  background: transparent;
+  color: var(--text-color);
+  border-color: var(--window-border-active);
+}
+
+@keyframes windowModalEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

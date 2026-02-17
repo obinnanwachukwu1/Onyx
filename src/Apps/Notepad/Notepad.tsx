@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Notepad.css';
 import { useFileSystem } from '../Files/FileSystem';
 import { Save } from 'lucide-react';
+import { useWindowModal } from '../../components/WindowModalContext';
 
 interface NotepadProps {
   initialContent?: string;
@@ -12,29 +13,38 @@ const Notepad = ({ initialContent = '', filePath }: NotepadProps): JSX.Element =
   const [content, setContent] = useState(initialContent);
   const { updateFileContent, isEditable } = useFileSystem();
   const [isDirty, setIsDirty] = useState(false);
+  const { showAlert } = useWindowModal();
 
   useEffect(() => {
     setContent(initialContent);
     setIsDirty(false);
   }, [initialContent]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (filePath && isEditable(filePath)) {
       try {
         updateFileContent(filePath, content);
         setIsDirty(false);
       } catch (e) {
-        alert('Failed to save file: ' + (e instanceof Error ? e.message : 'Unknown error'));
+        await showAlert({
+          title: 'Save failed',
+          message: `Failed to save file: ${e instanceof Error ? e.message : 'Unknown error'}`,
+          tone: 'danger',
+        });
       }
     } else {
-      alert('Cannot save: No file path or read-only location.');
+      await showAlert({
+        title: 'Cannot save',
+        message: 'No file path is selected or this location is read-only.',
+        tone: 'danger',
+      });
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 's') {
       e.preventDefault();
-      handleSave();
+      void handleSave();
     }
   };
 
@@ -44,7 +54,7 @@ const Notepad = ({ initialContent = '', filePath }: NotepadProps): JSX.Element =
         <div className="notepad-toolbar">
           <button 
             className="notepad-btn" 
-            onClick={handleSave}
+            onClick={() => { void handleSave(); }}
             disabled={!isDirty}
             title="Save (Ctrl+S)"
           >

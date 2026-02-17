@@ -33,14 +33,27 @@ const AppGrid: React.FC<AppGridProps> = ({ apps, onOpenApp, searchTerm, selected
         <div
             className="grid gap-5 sm:gap-6 p-1 items-stretch justify-center [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]"
         >
-            {filteredApps.map((app) => (
+            {filteredApps.map((app) => {
+                const hasBanner = Boolean(app.image);
+                const usingIconAsBanner = Boolean(app.image && app.icon && app.image === app.icon);
+                return (
                 <div
                     key={app.id}
                     className="group relative bg-card rounded-2xl border border-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col h-full"
                     onClick={() => onOpenApp(app)}
                 >
                     <div className="aspect-[16/9] w-full bg-subtle flex items-center justify-center transition-colors relative overflow-hidden">
-                        {app.icon ? (
+                        {hasBanner ? (
+                            <img 
+                                src={app.image}
+                                alt={`${app.name} banner`}
+                                className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${usingIconAsBanner ? 'object-contain p-6 sm:p-8' : 'object-cover'}`}
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.parentElement?.classList.add('fallback-icon');
+                                }}
+                            />
+                        ) : app.icon ? (
                             <img 
                                 src={app.icon} 
                                 alt={app.name} 
@@ -84,7 +97,8 @@ const AppGrid: React.FC<AppGridProps> = ({ apps, onOpenApp, searchTerm, selected
                         </div>
                     </div>
                 </div>
-            ))}
+                );
+            })}
         </div>
     );
 };

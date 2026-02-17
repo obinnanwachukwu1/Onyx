@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { App } from '../types';
 
 interface FeaturedCarouselProps {
@@ -9,6 +9,7 @@ interface FeaturedCarouselProps {
 
 const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ apps, onOpenApp }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [mediaFallbackIndex, setMediaFallbackIndex] = useState(0);
     // Fallback to first 3 apps if no featured apps are found
     const featuredApps = apps.filter(app => app.featured).length > 0
         ? apps.filter(app => app.featured)
@@ -22,19 +23,34 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ apps, onOpenApp }) 
         return () => clearInterval(interval);
     }, [featuredApps]);
 
-    const nextSlide = (e?: React.MouseEvent) => {
-        e?.stopPropagation();
-        setCurrentIndex((prev) => (prev + 1) % featuredApps.length);
+    const getBannerCandidate = (app: App): string | null => {
+        const seed = app.image || app.icon || app.screenshots?.[0];
+        if (!seed) return null;
+        const match = seed.match(/^(\/projects\/[^/]+\/)/);
+        if (!match) return null;
+        return `${match[1]}banner.webp`;
     };
-
-    const prevSlide = (e?: React.MouseEvent) => {
-        e?.stopPropagation();
-        setCurrentIndex((prev) => (prev === 0 ? featuredApps.length - 1 : prev - 1));
-    };
-
-    if (featuredApps.length === 0) return null;
 
     const currentApp = featuredApps[currentIndex];
+
+    const carouselMedia = useMemo(() => {
+        if (!currentApp) return [];
+        const candidates = [
+            currentApp.screenshots?.[0],
+            getBannerCandidate(currentApp),
+            currentApp.image,
+        ].filter(Boolean) as string[];
+
+        return [...new Set(candidates)];
+    }, [currentApp]);
+
+    const activeMedia = carouselMedia[mediaFallbackIndex];
+
+    useEffect(() => {
+        setMediaFallbackIndex(0);
+    }, [currentIndex]);
+
+    if (!currentApp) return null;
 
     return (
         <div className="mb-8 md:mb-12 relative group/carousel">
@@ -45,18 +61,25 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ apps, onOpenApp }) 
 
                 <div className="absolute inset-0 transition-all duration-700 ease-out transform">
                     <div
-                        className="w-full h-full bg-cover bg-center transition-transform duration-[2000ms] hover:scale-105"
-                        style={{
-                            backgroundImage: currentApp.image ? `url(${currentApp.image})` : 'none',
-                            backgroundColor: currentApp.image ? 'transparent' : '#0066cc'
-                        }}
+                        className="w-full h-full bg-cover bg-center"
+                        style={{ backgroundColor: activeMedia ? 'transparent' : '#0066cc' }}
                         onClick={() => onOpenApp(currentApp)}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+                        {activeMedia && (
+                            <img
+                                src={activeMedia}
+                                alt={`${currentApp.name} featured`}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                onError={() => {
+                                    if (mediaFallbackIndex < carouselMedia.length - 1) {
+                                        setMediaFallbackIndex((prev) => prev + 1);
+                                    }
+                                }}
+                            />
+                        )}
+                        <div className="absolute inset-0 bg-black/10" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent">
                             <div className="absolute bottom-0 left-0 p-5 sm:p-8 md:p-10 max-w-xl sm:max-w-2xl md:max-w-3xl">
-                                <div className="mb-3 sm:mb-4 inline-flex items-center px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/10 text-white text-[10px] sm:text-xs font-medium uppercase tracking-wider">
-                                    Featured App
-                                </div>
                                 <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-2 sm:mb-4 tracking-tight drop-shadow-lg leading-tight">
                                     {currentApp.name}
                                 </h2>

@@ -7,7 +7,7 @@ interface LaunchButtonProps {
 
 const LaunchButton = ({ onClick }: LaunchButtonProps): JSX.Element => {
   return (
-    <button className="launch-button-mobile" onClick={onClick}>
+    <button className="launch-button-mobile" onClick={onClick} aria-label="Open launcher">
       <img src={IconCrystal} alt="Launch" className="launch-icon" />
     </button>
   );

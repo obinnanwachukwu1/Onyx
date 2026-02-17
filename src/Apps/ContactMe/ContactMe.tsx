@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Mail, Github, Linkedin, Send, MessageSquare, ArrowUpRight } from 'lucide-react';
 import './ContactMe.css';
+import { useWindowModal } from '../../components/WindowModalContext';
 
 type FormData = {
   name: string;
@@ -14,17 +15,22 @@ const ContactMe = (): JSX.Element => {
     email: '',
     message: '',
   });
+  const { showAlert } = useWindowModal();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     console.log('Message sent:', formData);
     setFormData({ name: '', email: '', message: '' });
-    alert('Your message has been sent!');
+    await showAlert({
+      title: 'Message sent',
+      message: 'Your message has been sent successfully.',
+      tone: 'success',
+    });
   };
 
   return (

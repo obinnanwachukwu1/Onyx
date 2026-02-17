@@ -27,19 +27,21 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
         return () => ro.disconnect();
     }, []);
     return (
-        <div className="app-detail-page visible">
-            <div className="px-6 sm:px-8 md:px-10">
-                <button
-                    className="inline-flex items-center gap-2 py-1 text-[var(--muted-text)] hover:text-blue-600 transition-colors"
-                    onClick={onBack}
-                    title="Back to Apps"
-                >
-                    <ChevronLeft className="w-5 h-5" />
-                    <span>Back to Apps</span>
-                </button>
+        <div className="app-detail-page visible py-4 sm:py-6 md:py-8">
+            <div className="px-6 mb-4 sm:mb-5 md:mb-6">
+                <div className="max-w-5xl mx-auto">
+                    <button
+                        className="inline-flex items-center gap-2 py-1 text-[var(--muted-text)] hover:text-blue-600 transition-colors"
+                        onClick={onBack}
+                        title="Back to Apps"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                        <span>Back to Apps</span>
+                    </button>
+                </div>
             </div>
 
-            <div className="app-detail-body">
+            <div className="app-detail-body pb-6 sm:pb-8 md:pb-10">
                 <div ref={containerRef} className="app-detail-content animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto bg-[var(--card-bg)] text-[var(--text-color)] rounded-2xl md:rounded-3xl shadow-none overflow-hidden px-6 sm:px-8 md:px-10">
                 <div className="app-detail-hero flex flex-col md:flex-row items-center md:items-stretch py-6 sm:py-8 md:py-10 border-b border-[var(--card-border)] gap-6 md:gap-8 text-center md:text-left">
                     <div className="app-detail-icon-container shrink-0">

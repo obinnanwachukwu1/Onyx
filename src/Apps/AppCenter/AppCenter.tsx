@@ -70,6 +70,18 @@ const AppCenter = () => {
     return ["All", ...new Set(categories)];
   };
 
+  const getRecommendedApps = () => {
+    const base = apps.slice(0, 6);
+    const queueUp = apps.find((app) => app.name === 'QueueUp');
+    const aiQaIndex = base.findIndex((app) => app.name === 'AI Q&A Tool');
+    if (queueUp && aiQaIndex !== -1) {
+      const next = [...base];
+      next[aiQaIndex] = queueUp;
+      return next;
+    }
+    return base;
+  };
+
   if (loading) return <LoadingScreen />;
 
   if (error) {
@@ -152,7 +164,7 @@ const AppCenter = () => {
                 </button>
               </div>
               <AppGrid
-                apps={apps.slice(0, 6)} // Show first 6 as recommended
+                apps={getRecommendedApps()} // Replace AI Q&A Tool with QueueUp when available
                 onOpenApp={openApp}
                 searchTerm={searchTerm}
                 selectedCategory="All"

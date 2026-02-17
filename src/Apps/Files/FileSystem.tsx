@@ -1,4 +1,12 @@
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
+import {
+  canCreateInDirectory,
+  canDeletePath,
+  canEditPath,
+  canRenamePath,
+  canOpenPath,
+  normalizePath,
+} from './permissions';
 
 export type FileType = 'file' | 'folder';
 
@@ -222,11 +230,11 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
   };
 
   const isEditable = useCallback((path: string) => {
-    return path.startsWith('/Users/root');
+    return canEditPath(path);
   }, []);
 
   const mkdir = useCallback((path: string, name: string) => {
-    if (!isEditable(path)) throw new Error('Permission denied: Read-only file system');
+    if (!canCreateInDirectory(path)) throw new Error('Permission denied: Read-only file system');
     const parent = resolvePath(path);
     if (!parent || parent.type !== 'folder') throw new Error('Invalid path');
     if (parent.children && parent.children[name]) throw new Error('File or folder already exists');
@@ -252,10 +260,10 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     current.children[name] = newNode;
 
     saveFs({ root: newRoot });
-  }, [fs, resolvePath, saveFs, isEditable]);
+  }, [fs, resolvePath, saveFs]);
 
   const touch = useCallback((path: string, name: string, content: string = '') => {
-    if (!isEditable(path)) throw new Error('Permission denied: Read-only file system');
+    if (!canCreateInDirectory(path)) throw new Error('Permission denied: Read-only file system');
     const parent = resolvePath(path);
     if (!parent || parent.type !== 'folder') throw new Error('Invalid path');
     if (parent.children && parent.children[name]) throw new Error('File or folder already exists');
@@ -281,12 +289,13 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     current.children[name] = newNode;
 
     saveFs({ root: newRoot });
-  }, [fs, resolvePath, saveFs, isEditable]);
+  }, [fs, resolvePath, saveFs]);
 
   const rm = useCallback((path: string) => {
-    if (!isEditable(path)) throw new Error('Permission denied: Read-only file system');
-    const parentPath = getParentPath(path);
-    const name = path.split('/').pop();
+    const normalizedPath = normalizePath(path);
+    if (!canDeletePath(normalizedPath)) throw new Error('Permission denied: You cannot delete this item');
+    const parentPath = getParentPath(normalizedPath);
+    const name = normalizedPath.split('/').pop();
     if (!name) throw new Error('Invalid path');
 
     const newRoot = JSON.parse(JSON.stringify(fs.root));
@@ -297,17 +306,21 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     }
 
     if (current.children && current.children[name]) {
+      if (current.children[name].isGhost) {
+        throw new Error('Permission denied: Protected system item');
+      }
       delete current.children[name];
       saveFs({ root: newRoot });
     } else {
       throw new Error('File not found');
     }
-  }, [fs, saveFs, isEditable]);
+  }, [fs, saveFs]);
 
   const rename = useCallback((path: string, newName: string) => {
-    if (!isEditable(path)) throw new Error('Permission denied: Read-only file system');
-    const parentPath = getParentPath(path);
-    const oldName = path.split('/').pop();
+    const normalizedPath = normalizePath(path);
+    if (!canRenamePath(normalizedPath)) throw new Error('Permission denied: You cannot rename this item');
+    const parentPath = getParentPath(normalizedPath);
+    const oldName = normalizedPath.split('/').pop();
     if (!oldName) throw new Error('Invalid path');
 
     const newRoot = JSON.parse(JSON.stringify(fs.root));
@@ -318,6 +331,9 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     }
 
     if (current.children && current.children[oldName]) {
+      if (current.children[oldName].isGhost) {
+        throw new Error('Permission denied: Protected system item');
+      }
       const node = current.children[oldName];
       node.name = newName;
       node.modifiedAt = Date.now();
@@ -329,12 +345,13 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     } else {
       throw new Error('File not found');
     }
-  }, [fs, saveFs, isEditable]);
+  }, [fs, saveFs]);
 
   const updateFileContent = useCallback((path: string, content: string) => {
-    if (!isEditable(path)) throw new Error('Permission denied: Read-only file system');
-    const parentPath = getParentPath(path);
-    const name = path.split('/').pop();
+    const normalizedPath = normalizePath(path);
+    if (!canEditPath(normalizedPath)) throw new Error('Permission denied: Read-only file system');
+    const parentPath = getParentPath(normalizedPath);
+    const name = normalizedPath.split('/').pop();
     if (!name) throw new Error('Invalid path');
 
     const newRoot = JSON.parse(JSON.stringify(fs.root));
@@ -345,13 +362,16 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     }
 
     if (current.children && current.children[name]) {
+      if (current.children[name].isGhost) {
+        throw new Error('Permission denied: Protected system item');
+      }
       current.children[name].content = content;
       current.children[name].modifiedAt = Date.now();
       saveFs({ root: newRoot });
     } else {
       throw new Error('File not found');
     }
-  }, [fs, saveFs, isEditable]);
+  }, [fs, saveFs]);
 
   return {
     fs,
@@ -362,6 +382,9 @@ const useFileSystemState = (apps?: AppShortcut[]) => {
     rename,
     updateFileContent,
     isEditable,
+    canOpenPath,
+    canDeletePath,
+    canRenamePath,
     isHydrated
   };
 };
