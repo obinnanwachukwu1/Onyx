@@ -8,23 +8,27 @@ import { fileURLToPath, URL } from 'url'
 import tailwindcss from '@tailwindcss/vite'
 import { cloudflare } from '@cloudflare/vite-plugin'
 
-const config = defineConfig({
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+const config = defineConfig(() => {
+  const isVitest = process.env.VITEST === 'true'
+
+  return {
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
     },
-  },
-  plugins: [
-    devtools(),
-    cloudflare({ viteEnvironment: { name: 'ssr' } }),
-    // this is the plugin that enables path aliases
-    viteTsConfigPaths({
-      projects: ['./tsconfig.json'],
-    }),
-    tailwindcss(),
-    tanstackStart(),
-    viteReact(),
-  ],
+    plugins: [
+      devtools(),
+      !isVitest && cloudflare({ viteEnvironment: { name: 'ssr' } }),
+      // this is the plugin that enables path aliases
+      viteTsConfigPaths({
+        projects: ['./tsconfig.json'],
+      }),
+      tailwindcss(),
+      tanstackStart(),
+      viteReact(),
+    ].filter(Boolean),
+  }
 })
 
 export default config
