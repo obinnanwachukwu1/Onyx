@@ -13,5 +13,6 @@ export interface App {
     github?: string;
     canTry?: boolean;
     featured?: boolean;
+    featuredOrder?: number;
     image?: string;
 }

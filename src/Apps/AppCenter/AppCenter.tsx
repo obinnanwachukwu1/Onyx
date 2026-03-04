@@ -70,16 +70,30 @@ const AppCenter = () => {
     return ["All", ...new Set(categories)];
   };
 
+  const parseReleaseDate = (releaseDate?: string) => {
+    if (!releaseDate) return 0;
+
+    const trimmed = releaseDate.trim();
+    const normalized = /^\d{4}$/.test(trimmed) ? `January 1, ${trimmed}` : trimmed;
+    const timestamp = Date.parse(normalized);
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+  };
+
   const getRecommendedApps = () => {
-    const base = apps.slice(0, 6);
-    const queueUp = apps.find((app) => app.name === 'QueueUp');
-    const aiQaIndex = base.findIndex((app) => app.name === 'AI Q&A Tool');
-    if (queueUp && aiQaIndex !== -1) {
-      const next = [...base];
-      next[aiQaIndex] = queueUp;
-      return next;
-    }
-    return base;
+    const MAX_RECOMMENDED = 6;
+
+    return [...apps]
+      .sort((a, b) => {
+        const releaseDiff = parseReleaseDate(b.releaseDate) - parseReleaseDate(a.releaseDate);
+        if (releaseDiff !== 0) return releaseDiff;
+
+        const idA = Number.parseInt(String(a.id), 10);
+        const idB = Number.parseInt(String(b.id), 10);
+        const safeIdA = Number.isNaN(idA) ? 0 : idA;
+        const safeIdB = Number.isNaN(idB) ? 0 : idB;
+        return safeIdB - safeIdA;
+      })
+      .slice(0, MAX_RECOMMENDED);
   };
 
   if (loading) return <LoadingScreen />;
@@ -164,7 +178,7 @@ const AppCenter = () => {
                 </button>
               </div>
               <AppGrid
-                apps={getRecommendedApps()} // Replace AI Q&A Tool with QueueUp when available
+                apps={getRecommendedApps()}
                 onOpenApp={openApp}
                 searchTerm={searchTerm}
                 selectedCategory="All"

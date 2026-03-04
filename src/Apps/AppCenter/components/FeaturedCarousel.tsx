@@ -11,9 +11,21 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ apps, onOpenApp }) 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [mediaFallbackIndex, setMediaFallbackIndex] = useState(0);
     // Fallback to first 3 apps if no featured apps are found
-    const featuredApps = apps.filter(app => app.featured).length > 0
-        ? apps.filter(app => app.featured)
-        : apps.slice(0, 3);
+    const featuredApps = useMemo(() => {
+        const explicitFeatured = apps.filter((app) => app.featured);
+        if (explicitFeatured.length === 0) {
+            return apps.slice(0, 3);
+        }
+
+        return [...explicitFeatured].sort((a, b) => {
+            const rankA = a.featuredOrder ?? Number.MAX_SAFE_INTEGER;
+            const rankB = b.featuredOrder ?? Number.MAX_SAFE_INTEGER;
+            if (rankA !== rankB) {
+                return rankA - rankB;
+            }
+            return a.name.localeCompare(b.name);
+        });
+    }, [apps]);
 
     useEffect(() => {
         if (featuredApps.length === 0) return;
@@ -22,6 +34,12 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ apps, onOpenApp }) 
         }, 8000);
         return () => clearInterval(interval);
     }, [featuredApps]);
+
+    useEffect(() => {
+        if (currentIndex >= featuredApps.length) {
+            setCurrentIndex(0);
+        }
+    }, [currentIndex, featuredApps.length]);
 
     const getBannerCandidate = (app: App): string | null => {
         const seed = app.image || app.icon || app.screenshots?.[0];

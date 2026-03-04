@@ -50,7 +50,9 @@
       "Docker",
       "GitHub Actions",
       "Vultr"
-    ]
+    ],
+    "featured": true,
+    "featuredOrder": 3
   },
   {
     "id": 3,
@@ -74,7 +76,9 @@
       "OpenAI APIs",
       "Product Analytics",
       "TypeScript"
-    ]
+    ],
+    "featured": true,
+    "featuredOrder": 2
   },
   {
     "id": 4,
@@ -266,5 +270,38 @@
       "Events",
       "Queueing"
     ]
+  },
+  {
+    "id": 11,
+    "name": "TraceCode",
+    "description": "Interactive algorithm interview prep with guided workflows and execution tracing",
+    "fullDescription": "I built TraceCode, a full-stack interview-prep platform focused on teaching how to think through algorithm problems. It combines a guided 6-step workflow (pattern selection, approach comparison, edge-case planning, tracing, coding checkpoints, and completion) with a runtime visualizer for arrays, hash maps, trees, linked lists, graphs, dynamic programming tables, and call stacks. The platform currently includes 83 practice problems, 25 pattern lesson modules, 8 drill categories (66 drills plus endless runs), and 40 timed mock interview problems with stage-based follow-ups. It supports Python, JavaScript, and TypeScript execution, tracks submissions and complexity analysis, and uses local-first persistence with cloud sync so progress and drafts stay reliable across sessions.",
+    "image": "/projects/TraceCode/banner.svg",
+    "screenshots": [
+      "/projects/TraceCode/banner.svg"
+    ],
+    "canTry": true,
+    "trial": "https://tracecode.app",
+    "github": null,
+    "releaseDate": "2026",
+    "icon": "/projects/TraceCode/logo.svg",
+    "technologies": [
+      "React",
+      "TypeScript",
+      "Python",
+      "JavaScript",
+      "Algorithm Visualization",
+      "Cloud Sync",
+      "Local-First Persistence"
+    ],
+    "category": "Interview Prep",
+    "tags": [
+      "Algorithms",
+      "Education",
+      "Interview Prep",
+      "Visualizer"
+    ],
+    "featured": true,
+    "featuredOrder": 1
   }
 ]
