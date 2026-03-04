@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Notepad.css';
 import { useFileSystem } from '../Files/FileSystem';
 import { Save } from 'lucide-react';
-import { useWindowModal } from '../../components/WindowModalContext';
+import { useWindowModal } from '../../Components/WindowModalContext';
 
 interface NotepadProps {
   initialContent?: string;

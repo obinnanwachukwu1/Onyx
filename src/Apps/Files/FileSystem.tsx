@@ -165,13 +165,20 @@ const mergeFileSystems = (ghost: FileNode, stored: FileNode | null): FileNode =>
   const mergedUserRoot = findNode(merged, ['Users', 'root']);
 
   if (storedUserRoot && mergedUserRoot && mergedUserRoot.children) {
-    // Shallow merge of user root
-    mergedUserRoot.children = { ...mergedUserRoot.children, ...storedUserRoot.children };
-    // Deep-merge Desktop folder so ghost shortcuts appear for existing users
+    const storedChildren = storedUserRoot.children || {};
+    const { Desktop: storedDesktop, ...storedChildrenWithoutDesktop } = storedChildren;
+
+    // Merge non-desktop children first so we can preserve a dedicated Desktop merge.
+    mergedUserRoot.children = { ...mergedUserRoot.children, ...storedChildrenWithoutDesktop };
+
+    // Deep-merge Desktop folder so ghost shortcuts appear for existing users.
     const mergedDesktop = mergedUserRoot.children['Desktop'];
-    const storedDesktop = storedUserRoot.children?.['Desktop'];
     if (mergedDesktop && storedDesktop && mergedDesktop.type === 'folder' && storedDesktop.type === 'folder') {
-      mergedDesktop.children = { ...(mergedDesktop.children || {}), ...(storedDesktop.children || {}) };
+      mergedUserRoot.children['Desktop'] = {
+        ...mergedDesktop,
+        ...storedDesktop,
+        children: { ...(mergedDesktop.children || {}), ...(storedDesktop.children || {}) },
+      };
     }
   }
 

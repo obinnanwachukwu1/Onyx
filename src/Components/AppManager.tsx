@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { cloneElement, isValidElement, useEffect, useRef, useState } from 'react';
 import NavigationBar from './NavigationBar/NavigationBar';
 import MobileDesktop from './MobileDesktop/MobileDesktop';
 import appList from '../Apps/AppList';
@@ -43,7 +43,7 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
     return maxZIndex + 1;
   });
 
-  const launchApp = (appId: string) => {
+  const launchApp = (appId: string, props: Record<string, unknown> = {}) => {
     const desktop = document.querySelector<HTMLElement>('.mobile-desktop');
     // Navigation bar is fixed height (see NavigationBar.css)
     const FALLBACK_NAV_HEIGHT = 50;
@@ -66,16 +66,31 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
       .sort((a, b) => b.zIndex - a.zIndex)[0];
 
     if (existingWindow) {
+      const updatedContent = isValidElement(app.component)
+        ? cloneElement(app.component, props)
+        : app.component;
+
+      setWindows((previousWindows) =>
+        previousWindows.map((window) =>
+          window.id === existingWindow.id
+            ? { ...window, content: updatedContent, isMinimized: false }
+            : window
+        )
+      );
       activateWindow(existingWindow.id);
       return;
     }
+
+    const content = isValidElement(app.component)
+      ? cloneElement(app.component, props)
+      : app.component;
 
     const newWindow: WindowData = {
       id: Date.now(),
       appId: app.id,
       appIcon: app.icon,
       title: app.name,
-      content: app.component,
+      content,
       position: { x: 0, y: 0 },
       restorePosition: { x: 0, y: 0 },
       size: { width: desktopBounds.width, height: desktopBounds.height - navigationBarHeight },

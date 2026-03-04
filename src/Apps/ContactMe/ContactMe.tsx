@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, Github, Linkedin, Send, MessageSquare, ArrowUpRight } from 'lucide-react';
 import './ContactMe.css';
-import { useWindowModal } from '../../components/WindowModalContext';
+import { useWindowModal } from '../../Components/WindowModalContext';
 
 type FormData = {
   name: string;

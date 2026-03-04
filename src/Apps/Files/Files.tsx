@@ -9,7 +9,7 @@ import { useWindowChrome } from '../../Components/WindowChromeContext';
 import { useWindowContext } from '../../Components/WindowContext';
 import { getAppIconMap, filesIconFor, filesListIconFor } from './fileAssociations';
 import { joinPath } from './permissions';
-import { useWindowModal } from '../../components/WindowModalContext';
+import { useWindowModal } from '../../Components/WindowModalContext';
 
 const Files = () => {
   const {

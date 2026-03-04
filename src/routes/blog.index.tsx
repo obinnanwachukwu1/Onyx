@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { getPosts } from '../utils/posts'
-import BlogList from '../components/BlogList'
+import BlogList from '../Components/BlogList'
 import { useBlogWindowTitle } from '../utils/BlogWindowContext'
 
 export const Route = createFileRoute('/blog/')({

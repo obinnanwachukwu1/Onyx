@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { getPost } from '../utils/posts'
-import ReaderView from '../components/ReaderView'
+import ReaderView from '../Components/ReaderView'
 import { useBlogWindowTitle } from '../utils/BlogWindowContext'
 
 export const Route = createFileRoute('/blog/$postId')({
