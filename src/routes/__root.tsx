@@ -5,6 +5,13 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { DeviceProvider } from '../Components/DeviceContext'
 
 import appCss from '../styles.css?url'
+import desktopWallpaper from '../assets/wallpaper/wall5.webp?url'
+import iconCrystal from '../assets/icons/IconCrystal.svg?url'
+import iconFiles from '../assets/icons/IconFiles.svg?url'
+import iconStore from '../assets/icons/IconStore.svg?url'
+import iconSettings from '../assets/icons/IconSettings.svg?url'
+import iconResume from '../assets/icons/IconResume.svg?url'
+import iconContact from '../assets/icons/IconContact.svg?url'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -24,6 +31,48 @@ export const Route = createRootRoute({
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+      {
+        rel: 'preload',
+        as: 'image',
+        href: desktopWallpaper,
+        type: 'image/webp',
+      },
+      {
+        rel: 'preload',
+        as: 'image',
+        href: iconCrystal,
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'preload',
+        as: 'image',
+        href: iconFiles,
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'preload',
+        as: 'image',
+        href: iconStore,
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'preload',
+        as: 'image',
+        href: iconSettings,
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'preload',
+        as: 'image',
+        href: iconResume,
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'preload',
+        as: 'image',
+        href: iconContact,
+        type: 'image/svg+xml',
       },
     ],
   }),

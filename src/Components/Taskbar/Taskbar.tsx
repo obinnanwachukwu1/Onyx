@@ -15,6 +15,7 @@ interface TaskbarProps {
 }
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+const APP_MAP = new Map(appList.map((app) => [app.id, app]));
 
 const Taskbar = forwardRef<HTMLDivElement, TaskbarProps>(({ windows, setButtonPosition }, ref) => {
   const { toggleLauncherVisibility, launcherVisible } = useWindowContext();
@@ -108,13 +109,13 @@ const Taskbar = forwardRef<HTMLDivElement, TaskbarProps>(({ windows, setButtonPo
   return (
     <div ref={ref} className={`taskbar ${taskbarStyle}`} onContextMenu={handleContextMenu}>
       
-      <div ref={itemsContainerRef} className={`taskbar-items-container ${isHydrated ? 'hydrated' : ''}`}>
+      <div ref={itemsContainerRef} className="taskbar-items-container">
         <div ref={itemsRowRef} className="taskbar-items">
            {/* Start Button / Launchpad */}
-           <LaunchButton launcherVisible={launcherVisible} onClick={toggleLauncherVisibility} />
+          <LaunchButton launcherVisible={launcherVisible} onClick={toggleLauncherVisibility} />
 
           {allAppIds.map((appId) => {
-            const app = appList.find((a) => a.id === appId);
+            const app = APP_MAP.get(appId);
             if (!app) return null;
 
             const appWindows = windows.filter((w) => w.appId === appId);

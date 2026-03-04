@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type TaskbarStyle = 'classic' | 'modern' | 'floating';
 
@@ -24,7 +24,6 @@ const DEFAULT_PINNED = ['files', 'appcenter', 'settings'];
 // Global flag that persists across component remounts
 // Once hydrated, stays true for the entire session
 let globalHydrated = false;
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 const normalizeTaskbarStyle = (storedStyle: string | null): TaskbarStyle | null => {
   if (storedStyle === 'windows') return 'modern';
@@ -35,63 +34,90 @@ const normalizeTaskbarStyle = (storedStyle: string | null): TaskbarStyle | null 
   return null;
 };
 
-export const TaskbarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Start with defaults that match what the server will render
-  const [taskbarStyle, setTaskbarStyleState] = useState<TaskbarStyle>('modern');
-  const [pinnedAppIds, setPinnedAppIds] = useState<string[]>(DEFAULT_PINNED);
-  // Use global flag - if we've hydrated before, skip the animation on remount
-  const [isHydrated, setIsHydrated] = useState(globalHydrated);
+const getInitialTaskbarStyle = (): TaskbarStyle => {
+  if (typeof window === 'undefined') {
+    return 'modern';
+  }
 
-  useIsomorphicLayoutEffect(() => {
-    // Only run on client after mount
-    if (typeof window === 'undefined') return;
-
-    const savedStyle = normalizeTaskbarStyle(localStorage.getItem(STORAGE_KEY_STYLE));
+  try {
+    const savedStyle = normalizeTaskbarStyle(window.localStorage.getItem(STORAGE_KEY_STYLE));
     if (savedStyle) {
-      setTaskbarStyleState(savedStyle);
-      localStorage.setItem(STORAGE_KEY_STYLE, savedStyle);
+      window.localStorage.setItem(STORAGE_KEY_STYLE, savedStyle);
+      return savedStyle;
+    }
+  } catch (e) {
+    console.error('Failed to read taskbar style', e);
+  }
+  return 'modern';
+};
+
+const getInitialPinnedApps = (): string[] => {
+  if (typeof window === 'undefined') {
+    return DEFAULT_PINNED;
+  }
+
+  try {
+    const savedPinned = window.localStorage.getItem(STORAGE_KEY_PINNED);
+    if (!savedPinned) {
+      return DEFAULT_PINNED;
     }
 
-    const savedPinned = localStorage.getItem(STORAGE_KEY_PINNED);
-    if (savedPinned) {
-      try {
-        setPinnedAppIds(JSON.parse(savedPinned));
-      } catch (e) {
-        console.error('Failed to parse pinned apps', e);
-      }
+    const parsed = JSON.parse(savedPinned);
+    if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+      return parsed;
     }
-    // Note: We don't set defaults here because we already initialized with them
-    
-    // Set both local state and global flag
+  } catch (e) {
+    console.error('Failed to parse pinned apps', e);
+  }
+
+  return DEFAULT_PINNED;
+};
+
+export const TaskbarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [taskbarStyle, setTaskbarStyleState] = useState<TaskbarStyle>(getInitialTaskbarStyle);
+  const [pinnedAppIds, setPinnedAppIds] = useState<string[]>(getInitialPinnedApps);
+  // Use global flag - if we've hydrated before, skip the animation on remount
+  const [isHydrated, setIsHydrated] = useState(globalHydrated || typeof window !== 'undefined');
+
+  useEffect(() => {
     globalHydrated = true;
-    setIsHydrated(true);
-  }, []);
+    if (!isHydrated) {
+      setIsHydrated(true);
+    }
+  }, [isHydrated]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY_STYLE, taskbarStyle);
+    } catch (e) {
+      console.error('Failed to persist taskbar style', e);
+    }
+  }, [taskbarStyle]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY_PINNED, JSON.stringify(pinnedAppIds));
+    } catch (e) {
+      console.error('Failed to persist pinned apps', e);
+    }
+  }, [pinnedAppIds]);
 
   const setTaskbarStyle = (style: TaskbarStyle) => {
     setTaskbarStyleState(style);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY_STYLE, style);
-    }
   };
 
   const pinApp = (appId: string) => {
     setPinnedAppIds((prev) => {
       if (prev.includes(appId)) return prev;
-      const newPinned = [...prev, appId];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY_PINNED, JSON.stringify(newPinned));
-      }
-      return newPinned;
+      return [...prev, appId];
     });
   };
 
   const unpinApp = (appId: string) => {
     setPinnedAppIds((prev) => {
-      const newPinned = prev.filter((id) => id !== appId);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY_PINNED, JSON.stringify(newPinned));
-      }
-      return newPinned;
+      return prev.filter((id) => id !== appId);
     });
   };
 

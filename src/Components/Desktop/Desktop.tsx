@@ -1,7 +1,6 @@
 import { useEffect, useRef, type MouseEventHandler } from 'react';
 import './Desktop.css';
 import DesktopIcon from './DesktopIcon';
-import appList from '../../Apps/AppList';
 import { useWindowContext } from '../WindowContext';
 import { useFileSystem } from '../../Apps/Files/FileSystem';
 import { desktopIconSrcFor, getAppIconMap } from '../../Apps/Files/fileAssociations';
@@ -30,7 +29,11 @@ const Desktop = ({ focusMode = false, disableAutoStart = false }: DesktopProps):
     };
   }, [launchApp]);
 
-  const { resolvePath, isHydrated } = useFileSystem();
+  const { resolvePath } = useFileSystem();
+  const appIconMapRef = useRef<Record<string, string> | null>(null);
+  if (!appIconMapRef.current) {
+    appIconMapRef.current = getAppIconMap();
+  }
 
   const handleOpenItem = (name: string, content?: string) => {
     // .app shortcut -> launch app by id stored in content
@@ -56,16 +59,13 @@ const Desktop = ({ focusMode = false, disableAutoStart = false }: DesktopProps):
   const desktopFolder = resolvePath('/Users/root/Desktop');
   const items = desktopFolder?.children ? Object.values(desktopFolder.children) : [];
 
-  // Map app id -> icon for .app shortcuts
-  const appIconMap: Record<string, string> = getAppIconMap();
-
   return (
     <div className={`desktop ${focusMode ? 'focus-mode' : ''}`} onMouseDown={handleMouseDown}>
-      <div className={`desktop-icons ${isHydrated ? 'hydrated' : ''}`}>
+      <div className="desktop-icons">
         {items.map((item) => {
           const isFolder = item.type === 'folder';
           const appId = (item.content || '').trim();
-          const imageSrc = desktopIconSrcFor(item.name, isFolder, appId, appIconMap);
+          const imageSrc = desktopIconSrcFor(item.name, isFolder, appId, appIconMapRef.current || undefined);
           const label = item.name.replace(/\.app$/, '');
           return (
             <DesktopIcon

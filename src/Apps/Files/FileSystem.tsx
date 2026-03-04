@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode, useRef } from 'react';
 import {
   canCreateInDirectory,
   canDeletePath,
@@ -185,36 +185,51 @@ const mergeFileSystems = (ghost: FileNode, stored: FileNode | null): FileNode =>
   return merged;
 };
 
+const getInitialFileSystem = (apps?: AppShortcut[]): { fs: FileSystemState; hydrated: boolean } => {
+  const initialGhost = createInitialGhostFs(apps);
+
+  if (typeof window === 'undefined') {
+    return { fs: { root: initialGhost }, hydrated: globalFsHydrated };
+  }
+
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const storedFs = JSON.parse(stored);
+      return {
+        fs: { root: mergeFileSystems(initialGhost, storedFs?.root ?? null) },
+        hydrated: true,
+      };
+    }
+  } catch (e) {
+    console.error('Failed to parse filesystem from localStorage', e);
+  }
+
+  return { fs: { root: initialGhost }, hydrated: true };
+};
+
 // Internal hook for state management
 const useFileSystemState = (apps?: AppShortcut[]) => {
-  // Always start with ghost FS for SSR consistency
-  const [fs, setFs] = useState<FileSystemState>(() => {
-    const initialGhost = createInitialGhostFs(apps);
-    return { root: initialGhost };
-  });
-  const [isHydrated, setIsHydrated] = useState(globalFsHydrated);
+  const initialStateRef = useRef<{ fs: FileSystemState; hydrated: boolean } | null>(null);
+  if (!initialStateRef.current) {
+    initialStateRef.current = getInitialFileSystem(apps);
+  }
 
-  // Load from localStorage after mount (client only)
+  const [fs, setFs] = useState<FileSystemState>(initialStateRef.current.fs);
+  const [isHydrated, setIsHydrated] = useState<boolean>(initialStateRef.current.hydrated);
+
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const storedFs = JSON.parse(stored);
-        const initialGhost = createInitialGhostFs(apps);
-        setFs({ root: mergeFileSystems(initialGhost, storedFs?.root) });
-      } catch (e) {
-        console.error('Failed to parse filesystem from localStorage', e);
-      }
-    }
     globalFsHydrated = true;
-    setIsHydrated(true);
-  }, [apps]);
+    if (!isHydrated) {
+      setIsHydrated(true);
+    }
+  }, [isHydrated]);
 
   const saveFs = useCallback((newFs: FileSystemState) => {
     setFs(newFs);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newFs));
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newFs));
+    }
   }, []);
 
   const resolvePath = useCallback((path: string): FileNode | null => {

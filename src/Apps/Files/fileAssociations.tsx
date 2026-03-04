@@ -5,9 +5,17 @@ import IconNotepad from '../../assets/icons/IconNotepad.svg';
 import IconFolder from '../../assets/icons/IconFolder.svg';
 import { Download, FileText, Lock, Monitor, Settings, User, Users } from 'lucide-react';
 
+let cachedAppIconMap: Record<string, string> | null = null;
+
 // Build a stable appId -> icon map
-export const getAppIconMap = (): Record<string, string> =>
-  Object.fromEntries(appList.map(a => [a.id, a.icon as unknown as string]));
+export const getAppIconMap = (): Record<string, string> => {
+  if (cachedAppIconMap) {
+    return cachedAppIconMap;
+  }
+
+  cachedAppIconMap = Object.fromEntries(appList.map((a) => [a.id, a.icon as unknown as string]));
+  return cachedAppIconMap;
+};
 
 export const isAppShortcut = (name: string) => name.toLowerCase().endsWith('.app');
 export const isTextFile = (name: string) => name.toLowerCase().endsWith('.txt');

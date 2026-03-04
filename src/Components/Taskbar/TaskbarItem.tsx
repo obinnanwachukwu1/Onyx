@@ -297,7 +297,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
                 title={displayTitle}
             >
                 <div className="taskbar-item-content">
-                    <img src={icon} alt={title} className="taskbar-icon" />
+                    <img src={icon} alt={title} className="taskbar-icon" loading="eager" decoding="sync" fetchPriority="high" />
                     {renderWindowsIndicators()}
                     {taskbarStyle === 'floating' && isOpen && <div className="dock-indicator" />}
                 </div>
