@@ -100,7 +100,7 @@ const Settings = () => {
           <span className="settings-label">Onyx OS Web Desktop</span>
         </div>
         <div className="settings-row">
-          <span className="settings-label">Version 1.0.0</span>
+          <span className="settings-label">Version 2.0.0</span>
         </div>
       </div>
       <div className="settings-section">
