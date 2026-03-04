@@ -46,14 +46,14 @@ const ContactMe = (): JSX.Element => {
             <div className="space-y-4 lg:col-span-1 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
               {/* Email Card */}
               <a 
-                href="mailto:me@obinnanwachukwu.com" 
+                href="mailto:business@obinnanwachukwu.com" 
                 className="group block rounded-xl border border-[var(--window-border-inactive)] bg-[var(--welcome-card-bg)] p-4 sm:p-5 transition-all hover:border-[var(--window-border-active)] hover:bg-[var(--welcome-card-hover)] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--welcome-accent-blue)]"
               >
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--welcome-accent-emerald-soft)] text-[var(--welcome-accent-emerald)]">
                   <Mail className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <h3 className="font-semibold text-[var(--text-color)]">Email</h3>
-                <p className="text-sm sm:text-base text-[var(--text-color)] opacity-70 break-all">me@obinnanwachukwu.com</p>
+                <p className="text-sm sm:text-base text-[var(--text-color)] opacity-70 break-all">business@obinnanwachukwu.com</p>
               </a>
 
               {/* LinkedIn Card */}

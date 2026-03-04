@@ -26,13 +26,9 @@ export default function StatusPill() {
         <span>System Status</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"></span>
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-        </span>
+        <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
         <span className="text-xs font-medium text-[var(--sidebar-item-text)]">{status || 'System Idle'}</span>
       </div>
     </div>
   );
 }
-

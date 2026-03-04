@@ -312,8 +312,15 @@ const Launcher = (): JSX.Element | null => {
           </button>
         </div>
 
-        <div className="flex flex-col gap-3 pb-2 w-full px-2 items-center">
-          <button className="p-3 text-[var(--text-color)] opacity-60 hover:text-[var(--text-color)] hover:opacity-100 hover:bg-[var(--sidebar-item-hover-bg)] rounded-xl transition-colors bg-transparent w-full aspect-square flex items-center justify-center" title="Settings">
+        <div className="flex flex-col gap-3 w-full px-2 items-center">
+          <button
+            className="p-3 text-[var(--text-color)] opacity-60 hover:text-[var(--text-color)] hover:opacity-100 hover:bg-[var(--sidebar-item-hover-bg)] rounded-xl transition-colors bg-transparent w-full aspect-square flex items-center justify-center"
+            title="Settings"
+            onClick={() => {
+              launchApp('settings');
+              closeLauncher();
+            }}
+          >
             <Settings size={20} />
           </button>
         </div>
