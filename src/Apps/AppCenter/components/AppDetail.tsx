@@ -27,7 +27,7 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
         return () => ro.disconnect();
     }, []);
     return (
-        <div className="app-detail-page visible py-4 sm:py-6 md:py-8">
+        <div className="app-detail-page visible">
             <div className="px-6 mb-4 sm:mb-5 md:mb-6">
                 <div className="max-w-5xl mx-auto">
                     <button
@@ -41,8 +41,8 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
                 </div>
             </div>
 
-            <div className="app-detail-body pb-6 sm:pb-8 md:pb-10">
-                <div ref={containerRef} className="app-detail-content animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto bg-[var(--card-bg)] text-[var(--text-color)] rounded-2xl md:rounded-3xl shadow-none overflow-hidden px-6 sm:px-8 md:px-10">
+            <div className="app-detail-body">
+                <div ref={containerRef} className="app-detail-content app-detail-content-shell animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto bg-[var(--card-bg)] text-[var(--text-color)] rounded-2xl md:rounded-3xl shadow-none overflow-x-hidden px-6 sm:px-8 md:px-10">
                 <div className="app-detail-hero flex flex-col md:flex-row items-center md:items-stretch py-6 sm:py-8 md:py-10 border-b border-[var(--card-border)] gap-6 md:gap-8 text-center md:text-left">
                     <div className="app-detail-icon-container shrink-0">
                         <div className="app-detail-icon w-24 h-24 sm:w-28 sm:h-28 md:w-40 md:h-40 bg-[var(--subtle-bg)] rounded-2xl flex items-center justify-center shadow-inner p-5 sm:p-6">
@@ -110,7 +110,7 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
                     </div>
                 )}
 
-                <div className={`app-description-section py-5 sm:py-8 md:py-10 ${stack ? 'grid grid-cols-1 gap-6' : 'grid lg:grid-cols-3 gap-8 lg:gap-10'}`}> 
+                <div className={`app-description-section app-detail-bottom-section py-5 sm:py-8 md:py-10 ${stack ? 'grid grid-cols-1 gap-6' : 'grid lg:grid-cols-3 gap-8 lg:gap-10'}`}> 
                     <div className={`${stack ? '' : 'lg:col-span-2'}`}> 
                         <h3 className="section-title text-lg sm:text-xl font-bold text-[var(--heading-text)] mb-3 sm:mb-4">About this project</h3>
                         <div className="app-description max-w-none text-[var(--text-color)] leading-relaxed">
@@ -118,7 +118,7 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
                         </div>
                     </div>
 
-                    <div className={`app-additional-info space-y-4 sm:space-y-6 ${stack ? '' : 'lg:col-span-1'}`}> 
+                    <div className={`app-additional-info app-detail-bottom-info space-y-4 sm:space-y-6 ${stack ? '' : 'lg:col-span-1'}`}> 
                         <div className={`bg-transparent sm:bg-[var(--subtle-bg)] rounded-none sm:rounded-2xl p-0 sm:p-6 border-0 sm:border sm:border-[var(--card-border)] w-full sm:w-auto max-w-sm mx-auto ${stack ? '' : 'lg:mx-0'} ${stack ? '' : 'lg:sticky lg:top-6'}`}> 
                             <h4 className="font-semibold text-[var(--heading-text)] mb-2 sm:mb-4 text-lg">Details</h4>
                             <div className="space-y-4">

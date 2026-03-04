@@ -36,20 +36,62 @@
     min-height: 100%;
     width: 100%;
     background-color: var(--window-bg);
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    padding: 1rem 0 1.25rem;
     /* Avoid margin collapse creating a light strip with parent */
     margin-top: 0;
 }
 
 .app-detail-body {
-    flex: 1;
-    overflow-y: auto;
-    /* More breathing room at the very top */
-    padding: 0rem 1.5rem 3.5rem;
+    flex: 1 0 auto;
+    padding: 0 1.5rem 1.75rem;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+}
+
+.app-detail-content-shell {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-detail-bottom-section {
+    margin-top: auto;
+    padding-bottom: clamp(1rem, 1.8vw, 1.75rem);
+}
+
+.app-detail-bottom-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+@media (min-width: 640px) {
+    .app-detail-page {
+        padding-top: 1.25rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .app-detail-body {
+        padding-bottom: 2rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .app-detail-page {
+        padding-top: 1.5rem;
+        padding-bottom: 1.75rem;
+    }
+
+    .app-detail-body {
+        padding-bottom: 2.25rem;
+    }
 }
 
 /* Error State */
