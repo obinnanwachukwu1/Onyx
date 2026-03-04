@@ -4,42 +4,35 @@
   position: absolute;
   user-select: none;
   overflow: hidden;
+  isolation: isolate;
+  background-color: #000;
+  background-image: url("../../assets/wallpaper/wall5.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .desktop::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: -1;
-  
-  background-image: url("../../assets/wallpaper/wall5.webp");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-
-  filter: blur(1px);
-  transform: scale(1.05);
-  overflow: hidden;
-  transition: filter 0.3s ease-out;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0);
+  transition: backdrop-filter 0.2s ease-out, background-color 0.2s ease-out;
 }
 
 /* Desktop icons container with fade-in for hydration */
 .desktop-icons {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
   align-content: flex-start;
   gap: 8px;
   padding: 16px;
-  height: calc(100% - 50px); /* Account for taskbar */
-  opacity: 0;
-  transition: opacity 0.15s ease-out;
-}
-
-.desktop-icons.hydrated {
+  height: calc(100% - var(--taskbar-height, 50px)); /* Account for actual taskbar style/size */
   opacity: 1;
 }
 
@@ -50,5 +43,6 @@
 }
 
 .desktop.focus-mode::before {
-  filter: blur(3px) brightness(0.7);
+  backdrop-filter: blur(3px) brightness(0.7);
+  background: rgba(4, 10, 20, 0.35);
 }

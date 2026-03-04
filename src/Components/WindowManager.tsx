@@ -8,9 +8,11 @@ import Launcher from './Launcher/Launcher';
 
 import { WindowManagerContext } from './WindowManagerContext';
 import { LauncherView, WindowStartPosition } from '../types/windows';
+import { useTaskbar } from './Taskbar/TaskbarContext';
 
 const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocusMode = false, blogFullscreen = false }) => {
     const taskbarRef = useRef(null)
+    const { taskbarStyle } = useTaskbar();
     const [windows, setWindows] = useState(initialWindows);
     const [immersiveMode, setImmersiveMode] = useState(blogFullscreen);
     const [activeWindowId, setActiveWindowId] = useState(null);
@@ -19,6 +21,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
     const [launcherVisible, setLauncherVisible] = useState(false);
     const [launcherView, setLauncherView] = useState<LauncherView>('apps');
     const [zIndexCounter, setZIndexCounter] = useState(1);
+    const [taskbarReservedHeight, setTaskbarReservedHeight] = useState(0);
     
     // Focus mode state - can be exited by user interaction
     const [focusMode, setFocusMode] = useState(initialFocusMode);
@@ -29,6 +32,48 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
             setFocusMode(false);
         }
     }, [focusMode]);
+
+    const getTaskbarReservedHeight = useCallback(() => {
+        if (immersiveMode) return 0;
+        const taskbarElement = taskbarRef.current;
+        if (!taskbarElement) return 0;
+
+        const taskbarRect = taskbarElement.getBoundingClientRect();
+        const viewportHeight = windowSize?.height || window.innerHeight;
+        return Math.max(0, Math.round(viewportHeight - taskbarRect.top));
+    }, [immersiveMode, windowSize?.height]);
+
+    const syncTaskbarMetrics = useCallback(() => {
+        const reservedHeight = getTaskbarReservedHeight();
+        setTaskbarReservedHeight((prevHeight) => (prevHeight === reservedHeight ? prevHeight : reservedHeight));
+        document.documentElement.style.setProperty('--taskbar-height', `${reservedHeight}px`);
+    }, [getTaskbarReservedHeight]);
+
+    useEffect(() => {
+        syncTaskbarMetrics();
+    }, [syncTaskbarMetrics, taskbarStyle, immersiveMode]);
+
+    useEffect(() => {
+        const handleResize = () => syncTaskbarMetrics();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [syncTaskbarMetrics]);
+
+    useEffect(() => {
+        if (immersiveMode) return;
+
+        const taskbarElement = taskbarRef.current;
+        if (!taskbarElement || typeof ResizeObserver === 'undefined') return;
+
+        const resizeObserver = new ResizeObserver(() => syncTaskbarMetrics());
+        resizeObserver.observe(taskbarElement);
+        const raf = window.requestAnimationFrame(() => syncTaskbarMetrics());
+
+        return () => {
+            resizeObserver.disconnect();
+            window.cancelAnimationFrame(raf);
+        };
+    }, [immersiveMode, syncTaskbarMetrics, taskbarStyle]);
 
     const launchApp = (appId, props = {}) => {
         const app = appList.find((a) => a.id === appId);
@@ -79,7 +124,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
                 if (window.isMaximized) {
                     updatedWindow.size = {
                         width: windowSize.width,
-                        height: windowSize.height - (taskbarRef.current?.clientHeight || 0)
+                        height: windowSize.height - taskbarReservedHeight
                     };
                     updatedWindow.position = { x: 0, y: 0 };
                     return updatedWindow;
@@ -90,7 +135,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
 
                 if (rightEdge > windowSize.width || bottomEdge > windowSize.height) {
                     const newX = Math.max(0, Math.min(window.position.x, windowSize.width - window.size.width));
-                    const newY = Math.max(0, Math.min(window.position.y, windowSize.height - window.size.height - (taskbarRef.current?.clientHeight || 0)));
+                    const newY = Math.max(0, Math.min(window.position.y, windowSize.height - window.size.height - taskbarReservedHeight));
 
                     updatedWindow.position = { x: newX, y: newY };
                 }
@@ -98,7 +143,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
                 return updatedWindow;
             })
         );
-    }, [windowSize]);
+    }, [windowSize, taskbarReservedHeight]);
 
 
     const activateWindow = (id) => {
@@ -164,9 +209,8 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
     const sendIntentToMaximize = () => {
         const desktop = document.querySelector('.desktop');
         const desktopBounds = desktop.getBoundingClientRect();
-        const taskbarHeight = taskbarRef.current?.clientHeight || 0;
         document.documentElement.style.setProperty('--width', `${desktopBounds.width}px`);
-        document.documentElement.style.setProperty('--height', `${desktopBounds.height - taskbarHeight}px`);
+        document.documentElement.style.setProperty('--height', `${desktopBounds.height - taskbarReservedHeight}px`);
     }
 
     const sendIntentToRestore = (id) => {
@@ -195,10 +239,9 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
 
 
     const notifyMaximize = (id) => {
-        const taskbarHeight = taskbarRef.current?.clientHeight || 0;
         setWindows((prevWindows) =>
             prevWindows.map((w) =>
-                w.id === id ? { ...w, isMaximized: true, size: { width: window.innerWidth, height: (window.innerHeight - taskbarHeight) }, position: { x: 0, y: 0 } } : w
+                w.id === id ? { ...w, isMaximized: true, size: { width: window.innerWidth, height: (window.innerHeight - taskbarReservedHeight) }, position: { x: 0, y: 0 } } : w
             )
         );
     }
