@@ -45,12 +45,12 @@ const folderIcon = (size: 'grid' | 'list', absolutePath?: string): React.ReactNo
   const badge = folderBadgeIconForPath(absolutePath);
   const iconClass = size === 'grid' ? 'file-icon-grid' : 'file-icon-list';
   if (!badge) {
-    return <img className={iconClass} src={IconFolder} alt="Folder" />;
+    return <img className={iconClass} src={IconFolder} alt="Folder" draggable={false} />;
   }
 
   return (
     <span className={`file-icon-badged file-icon-badged-${size}`}>
-      <img className={iconClass} src={IconFolder} alt="Folder" />
+      <img className={iconClass} src={IconFolder} alt="Folder" draggable={false} />
       {badge}
     </span>
   );
@@ -66,7 +66,14 @@ export const filesIconFor = (
 ): React.ReactNode => {
   if (isFolder) return folderIcon('grid', absolutePath);
   if (isAppShortcut(name) && appIdFromContent && appIconMap && appIconMap[appIdFromContent]) {
-    return <img className="file-icon-grid" src={appIconMap[appIdFromContent]} alt={name.replace(/\.app$/i, '')} />;
+    return (
+      <img
+        className="file-icon-grid"
+        src={appIconMap[appIdFromContent]}
+        alt={name.replace(/\.app$/i, '')}
+        draggable={false}
+      />
+    );
   }
   if (isTextFile(name)) return <FileText className="file-icon-grid file" />;
   return <FileText className="file-icon-grid file" />;
@@ -82,7 +89,14 @@ export const filesListIconFor = (
 ): React.ReactNode => {
   if (isFolder) return folderIcon('list', absolutePath);
   if (isAppShortcut(name) && appIdFromContent && appIconMap && appIconMap[appIdFromContent]) {
-    return <img className="file-icon-list" src={appIconMap[appIdFromContent]} alt={name.replace(/\.app$/i, '')} />;
+    return (
+      <img
+        className="file-icon-list"
+        src={appIconMap[appIdFromContent]}
+        alt={name.replace(/\.app$/i, '')}
+        draggable={false}
+      />
+    );
   }
   if (isTextFile(name)) return <FileText className="file-icon-list file" />;
   return <FileText className="file-icon-list file" />;
