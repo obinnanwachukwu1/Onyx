@@ -1,55 +1,12 @@
-import { useEffect, useState } from 'react';
-import { ArrowUpRight, Terminal, Globe, Mail, FileText, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, Globe, Mail, FileText, ChevronRight } from 'lucide-react';
 
 import { useWindowContext } from '../../Components/WindowContext';
 import { useWindowChrome } from '../../Components/WindowChromeContext';
-import { useDeviceContext } from '../../Components/DeviceContext';
-import LoadingScreen from '../../Components/LoadingScreen/LoadingScreen';
-import logo192 from '../../../logo192.png';
-
-type StatusResponse = {
-  working_status?: string;
-};
-
-const STATUS_URL = '/projects/status.json';
 
 const WelcomeCenter = (): JSX.Element => {
   const { launchApp } = useWindowContext();
-  const { isMobile } = useDeviceContext();
-  const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
-
-  const [loading, setLoading] = useState<boolean>(true);
-  const [workingStatus, setWorkingStatus] = useState<string>('');
+  const { sidebarActiveId } = useWindowChrome();
   // Active tab is now window-managed via Window chrome context
-
-  useEffect(() => {
-    let isSubscribed = true;
-
-    fetch(STATUS_URL, { cache: 'no-cache' })
-      .then<StatusResponse>((response) => response.json())
-      .then((data) => {
-        if (!isSubscribed) return;
-        setWorkingStatus(data.working_status ?? '');
-        setLoading(false);
-      })
-      .catch((error: unknown) => {
-        console.error('Error loading working status:', error);
-        if (!isSubscribed) return;
-        setLoading(false);
-      });
-
-    return () => {
-      isSubscribed = false;
-    };
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-[var(--window-bg)]">
-        <LoadingScreen />
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-[var(--window-bg)] text-[var(--text-color)]">

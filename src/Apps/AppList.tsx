@@ -5,7 +5,6 @@ import IconNotepad from '../assets/icons/IconNotepad.svg';
 import IconNewWindow from '../assets/icons/IconNewWindow.svg';
 import IconTerminal from '../assets/icons/IconTerminal.svg';
 import WelcomeCenter from './WelcomeCenter/WelcomeCenter';
-import StatusPill from './WelcomeCenter/StatusPill';
 import { Home, Info, Bell, Palette, Monitor, FileText, Download, LayoutGrid, HardDrive } from 'lucide-react';
 import Terminal from './Terminal/Terminal';
 import Files from './Files/Files';
@@ -137,7 +136,6 @@ const appList: AppDefinition[] = [
         { id: 'updates', label: "What's New", icon: Bell },
       ],
       initialActiveId: 'home',
-      footer: <StatusPill />,
     },
   },
 ];

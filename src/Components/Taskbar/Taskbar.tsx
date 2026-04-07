@@ -14,6 +14,11 @@ interface TaskbarProps {
   activeWindowId?: number | null;
 }
 
+interface TaskbarWindowEntry {
+  id: number;
+  instanceNumber: number;
+}
+
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 const APP_MAP = new Map(appList.map((app) => [app.id, app]));
 
@@ -126,6 +131,12 @@ const Taskbar = forwardRef<HTMLDivElement, TaskbarProps>(({ windows, setButtonPo
             const windowIds = [...appWindows]
               .sort((a, b) => a.zIndex - b.zIndex)
               .map((window) => window.id);
+            const windowEntries: TaskbarWindowEntry[] = [...appWindows]
+              .sort((a, b) => a.id - b.id)
+              .map((window, index) => ({
+                id: window.id,
+                instanceNumber: index + 1,
+              }));
 
             return (
               <TaskbarItem
@@ -140,6 +151,7 @@ const Taskbar = forwardRef<HTMLDivElement, TaskbarProps>(({ windows, setButtonPo
                 isActive={isActive}
                 isPinned={isPinned}
                 windowIds={windowIds}
+                windowEntries={windowEntries}
                 activeWindowId={activeWindowId}
               />
             );

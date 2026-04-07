@@ -383,7 +383,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
 
     return (
         <WindowManagerContext.Provider value={{ closingWindowID, launcherVisible, launcherView, windows, activeWindowId, focusMode, exitFocusMode, launchApp, activateWindow, deactivateAll, setWindowPosition, setWindowSize, setWindowTitle, sendIntentToMaximize, sendIntentToRestore, sendIntentToClose, notifyMaximize, notifyMinimize, notifyRestore, notifyClose, getTaskbarTransformPos, afterRestoreFromTaskbar, openLauncher, toggleLauncherVisibility, closeLauncher }}>
-            <Desktop focusMode={focusMode} disableAutoStart={initialWindows.length > 0} />
+            {!immersiveMode ? <Desktop focusMode={focusMode} disableAutoStart={initialWindows.length > 0} /> : null}
             {[...windows] // Create a copy of windows array
                 .sort((a, b) => a.zIndex - b.zIndex) // Sort by zIndex
                 .map((window) =>

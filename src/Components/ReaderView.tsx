@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLinkedin, faGithub } from '@fortawesome/free-brands-svg-icons';
+import { faLinkedin, faGithub, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 
 interface ReaderViewProps {
   title: string;
@@ -59,6 +59,15 @@ const ReaderView: React.FC<ReaderViewProps> = ({ title, subtitle, content, onBac
         </article>
 
         <footer className="mt-20 pt-8 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-center gap-6">
+          <a
+            href="https://x.com/itsobinnasworld"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            aria-label="X (Twitter)"
+          >
+            <FontAwesomeIcon icon={faXTwitter} className="w-6 h-6" />
+          </a>
           <a 
             href="https://linkedin.com/in/obinnanwachukwu" 
             target="_blank" 

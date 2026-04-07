@@ -10,7 +10,11 @@ interface TaskbarItemProps {
     isOpen: boolean;
     isActive: boolean;
     isPinned: boolean;
-    windowIds: number[]; // All window IDs for this app
+    windowIds: number[]; // Window IDs in stack order for activation/minimize behavior
+    windowEntries: Array<{
+        id: number;
+        instanceNumber: number;
+    }>;
     activeWindowId?: number | null; // Global active window ID to check which specific window is active
 }
 
@@ -30,6 +34,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
     isActive,
     isPinned,
     windowIds,
+    windowEntries,
     activeWindowId,
 }, ref) => {
     const { activateWindow, notifyMinimize, launchApp, getTaskbarTransformPos } = useWindowContext();
@@ -84,6 +89,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
             return { x: clampedX, y: anchorY };
         });
     }, []);
+    const hasMultipleWindows = windowEntries.length > 1;
 
     const handleClick = () => {
         clearHoverTimeout();
@@ -124,7 +130,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
         if (menuMode === 'context') return;
 
         // ONLY show hover menu if there is MORE THAN 1 instance
-        if (windowIds.length <= 1) {
+        if (!hasMultipleWindows) {
             clearHoverTimeout();
             return;
         }
@@ -201,7 +207,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
     const renderWindowsIndicators = () => {
         if (taskbarStyle === 'floating' || !isOpen) return null;
 
-        if (windowIds.length <= 1) {
+        if (!hasMultipleWindows) {
             return <div className={`taskbar-indicator ${isActive ? 'active' : 'minimized-indicator'}`} />;
         }
 
@@ -216,7 +222,7 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
         if (!menuMode || !menuAnchor) return null;
 
         // Double check condition for hover mode
-        if (menuMode === 'hover' && windowIds.length <= 1) return null;
+        if (menuMode === 'hover' && !hasMultipleWindows) return null;
 
         const style: React.CSSProperties = {
             top: menuAnchor.y,
@@ -231,18 +237,18 @@ const TaskbarItem = forwardRef<HTMLButtonElement, TaskbarItemProps>(({
         if (isOpen) {
             items.push({ type: 'header', label: title });
 
-            windowIds.forEach((wid, idx) => {
+            windowEntries.forEach(({ id, instanceNumber }) => {
                 items.push({
                     type: 'item',
-                    label: `Instance ${idx + 1}`,
+                    label: `Instance ${instanceNumber}`,
                     render: () => (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-                            <span>Instance {idx + 1}</span>
-                            {wid === activeWindowId && <span style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--welcome-accent-blue)' }} title="Active"></span>}
+                            <span>Instance {instanceNumber}</span>
+                            {id === activeWindowId && <span style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--welcome-accent-blue)' }} title="Active"></span>}
                         </div>
                     ),
                     onClick: () => {
-                        activateWindow(wid);
+                        activateWindow(id);
                         setMenuMode(null);
                     }
                 });

@@ -76,25 +76,57 @@ export const Route = createRootRoute({
       },
     ],
   }),
+  loader: ({ location }) => ({
+    initialPathname: location.pathname || '/',
+  }),
 
   component: RootComponent,
   notFoundComponent: () => <div className="p-4">Page Not Found</div>,
 })
 
 function RootComponent() {
+  const { initialPathname } = Route.useLoaderData()
+  const pathname = typeof window !== 'undefined'
+    ? window.location.pathname || '/'
+    : initialPathname
+  const isBlogRoute = pathname === '/blog' || pathname.startsWith('/blog/')
+
   return (
-    <RootDocument>
+    <RootDocument isBlogRoute={isBlogRoute}>
       <Outlet />
     </RootDocument>
   )
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({
+  children,
+  isBlogRoute,
+}: {
+  children: React.ReactNode
+  isBlogRoute: boolean
+}) {
+  const shell = isBlogRoute ? 'blog' : 'desktop'
+  const initialShellBg = isBlogRoute ? '#ffffff' : '#000000'
+  const initialShellBgImage = isBlogRoute ? 'none' : `url("${desktopWallpaper}")`
+
   return (
     // Start with light theme, inline script will correct it before paint
     // suppressHydrationWarning because the inline script intentionally modifies data-theme
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html lang="en" data-theme="light" data-shell={shell} suppressHydrationWarning>
       <head>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              html, body {
+                background-color: ${initialShellBg};
+                background-image: ${initialShellBgImage};
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+              }
+            `,
+          }}
+        />
         <HeadContent />
         {/* 
           Inline script to prevent theme flash.
@@ -108,6 +140,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             __html: `
               (function() {
                 try {
+                  var pathname = window.location.pathname || '/';
+                  var isBlogRoute = pathname === '/blog' || pathname.indexOf('/blog/') === 0;
+                  var shell = isBlogRoute ? 'blog' : 'desktop';
+                  document.documentElement.setAttribute('data-shell', shell);
+
                   var cookieMatch = document.cookie.match(/(^| )theme=([^;]+)/);
                   var cookieTheme = cookieMatch ? cookieMatch[2] : null;
                   var savedTheme = cookieTheme || localStorage.getItem('theme-preference');
@@ -116,13 +153,24 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   if (theme === 'dark' || theme === 'light') {
                     document.documentElement.setAttribute('data-theme', theme);
                   }
+
+                  if (isBlogRoute) {
+                    document.documentElement.style.backgroundColor = theme === 'dark' ? '#18181b' : '#ffffff';
+                    document.documentElement.style.backgroundImage = 'none';
+                  } else {
+                    document.documentElement.style.backgroundColor = '#000000';
+                    document.documentElement.style.backgroundImage = 'url("${desktopWallpaper}")';
+                    document.documentElement.style.backgroundSize = 'cover';
+                    document.documentElement.style.backgroundPosition = 'center';
+                    document.documentElement.style.backgroundRepeat = 'no-repeat';
+                  }
                 } catch (e) {}
               })();
             `,
           }}
         />
       </head>
-      <body>
+      <body data-shell={shell}>
         <DeviceProvider>
           {children}
         </DeviceProvider>

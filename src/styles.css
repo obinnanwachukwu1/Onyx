@@ -13,11 +13,30 @@ body,
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   overflow: hidden;
   overscroll-behavior-x: none;
+}
+
+html[data-shell="desktop"],
+html[data-shell="desktop"] body,
+html[data-shell="desktop"] #root {
   background-color: #000;
   background-image: url("./assets/wallpaper/wall5.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+html[data-shell="blog"],
+html[data-shell="blog"] body,
+html[data-shell="blog"] #root {
+  background-color: #fff;
+  background-image: none;
+}
+
+html[data-shell="blog"][data-theme="dark"],
+html[data-shell="blog"][data-theme="dark"] body,
+html[data-shell="blog"][data-theme="dark"] #root {
+  background-color: #18181b;
+  background-image: none;
 }
 
 :root {
