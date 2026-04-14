@@ -1,4 +1,4 @@
-import { ArrowUpRight, Globe, Mail, FileText, ChevronRight } from 'lucide-react';
+import { Globe, Mail, FileText, ChevronRight, Newspaper } from 'lucide-react';
 
 import { useWindowContext } from '../../components/WindowContext';
 import { useWindowChrome } from '../../components/WindowChromeContext';
@@ -37,6 +37,20 @@ const WelcomeCenter = (): JSX.Element => {
               </button>
 
               <button
+                onClick={() => launchApp('blog')}
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--window-border-inactive)] bg-[var(--welcome-card-bg)] p-6 text-left shadow-sm transition-all hover:border-[var(--window-border-active)] hover:bg-[var(--welcome-card-hover)] hover:shadow-md"
+              >
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                  <Newspaper className="h-6 w-6" />
+                </div>
+                <h3 className="mb-1 text-lg font-semibold text-[var(--text-color)]">Blog</h3>
+                <p className="mb-4 text-sm text-[var(--text-color)] opacity-70">Read posts, notes, and longer-form writing.</p>
+                <div className="mt-auto flex items-center text-sm font-medium text-amber-700 dark:text-amber-300 group-hover:underline">
+                  Open Blog <ChevronRight className="ml-1 h-4 w-4" />
+                </div>
+              </button>
+
+              <button
                 onClick={() => launchApp('resume')}
                 className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--window-border-inactive)] bg-[var(--welcome-card-bg)] p-6 text-left shadow-sm transition-all hover:border-[var(--window-border-active)] hover:bg-[var(--welcome-card-hover)] hover:shadow-md"
               >
@@ -52,19 +66,15 @@ const WelcomeCenter = (): JSX.Element => {
 
               <button
                 onClick={() => launchApp('contactme')}
-                className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--window-border-inactive)] bg-[var(--welcome-card-bg)] p-6 text-left shadow-sm transition-all hover:border-[var(--window-border-active)] hover:bg-[var(--welcome-card-hover)] hover:shadow-md sm:col-span-2"
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--window-border-inactive)] bg-[var(--welcome-card-bg)] p-6 text-left shadow-sm transition-all hover:border-[var(--window-border-active)] hover:bg-[var(--welcome-card-hover)] hover:shadow-md"
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--welcome-accent-emerald-soft)] text-[var(--welcome-accent-emerald)]">
-                      <Mail className="h-6 w-6" />
-                    </div>
-                    <h3 className="mb-1 text-lg font-semibold text-[var(--text-color)]">Get in Touch</h3>
-                    <p className="text-sm text-[var(--text-color)] opacity-70">Have a project in mind? Let's collaborate.</p>
-                  </div>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--welcome-accent-emerald-soft)] text-[var(--welcome-accent-emerald)] group-hover:bg-[var(--welcome-accent-emerald-soft)] group-hover:text-[var(--welcome-accent-emerald)]">
-                    <ArrowUpRight className="h-4 w-4" />
-                  </div>
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--welcome-accent-emerald-soft)] text-[var(--welcome-accent-emerald)]">
+                  <Mail className="h-6 w-6" />
+                </div>
+                <h3 className="mb-1 text-lg font-semibold text-[var(--text-color)]">Get in Touch</h3>
+                <p className="mb-4 text-sm text-[var(--text-color)] opacity-70">Have a project in mind? Let&apos;s collaborate.</p>
+                <div className="mt-auto flex items-center text-sm font-medium text-[var(--welcome-accent-emerald)] group-hover:underline">
+                  Contact Me <ChevronRight className="ml-1 h-4 w-4" />
                 </div>
               </button>
             </div>
