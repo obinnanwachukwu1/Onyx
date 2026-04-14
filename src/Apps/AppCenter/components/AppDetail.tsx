@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, Download, Code, Calendar, Tag } from 'lucide-react';
 import { siGithub } from 'simple-icons';
+import { useWindowLaunchAnimation } from '../../../components/WindowChromeContext';
 import { App } from '../types';
 
 interface AppDetailProps {
@@ -12,6 +13,7 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [stack, setStack] = useState(true);
     const hasScreenshots = Boolean(app.screenshots && app.screenshots.length > 0);
+    const playLaunchAnimation = useWindowLaunchAnimation();
 
     useEffect(() => {
         const el = containerRef.current;
@@ -43,7 +45,10 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
             </div>
 
             <div className="app-detail-body">
-                <div ref={containerRef} className="app-detail-content app-detail-content-shell animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto bg-[var(--card-bg)] text-[var(--text-color)] rounded-2xl md:rounded-3xl shadow-none overflow-x-hidden px-6 sm:px-8 md:px-10">
+                <div
+                    ref={containerRef}
+                    className={`app-detail-content app-detail-content-shell max-w-5xl mx-auto bg-[var(--card-bg)] text-[var(--text-color)] rounded-2xl md:rounded-3xl shadow-none overflow-x-hidden px-6 sm:px-8 md:px-10 ${playLaunchAnimation ? 'animate-in fade-in slide-in-from-bottom-4 duration-500' : ''}`}
+                >
                 <div className="app-detail-hero flex flex-col md:flex-row items-center md:items-stretch py-6 sm:py-8 md:py-10 border-b border-[var(--card-border)] gap-6 md:gap-8 text-center md:text-left">
                     <div className="app-detail-icon-container shrink-0">
                         <div className="app-detail-icon w-24 h-24 sm:w-28 sm:h-28 md:w-40 md:h-40 bg-[var(--subtle-bg)] rounded-2xl flex items-center justify-center shadow-inner p-5 sm:p-6">

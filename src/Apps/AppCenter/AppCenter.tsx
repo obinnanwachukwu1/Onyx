@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import LoadingScreen from "../../components/LoadingScreen/LoadingScreen";
 import "./AppCenter.animations.css";
 import "./AppCenter.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFaceFrown, faSearch, faRefresh } from "@fortawesome/free-solid-svg-icons";
-import { useWindowChrome } from "../../components/WindowChromeContext";
+import { useWindowChrome, useWindowLaunchAnimation } from "../../components/WindowChromeContext";
 import FeaturedCarousel from "./components/FeaturedCarousel";
 import AppGrid from "./components/AppGrid";
 import AppDetail from "./components/AppDetail";
@@ -63,6 +63,9 @@ const AppCenter = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [prevSidebarId, setPrevSidebarId] = useState<string | null>(null);
+  const [tabAnimationNonce, setTabAnimationNonce] = useState(0);
+  const previousSidebarIdRef = useRef<string | undefined>(undefined);
+  const playLaunchAnimation = useWindowLaunchAnimation();
 
   // Get sidebar state from Window context
   const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
@@ -142,7 +145,12 @@ const AppCenter = () => {
   const getRecommendedApps = () => {
     const MAX_RECOMMENDED = 6;
 
-    return [...apps]
+    return sortAppsByRecency(apps)
+      .slice(0, MAX_RECOMMENDED);
+  };
+
+  const sortAppsByRecency = (entries: App[]) => {
+    return [...entries]
       .sort((a, b) => {
         const releaseDiff = parseReleaseDate(b.releaseDate) - parseReleaseDate(a.releaseDate);
         if (releaseDiff !== 0) return releaseDiff;
@@ -152,9 +160,23 @@ const AppCenter = () => {
         const safeIdA = Number.isNaN(idA) ? 0 : idA;
         const safeIdB = Number.isNaN(idB) ? 0 : idB;
         return safeIdB - safeIdA;
-      })
-      .slice(0, MAX_RECOMMENDED);
+      });
   };
+
+  useEffect(() => {
+    const previousSidebarId = previousSidebarIdRef.current;
+
+    if (
+      previousSidebarId &&
+      previousSidebarId !== sidebarActiveId &&
+      sidebarActiveId &&
+      (sidebarActiveId === 'home' || sidebarActiveId === 'all-apps')
+    ) {
+      setTabAnimationNonce((previous) => previous + 1);
+    }
+
+    previousSidebarIdRef.current = sidebarActiveId;
+  }, [sidebarActiveId]);
 
   if (loading) return <LoadingScreen />;
 
@@ -222,7 +244,10 @@ const AppCenter = () => {
 
         {/* Home Tab Content */}
         {sidebarActiveId === 'home' && (
-          <div className="space-y-10 lg:space-y-12 animate-in fade-in duration-500">
+          <div
+            key={`home-${tabAnimationNonce}`}
+            className={`space-y-10 lg:space-y-12 ${playLaunchAnimation || tabAnimationNonce > 0 ? 'animate-in fade-in duration-500' : ''}`}
+          >
             {!searchTerm && <FeaturedCarousel apps={apps} onOpenApp={openApp} />}
 
             <div>
@@ -248,7 +273,10 @@ const AppCenter = () => {
 
         {/* All Apps Tab Content */}
         {sidebarActiveId === 'all-apps' && (
-          <div className="space-y-6 animate-in fade-in duration-500">
+          <div
+            key={`all-apps-${tabAnimationNonce}`}
+            className={`space-y-6 ${playLaunchAnimation || tabAnimationNonce > 0 ? 'animate-in fade-in duration-500' : ''}`}
+          >
             {/* Categories */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {getCategories().map(category => (
@@ -266,7 +294,7 @@ const AppCenter = () => {
             </div>
 
             <AppGrid
-              apps={apps}
+              apps={sortAppsByRecency(apps)}
               onOpenApp={openApp}
               searchTerm={searchTerm}
               selectedCategory={selectedCategory}
