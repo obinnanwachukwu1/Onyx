@@ -38,7 +38,6 @@
 .nav-btn {
   background: none;
   border: none;
-  cursor: pointer;
   padding: 4px;
   border-radius: 4px;
   color: var(--text-color);
@@ -71,7 +70,6 @@
 }
 
 .path-segment {
-  cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
 }
@@ -101,7 +99,6 @@
   border: none;
   padding: 4px 8px;
   border-radius: 4px;
-  cursor: pointer;
   color: var(--text-color);
   opacity: 0.6;
 }
@@ -149,7 +146,6 @@
   align-items: center;
   padding: 10px;
   border-radius: 6px;
-  cursor: pointer;
   transition: background-color 0.1s;
   text-align: center;
   user-select: none;
@@ -259,7 +255,6 @@
   align-items: center;
   padding: 8px 10px;
   border-radius: 4px;
-  cursor: pointer;
   font-size: 13px;
   user-select: none;
   -webkit-user-select: none;
@@ -351,7 +346,6 @@
 .context-menu-item {
   padding: 6px 12px;
   font-size: 13px;
-  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;

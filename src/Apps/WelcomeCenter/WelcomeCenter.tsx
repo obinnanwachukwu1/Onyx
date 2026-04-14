@@ -89,38 +89,6 @@ const WelcomeCenter = (): JSX.Element => {
             </div>
           </div>
         )}
-
-        {sidebarActiveId === 'updates' && (
-          <div className="mx-auto max-w-2xl p-8">
-            <h2 className="mb-6 text-2xl font-bold text-[var(--text-color)]">What's New</h2>
-            <div className="space-y-6">
-              <div className="border-l-2 border-blue-500 pl-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">v2.0.0</span>
-                <h3 className="text-lg font-semibold text-[var(--text-color)]">Desktop Experience Overhaul</h3>
-                <p className="mt-1 text-sm text-[var(--text-color)] opacity-70">
-                  Introduced taskbar modes (classic, modern, floating), pinned apps, launcher/taskbar context menus,
-                  window-managed sidebars, and improved mobile behavior across core desktop workflows.
-                </p>
-              </div>
-              <div className="border-l-2 border-[var(--window-border-active)] pl-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-color)] opacity-50">Architecture</span>
-                <h3 className="text-lg font-semibold text-[var(--text-color)]">TanStack Start SSR Migration</h3>
-                <p className="mt-1 text-sm text-[var(--text-color)] opacity-70">
-                  Migrated the project to TanStack Start SSR, modernized routing, and reworked core desktop/window
-                  systems with hydration and rendering fixes for more reliable navigation and app startup.
-                </p>
-              </div>
-              <div className="border-l-2 border-[var(--window-border-active)] pl-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-color)] opacity-50">Apps and Content</span>
-                <h3 className="text-lg font-semibold text-[var(--text-color)]">Expanded App Suite</h3>
-                <p className="mt-1 text-sm text-[var(--text-color)] opacity-70">
-                  Added Settings personalization, Files with Notepad integration, a full blog system (markdown + SSR routes),
-                  immersive blog modes, App Center improvements, and refreshed icon/theme assets across the UI.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

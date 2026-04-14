@@ -160,6 +160,11 @@ html[data-shell="blog"][data-theme="dark"] #root {
 button {
   margin: 0;
   line-height: 1;
+  cursor: default;
+}
+
+[role="button"] {
+  cursor: default;
 }
 
 input,
@@ -175,4 +180,8 @@ img {
 
 svg {
   vertical-align: middle;
+}
+
+a[href] {
+  cursor: pointer;
 }

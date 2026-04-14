@@ -328,6 +328,29 @@
     flex-direction: column;
     padding: 12px;
     overflow-y: auto; /* allow its own scroll when content is long */
+    width: 220px;
+    min-width: 180px;
+    border-right: 1px solid var(--window-border-active);
+    box-sizing: border-box;
+    transform-origin: left center;
+    transition: width 220ms ease, min-width 220ms ease, padding 220ms ease, opacity 180ms ease, transform 220ms ease, border-color 220ms ease;
+  }
+
+  .window-sidebar-expanded {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .window-sidebar-collapsed {
+    width: 0;
+    min-width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-right-color: transparent;
+    opacity: 0;
+    transform: translateX(-12px);
+    pointer-events: none;
+    overflow: hidden;
   }
 
   .window-sidebar.active {
@@ -358,7 +381,6 @@
     background: transparent;
     border: 1px solid transparent;
     color: var(--text-color);
-    cursor: pointer;
   }
 
   .window-sidebar-item:hover {
@@ -440,6 +462,7 @@
     z-index: 1100;
     opacity: 0;
     transition: opacity 200ms ease;
+    pointer-events: none;
   }
 
   /* Desktop variant: overlay is confined to the window content area
@@ -453,10 +476,19 @@
     z-index: 2;
     opacity: 0;
     transition: opacity 200ms ease;
+    pointer-events: none;
   }
 
-  .overlay-open { opacity: 1; }
+  .overlay-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .overlay-closing { opacity: 0; }
+
+  .overlay-hidden-layout {
+    visibility: hidden;
+  }
 
   .window-mobile-drawer {
     width: min(80%, 280px);

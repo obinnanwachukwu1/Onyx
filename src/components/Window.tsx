@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowMinimize } from '@fortawesome/free-solid-svg-icons/faWindowMinimize';
 import './Window.css';
@@ -51,9 +51,7 @@ const Window = ({
   const { closingWindowID, activateWindow, setWindowPosition, setWindowSize, sendIntentToClose, sendIntentToMaximize, sendIntentToRestore, notifyClose, notifyMaximize, notifyMinimize, notifyRestore, getTaskbarTransformPos, afterRestoreFromTaskbar, exitFocusMode } = useWindowContext();
   const [sidebarActiveId, setSidebarActiveId] = useState(sidebarActiveIdFromProps());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [drawerVisible, setDrawerVisible] = useState(false);
-  const [drawerAnimatingOut, setDrawerAnimatingOut] = useState(false);
-  const [drawerOpenActive, setDrawerOpenActive] = useState(false);
+  const [shouldAnimateOnLaunch, setShouldAnimateOnLaunch] = useState(true);
   const immersiveHideTimerRef = useRef(null);
   const isMobileViewport = !!renderMobile;
   const useImmersiveDesktopChrome = !isMobileViewport && !!hideDesktopChrome;
@@ -187,39 +185,14 @@ const Window = ({
     }
   }, [isSidebarMobileLayout]);
 
-  // Handle drawer mount/unmount to allow exit animation
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      setDrawerAnimatingOut(false);
-      setDrawerVisible(true);
-      setDrawerOpenActive(false);
-      // Defer to two animation frames to ensure initial closed state is painted
-      // before toggling to open, which triggers the transition.
-      const raf1 = requestAnimationFrame(() => {
-        const raf2 = requestAnimationFrame(() => setDrawerOpenActive(true));
-        // store nested id on window to allow cleanup
-        (window as any).__raf2 = raf2;
-      });
-      return () => {
-        cancelAnimationFrame(raf1);
-        if ((window as any).__raf2) cancelAnimationFrame((window as any).__raf2);
-      };
-    } else if (drawerVisible) {
-      // Trigger closing animation
-      setDrawerAnimatingOut(true);
-      setDrawerOpenActive(false);
-      const t = setTimeout(() => {
-        setDrawerVisible(false);
-        setDrawerAnimatingOut(false);
-      }, 200);
-      return () => clearTimeout(t);
-    }
-  }, [mobileMenuOpen]);
-
   const handleWindowClick = (e) => {
     e.stopPropagation();
     activateWindow(id);
   };
+
+  const consumeLaunchAnimation = useCallback(() => {
+    setShouldAnimateOnLaunch((previous) => (previous ? false : previous));
+  }, []);
 
   const handleClosing = (e) => {
     if (useImmersiveDesktopChrome && appId === 'blog') {
@@ -444,6 +417,8 @@ const Window = ({
   const hasSidebar = !!(sidebar && sidebar.items?.length);
   const showHeader = renderMobile ? hasSidebar : true;
   const SidebarIcon = mobileMenuOpen ? PanelLeftOpen : PanelLeft;
+  const showMobileDrawer = hasSidebar && isSidebarMobileLayout;
+  const drawerOpen = showMobileDrawer && mobileMenuOpen;
 
   return (
     <WindowModalProvider>
@@ -514,14 +489,9 @@ const Window = ({
       ) : null}
       <div className="window-content" style={{ display: 'flex', flexGrow: 1, width: '100%', height: '100%', position: 'relative' }}>
         {/* Optional window-managed sidebar */}
-        {sidebar && sidebar.items?.length && !isSidebarMobileLayout ? (
+        {hasSidebar ? (
           <aside
-            className={`window-sidebar ${isActive ? 'active' : 'inactive'}`}
-            style={{
-              width: 220,
-              minWidth: 180,
-              borderRight: '1px solid var(--window-border-active)',
-            }}
+            className={`window-sidebar ${isActive ? 'active' : 'inactive'} ${!isSidebarMobileLayout ? 'window-sidebar-expanded' : 'window-sidebar-collapsed'}`}
             role="navigation"
             aria-label="Window Sidebar"
           >
@@ -560,13 +530,17 @@ const Window = ({
             overflow: 'auto'
           }}
         >
-          {sidebar && sidebar.items?.length && isSidebarMobileLayout && drawerVisible ? (
+          {hasSidebar ? (
             <div
-              className={`${renderMobile ? 'window-mobile-drawer-overlay' : 'window-desktop-drawer-overlay'} ${drawerOpenActive && !drawerAnimatingOut ? 'overlay-open' : 'overlay-closing'}`}
-              onClick={() => setMobileMenuOpen(false)}
+              className={`${renderMobile ? 'window-mobile-drawer-overlay' : 'window-desktop-drawer-overlay'} ${drawerOpen ? 'overlay-open' : 'overlay-closing'} ${showMobileDrawer ? '' : 'overlay-hidden-layout'}`}
+              onClick={() => {
+                if (drawerOpen) {
+                  setMobileMenuOpen(false);
+                }
+              }}
             >
               <div
-                className={`${renderMobile ? 'window-mobile-drawer' : 'window-desktop-drawer'} ${isActive ? 'active' : 'inactive'} ${drawerOpenActive && !drawerAnimatingOut ? 'drawer-open' : 'drawer-closed'}`}
+                className={`${renderMobile ? 'window-mobile-drawer' : 'window-desktop-drawer'} ${isActive ? 'active' : 'inactive'} ${drawerOpen ? 'drawer-open' : 'drawer-closed'}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="drawer-header">
@@ -600,7 +574,15 @@ const Window = ({
               </div>
             </div>
           ) : null}
-          <WindowChromeProvider value={{ sidebarActiveId, setSidebarActiveId, isWindowActive: !!isActive }}>
+          <WindowChromeProvider
+            value={{
+              sidebarActiveId,
+              setSidebarActiveId,
+              isWindowActive: !!isActive,
+              shouldAnimateOnLaunch,
+              consumeLaunchAnimation,
+            }}
+          >
             {content}
           </WindowChromeProvider>
         </div>

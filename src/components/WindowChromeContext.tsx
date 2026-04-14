@@ -1,16 +1,34 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 type WindowChromeContextValue = {
   sidebarActiveId?: string;
   setSidebarActiveId?: (id: string) => void;
   isWindowActive: boolean;
+  shouldAnimateOnLaunch: boolean;
+  consumeLaunchAnimation?: () => void;
 };
 
 const WindowChromeContext = createContext<WindowChromeContextValue>({
   isWindowActive: true,
+  shouldAnimateOnLaunch: false,
 });
 
 export const useWindowChrome = () => useContext(WindowChromeContext);
+
+export const useWindowLaunchAnimation = () => {
+  const { shouldAnimateOnLaunch, consumeLaunchAnimation } = useWindowChrome();
+  const [playLaunchAnimation] = useState(shouldAnimateOnLaunch);
+
+  useEffect(() => {
+    if (!playLaunchAnimation) {
+      return;
+    }
+
+    consumeLaunchAnimation?.();
+  }, [consumeLaunchAnimation, playLaunchAnimation]);
+
+  return playLaunchAnimation;
+};
 
 export const WindowChromeProvider = WindowChromeContext.Provider;
 

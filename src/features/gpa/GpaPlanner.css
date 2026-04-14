@@ -80,7 +80,6 @@ body.gpa-mode {
   border-radius: 8px;
   font-weight: 600;
   font-size: 0.95rem;
-  cursor: pointer;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 

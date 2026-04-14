@@ -188,13 +188,12 @@ const AppCenter = () => {
           <div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-heading tracking-tight mb-1 sm:mb-2">
               {sidebarActiveId === 'home' ? 'Discover' :
-                sidebarActiveId === 'all-apps' ? 'All Apps' :
-                  sidebarActiveId === 'updates' ? 'Updates' : 'App Center'}
+                sidebarActiveId === 'all-apps' ? 'All Apps' : 'App Center'}
             </h1>
             <p className="text-base sm:text-lg text-muted font-medium max-w-2xl">
               {sidebarActiveId === 'home' ? 'Explore the best apps for you' :
                 sidebarActiveId === 'all-apps' ? 'Browse the complete catalog' :
-                  'Latest changes and improvements'}
+                  'Browse the app catalog'}
             </p>
           </div>
 
@@ -275,33 +274,6 @@ const AppCenter = () => {
             />
           </div>
         )}
-
-        {/* Updates Tab Content */}
-        {sidebarActiveId === 'updates' && (
-          <div className="max-w-2xl mx-auto animate-in fade-in duration-500">
-            <div className="space-y-8">
-              <div className="relative pl-8 border-l-2 border-blue-500">
-                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow-sm"></div>
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1 block">Just Now</span>
-                <h3 className="text-lg font-bold text-heading mb-2">App Center Redesign</h3>
-                <p className="text-muted leading-relaxed">
-                  Welcome to the new App Center! We've completely overhauled the design to provide a better browsing experience.
-                  Enjoy the new sidebar navigation, improved search, and beautiful app details.
-                </p>
-              </div>
-
-              <div className="relative pl-8 border-l-2 border-gray-200">
-                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-300 border-4 border-white"></div>
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-2 mb-1 block">Previous</span>
-                <h3 className="text-lg font-bold text-heading mb-2">Performance Improvements</h3>
-                <p className="text-muted leading-relaxed">
-                  Optimized loading times and smoother transitions across the system.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
       </div>
     </div>
   );

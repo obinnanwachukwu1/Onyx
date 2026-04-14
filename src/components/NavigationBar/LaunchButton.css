@@ -7,7 +7,6 @@
   border: none;
   margin: 0;
   padding: 0;
-  cursor: pointer;
   border-radius: 999px;
   outline: none;
   transition: transform 0.2s ease, opacity 0.2s ease;

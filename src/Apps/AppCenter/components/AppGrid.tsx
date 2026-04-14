@@ -44,7 +44,7 @@ const AppGrid: React.FC<AppGridProps> = ({
         return (
             <div
                 key={app.id}
-                className="group relative bg-card rounded-2xl border border-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col h-full"
+                className="group relative bg-card rounded-2xl border border-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full"
                 onClick={() => onOpenApp(app)}
             >
                 <div className="aspect-[16/9] w-full bg-subtle flex items-center justify-center transition-colors relative overflow-hidden">
@@ -104,7 +104,7 @@ const AppGrid: React.FC<AppGridProps> = ({
     const renderCompactCard = (app: App) => (
         <button
             key={app.id}
-            className="group w-full text-left bg-card rounded-2xl border border-card shadow-sm hover:shadow-lg transition-all duration-300 px-4 py-4 cursor-pointer"
+            className="group w-full text-left bg-card rounded-2xl border border-card shadow-sm hover:shadow-lg transition-all duration-300 px-4 py-4"
             onClick={() => onOpenApp(app)}
         >
             <div className="flex items-start gap-4">

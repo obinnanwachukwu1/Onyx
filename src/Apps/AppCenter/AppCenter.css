@@ -139,7 +139,6 @@ button {
     transition: all 0.2s;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: none;
-    cursor: pointer;
     outline: none;
 }
 
@@ -164,7 +163,6 @@ button {
     border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.2s;
-    cursor: pointer;
     outline: none;
 }
 
@@ -188,7 +186,6 @@ button {
     font-weight: 500;
     border: none;
     background: transparent;
-    cursor: pointer;
     outline: none;
 }
 
@@ -206,7 +203,6 @@ button {
     padding: 0.25rem 0;
     background: transparent;
     border: none;
-    cursor: pointer;
     transition: color 0.2s ease, transform 0.2s ease;
 }
 
