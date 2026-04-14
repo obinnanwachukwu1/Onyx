@@ -1,7 +1,7 @@
 import { ArrowUpRight, Globe, Mail, FileText, ChevronRight } from 'lucide-react';
 
-import { useWindowContext } from '../../Components/WindowContext';
-import { useWindowChrome } from '../../Components/WindowChromeContext';
+import { useWindowContext } from '../../components/WindowContext';
+import { useWindowChrome } from '../../components/WindowChromeContext';
 
 const WelcomeCenter = (): JSX.Element => {
   const { launchApp } = useWindowContext();

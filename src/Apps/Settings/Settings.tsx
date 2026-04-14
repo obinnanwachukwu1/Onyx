@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Settings.css';
-import { useWindowChrome } from '../../Components/WindowChromeContext';
-import { setTheme, getTheme } from '../../Components/toggleTheme';
-import { useTaskbar, TaskbarStyle } from '../../Components/Taskbar/TaskbarContext';
+import { useWindowChrome } from '../../components/WindowChromeContext';
+import { setTheme, getTheme } from '../../components/toggleTheme';
+import { useTaskbar, TaskbarStyle } from '../../components/Taskbar/TaskbarContext';
 
 const Settings = () => {
   const { sidebarActiveId } = useWindowChrome();

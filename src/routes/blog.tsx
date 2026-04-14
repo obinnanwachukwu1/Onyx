@@ -20,6 +20,13 @@ export const Route = createFileRoute('/blog')({
   loader: async () => ({
     initialIsMobile: await getBlogInitialIsMobile(),
   }),
+  head: () => ({
+    meta: [
+      {
+        title: "Obinna's Library",
+      },
+    ],
+  }),
   component: BlogLayout,
 })
 

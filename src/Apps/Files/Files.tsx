@@ -5,11 +5,11 @@ import {
   ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon,
   Monitor, File, Trash2, Plus, Edit2, ArrowUp
 } from 'lucide-react';
-import { useWindowChrome } from '../../Components/WindowChromeContext';
-import { useWindowContext } from '../../Components/WindowContext';
+import { useWindowChrome } from '../../components/WindowChromeContext';
+import { useWindowContext } from '../../components/WindowContext';
 import { getAppIconMap, filesIconFor, filesListIconFor } from './fileAssociations';
 import { joinPath } from './permissions';
-import { useWindowModal } from '../../Components/WindowModalContext';
+import { useWindowModal } from '../../components/WindowModalContext';
 
 const Files = () => {
   const {

@@ -3,8 +3,8 @@ export interface App {
     name: string;
     description: string;
     fullDescription?: string;
-    icon: string;
-    category: string;
+    icon?: string;
+    category?: string;
     tags?: string[];
     screenshots?: string[];
     releaseDate?: string;

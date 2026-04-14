@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import './Terminal.css';
 import useLockedState from '../../hooks/useLockedState';
 import details from '../../EnvironmentDetails';
-import toggleTheme from '../../Components/toggleTheme';
+import toggleTheme from '../../components/toggleTheme';
 
 const Terminal = () => {
     const inputRef = useRef(null);

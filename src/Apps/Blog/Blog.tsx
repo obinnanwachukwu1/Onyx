@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import BlogList from '../../Components/BlogList';
-import ReaderView from '../../Components/ReaderView';
+import BlogList from '../../components/BlogList';
+import ReaderView from '../../components/ReaderView';
 import { getPosts, getPost, BlogPost } from '../../utils/posts';
 import './Blog.css';
 

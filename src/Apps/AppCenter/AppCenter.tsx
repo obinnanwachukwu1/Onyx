@@ -1,14 +1,59 @@
-import React, { useState, useEffect } from "react";
-import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
+import { useState, useEffect } from "react";
+import LoadingScreen from "../../components/LoadingScreen/LoadingScreen";
 import "./AppCenter.animations.css";
 import "./AppCenter.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFaceFrown, faSearch, faRefresh } from "@fortawesome/free-solid-svg-icons";
-import { useWindowChrome } from "../../Components/WindowChromeContext";
+import { useWindowChrome } from "../../components/WindowChromeContext";
 import FeaturedCarousel from "./components/FeaturedCarousel";
 import AppGrid from "./components/AppGrid";
 import AppDetail from "./components/AppDetail";
 import { App } from "./types";
+
+const MAX_SCREENSHOT_COUNT = 4;
+
+const assetSlugOverrides: Record<string, string> = {
+  "AI Q&A Tool": "AIQA",
+  "Agent Arena": "AgentArena",
+  "Dungeon Crawler": "DungeonCrawler",
+  "Interview Prepper": "InterviewPrepper",
+  "SmartCare.ai": "SmartCare",
+};
+
+const getAssetSlug = (appName: string) =>
+  assetSlugOverrides[appName] ?? appName.replace(/[^a-z0-9]+/gi, "");
+
+const assetExists = async (path: string) => {
+  try {
+    const response = await fetch(path, { method: "HEAD", cache: "no-cache" });
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
+const hydrateAppAssets = async (app: App): Promise<App> => {
+  const slug = getAssetSlug(app.name);
+  const icon = `/projects/${slug}/logo.webp`;
+  const image = `/projects/${slug}/banner.webp`;
+  const screenshots = Array.from(
+    { length: MAX_SCREENSHOT_COUNT },
+    (_, index) => `/projects/${slug}/s${index + 1}.webp`
+  );
+
+  const [hasIcon, hasImage, screenshotAvailability] = await Promise.all([
+    assetExists(icon),
+    assetExists(image),
+    Promise.all(screenshots.map(assetExists)),
+  ]);
+
+  return {
+    ...app,
+    icon: hasIcon ? icon : undefined,
+    image: hasImage ? image : undefined,
+    screenshots: screenshots.filter((_, index) => screenshotAvailability[index]),
+  };
+};
 
 const AppCenter = () => {
   const [apps, setApps] = useState<App[]>([]);
@@ -23,19 +68,32 @@ const AppCenter = () => {
   const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
 
   useEffect(() => {
-    fetch('/projects/project_list.json', { cache: "no-cache" })
-      .then(response => {
+    let cancelled = false;
+
+    const loadApps = async () => {
+      try {
+        const response = await fetch('/projects/project_list.json', { cache: "no-cache" });
         if (!response.ok) throw new Error('Failed to fetch projects');
-        return response.json();
-      })
-      .then(data => {
-        setApps(data);
+
+        const data = await response.json() as App[];
+        const hydratedApps = await Promise.all(data.map(hydrateAppAssets));
+
+        if (cancelled) return;
+
+        setApps(hydratedApps);
         setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Failed to fetch projects');
         setLoading(false);
-      });
+      }
+    };
+
+    loadApps();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Reset view when sidebar tab changes
@@ -66,7 +124,9 @@ const AppCenter = () => {
 
   const getCategories = () => {
     if (!apps.length) return ["All"];
-    const categories = apps.map(app => app.category).filter(Boolean);
+    const categories = apps
+      .map(app => app.category)
+      .filter((category): category is string => Boolean(category));
     return ["All", ...new Set(categories)];
   };
 
@@ -211,6 +271,7 @@ const AppCenter = () => {
               onOpenApp={openApp}
               searchTerm={searchTerm}
               selectedCategory={selectedCategory}
+              compactMissingMedia
             />
           </div>
         )}

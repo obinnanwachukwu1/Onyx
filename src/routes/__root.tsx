@@ -2,7 +2,7 @@ import { HeadContent, Scripts, createRootRoute, Outlet } from '@tanstack/react-r
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
-import { DeviceProvider } from '../Components/DeviceContext'
+import { DeviceProvider } from '../components/DeviceContext'
 
 import appCss from '../styles.css?url'
 import desktopWallpaper from '../assets/wallpaper/wall5.webp?url'

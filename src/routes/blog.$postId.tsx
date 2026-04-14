@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { getPost } from '../utils/posts'
-import ReaderView from '../Components/ReaderView'
+import ReaderView from '../components/ReaderView'
 import { useBlogWindowTitle } from '../utils/BlogWindowContext'
 
 export const Route = createFileRoute('/blog/$postId')({
@@ -8,6 +8,13 @@ export const Route = createFileRoute('/blog/$postId')({
     const content = getPost(params.postId)
     return { content, postId: params.postId }
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: loaderData?.content?.title || "Obinna's Library",
+      },
+    ],
+  }),
   component: BlogPage,
 })
 

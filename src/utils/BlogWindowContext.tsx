@@ -1,5 +1,5 @@
 import { createContext, useContext, useLayoutEffect } from 'react';
-import { useWindowContext } from '../Components/WindowContext';
+import { useWindowContext } from '../components/WindowContext';
 
 interface BlogWindowContextType {
   windowId: number;

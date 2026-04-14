@@ -11,6 +11,7 @@ interface AppDetailProps {
 const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [stack, setStack] = useState(true);
+    const hasScreenshots = Boolean(app.screenshots && app.screenshots.length > 0);
 
     useEffect(() => {
         const el = containerRef.current;
@@ -46,16 +47,19 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
                 <div className="app-detail-hero flex flex-col md:flex-row items-center md:items-stretch py-6 sm:py-8 md:py-10 border-b border-[var(--card-border)] gap-6 md:gap-8 text-center md:text-left">
                     <div className="app-detail-icon-container shrink-0">
                         <div className="app-detail-icon w-24 h-24 sm:w-28 sm:h-28 md:w-40 md:h-40 bg-[var(--subtle-bg)] rounded-2xl flex items-center justify-center shadow-inner p-5 sm:p-6">
-                            {app.icon && <img src={app.icon} className="w-full h-full object-contain drop-shadow-sm" alt={app.name} />}
+                            {app.icon ? (
+                                <img src={app.icon} className="w-full h-full object-contain drop-shadow-sm" alt={app.name} />
+                            ) : (
+                                <span className="text-4xl sm:text-5xl md:text-6xl font-bold text-[var(--muted-text-2)] select-none">
+                                    {app.name.charAt(0)}
+                                </span>
+                            )}
                         </div>
                     </div>
 
                     <div className="app-detail-info grow flex flex-col justify-center">
                         <h1 className="app-detail-name text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--heading-text)] mb-2 sm:mb-3 tracking-tight">{app.name}</h1>
                         <div className="app-detail-meta flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 mb-4 sm:mb-6">
-                            <span className="app-detail-category bg-blue-50 px-4 py-1.5 rounded-full text-sm font-semibold text-blue-600 border border-blue-100">
-                                {app.category || 'Application'}
-                            </span>
                             {app.tags && (
                                 <div className="app-detail-tags flex flex-wrap gap-2">
                                     {app.tags.map((tag, idx) => (
@@ -95,13 +99,13 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
                     </div>
                 </div>
 
-                {app.screenshots && app.screenshots.length > 0 && (
+                {hasScreenshots && (
                     <div className="app-screenshots-section py-5 sm:py-8 md:py-10 border-b border-[var(--card-border)] bg-[color:var(--subtle-bg)]/50">
                         <h3 className="section-title text-lg sm:text-xl font-bold text-[var(--heading-text)] mb-4 sm:mb-6 flex items-center gap-2">
                             Screenshots
                         </h3>
                         <div className="app-screenshots-gallery flex gap-4 sm:gap-6 overflow-x-auto pb-4 sm:pb-6 scrollbar-hide snap-x">
-                            {app.screenshots.map((src, index) => (
+                            {app.screenshots!.map((src, index) => (
                                 <div key={index} className="screenshot-item flex-none w-[260px] sm:w-[320px] md:w-[400px] rounded-lg sm:rounded-xl overflow-hidden shadow-md border border-[var(--card-border)] snap-center transition-transform hover:scale-[1.02]">
                                     <img src={src} alt={`${app.name} screenshot ${index + 1}`} className="w-full h-auto object-cover" />
                                 </div>
@@ -110,7 +114,7 @@ const AppDetail: React.FC<AppDetailProps> = ({ app, onBack }) => {
                     </div>
                 )}
 
-                <div className={`app-description-section app-detail-bottom-section py-5 sm:py-8 md:py-10 ${stack ? 'grid grid-cols-1 gap-6' : 'grid lg:grid-cols-3 gap-8 lg:gap-10'}`}> 
+                <div className={`app-description-section py-5 sm:py-8 md:py-10 ${hasScreenshots ? 'app-detail-bottom-section' : ''} ${stack ? 'grid grid-cols-1 gap-6' : 'grid lg:grid-cols-3 gap-8 lg:gap-10'}`}> 
                     <div className={`${stack ? '' : 'lg:col-span-2'}`}> 
                         <h3 className="section-title text-lg sm:text-xl font-bold text-[var(--heading-text)] mb-3 sm:mb-4">About this project</h3>
                         <div className="app-description max-w-none text-[var(--text-color)] leading-relaxed">
