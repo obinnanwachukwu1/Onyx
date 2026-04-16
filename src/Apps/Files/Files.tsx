@@ -11,7 +11,12 @@ import { getAppIconMap, filesIconFor, filesListIconFor } from './fileAssociation
 import { joinPath } from './permissions';
 import { useWindowModal } from '../../components/WindowModalContext';
 
-const Files = () => {
+interface FilesProps {
+  initialPath?: string;
+  initialSelectedId?: string | null;
+}
+
+const Files = ({ initialPath, initialSelectedId = null }: FilesProps) => {
   const {
     resolvePath,
     mkdir,
@@ -88,6 +93,17 @@ const Files = () => {
       case 'root': navigate('/'); break;
     }
   }, [sidebarActiveId]);
+
+  useEffect(() => {
+    if (!initialPath || !resolvePath(initialPath)) {
+      return;
+    }
+
+    setCurrentPath(initialPath);
+    setHistory([initialPath]);
+    setHistoryIndex(0);
+    setSelectedId(initialSelectedId);
+  }, [initialPath, initialSelectedId, resolvePath]);
 
   const goBack = () => {
     if (historyIndex > 0) {

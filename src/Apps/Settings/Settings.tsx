@@ -4,14 +4,26 @@ import { useWindowChrome } from '../../components/WindowChromeContext';
 import { setTheme, getTheme } from '../../components/toggleTheme';
 import { useTaskbar, TaskbarStyle } from '../../components/Taskbar/TaskbarContext';
 
-const Settings = () => {
-  const { sidebarActiveId } = useWindowChrome();
+interface SettingsProps {
+  initialSidebarId?: string;
+}
+
+const Settings = ({ initialSidebarId }: SettingsProps) => {
+  const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
   const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
   const { taskbarStyle, setTaskbarStyle } = useTaskbar();
 
   useEffect(() => {
     setCurrentTheme(getTheme());
   }, []);
+
+  useEffect(() => {
+    if (!initialSidebarId || !setSidebarActiveId) {
+      return;
+    }
+
+    setSidebarActiveId(initialSidebarId);
+  }, [initialSidebarId, setSidebarActiveId]);
 
   const handleThemeChange = (theme: 'light' | 'dark') => {
     setTheme(theme);
