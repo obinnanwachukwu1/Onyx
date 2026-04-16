@@ -1,23 +1,40 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLinkedin, faGithub, faXTwitter } from '@fortawesome/free-brands-svg-icons';
+import type { AnchorHTMLAttributes, ComponentType } from 'react';
+
+type MDXContentComponent = ComponentType<{
+  components?: {
+    a?: ComponentType<AnchorHTMLAttributes<HTMLAnchorElement>>;
+  };
+}>;
 
 interface ReaderViewProps {
   title: string;
   subtitle?: string;
-  content: string;
+  Content: MDXContentComponent;
+  readTime: number;
   /** If provided, uses callback for back navigation (CSR mode). Otherwise uses router Link (SSR mode). */
   onBack?: () => void;
 }
 
-const ReaderView: React.FC<ReaderViewProps> = ({ title, subtitle, content, onBack }) => {
-  // Calculate read time
-  const words = content.trim().split(/\s+/).length;
-  const readTime = Math.ceil(words / 200);
+function BlogContentLink(props: AnchorHTMLAttributes<HTMLAnchorElement>) {
+  const { href, rel, target, ...rest } = props;
+  const isExternal = !!href && /^(https?:)?\/\//.test(href);
 
+  return (
+    <a
+      href={href}
+      target={isExternal ? '_blank' : target}
+      rel={isExternal ? rel ?? 'noopener noreferrer' : rel}
+      {...rest}
+    />
+  );
+}
+
+const ReaderView: React.FC<ReaderViewProps> = ({ title, subtitle, Content, readTime, onBack }) => {
   return (
     <div className="w-full h-full bg-white dark:bg-zinc-900 overflow-y-auto">
       <div className="max-w-3xl mx-auto px-6 py-12 md:py-20">
@@ -55,7 +72,7 @@ const ReaderView: React.FC<ReaderViewProps> = ({ title, subtitle, content, onBac
         </header>
         
         <article className="prose prose-lg prose-zinc dark:prose-invert mx-auto focus:outline-none max-w-none">
-          <ReactMarkdown>{content}</ReactMarkdown>
+          <Content components={{ a: BlogContentLink }} />
         </article>
 
         <footer className="mt-20 pt-8 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-center gap-6">

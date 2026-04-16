@@ -1,78 +1,71 @@
-const posts = import.meta.glob('../posts/*.md', { query: '?raw', import: 'default', eager: true });
+import type { ComponentType } from 'react';
+import rawPostSources from 'virtual:blog-post-sources';
 
-export interface BlogPost {
-  slug: string;
+export interface BlogPostMetadata {
   title: string;
   subtitle?: string;
   date: string;
-  content: string;
 }
 
-// Simple frontmatter parser that doesn't rely on Node.js Buffer
-function parseFrontmatter(fileContent: string): { data: Record<string, string>; content: string } {
-  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
-  const match = fileContent.match(frontmatterRegex);
-  
-  if (!match) {
-    return { data: {}, content: fileContent };
-  }
-  
-  const frontmatterBlock = match[1];
-  const content = match[2];
-  
-  // Parse YAML-like key: value pairs
-  const data: Record<string, string> = {};
-  const lines = frontmatterBlock.split('\n');
-  
-  for (const line of lines) {
-    const colonIndex = line.indexOf(':');
-    if (colonIndex !== -1) {
-      const key = line.slice(0, colonIndex).trim();
-      let value = line.slice(colonIndex + 1).trim();
-      // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) || 
-          (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
-      }
-      data[key] = value;
-    }
-  }
-  
-  return { data, content };
+export interface BlogPostSummary extends BlogPostMetadata {
+  slug: string;
 }
 
-export function getPost(slug: string): BlogPost {
-  const matchingPath = Object.keys(posts).find((path) => path.endsWith(`/${slug}.md`));
-  
-  if (!matchingPath) {
-    throw new Error(`Post not found: ${slug}`);
-  }
-  
-  const fileContent = posts[matchingPath] as string;
-  const { data, content } = parseFrontmatter(fileContent);
-  
+export interface BlogPost extends BlogPostSummary {
+  Content: ComponentType;
+  readTime: number;
+}
+
+interface BlogPostModule {
+  default: ComponentType;
+  metadata: BlogPostMetadata;
+}
+
+const postModules = import.meta.glob<BlogPostModule>('../posts/*.mdx', { eager: true });
+
+function stripMetadataExport(source: string): string {
+  return source.replace(/^export\s+const\s+metadata\s*=\s*\{[\s\S]*?\}\s*;?\s*/m, '').trim();
+}
+
+function calculateReadTime(source: string): number {
+  const words = stripMetadataExport(source).trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 200));
+}
+
+function buildPost(path: string, module: BlogPostModule): BlogPost {
+  const summary = buildPostSummary(path, module);
+  const rawSource = rawPostSources[path] || '';
+
   return {
-    slug,
-    title: data.title || slug,
-    subtitle: data.subtitle,
-    date: data.date || '',
-    content
+    ...summary,
+    Content: module.default,
+    readTime: calculateReadTime(rawSource),
   };
 }
 
-export function getPosts(): BlogPost[] {
-  return Object.keys(posts).map((path) => {
-    const slug = path.split('/').pop()?.replace('.md', '') || '';
-    const fileContent = posts[path] as string;
-    const { data, content } = parseFrontmatter(fileContent);
-    
-    return {
-      slug,
-      title: data.title || slug,
-      subtitle: data.subtitle,
-      date: data.date || '',
-      content
-    };
+function buildPostSummary(path: string, module: BlogPostModule): BlogPostSummary {
+  const slug = path.split('/').pop()?.replace('.mdx', '') || '';
+
+  return {
+    slug,
+    ...module.metadata,
+  };
+}
+
+export function getPost(slug: string): BlogPost {
+  const matchingEntry = Object.entries(postModules).find(([path]) => path.endsWith(`/${slug}.mdx`));
+
+  if (!matchingEntry) {
+    throw new Error(`Post not found: ${slug}`);
+  }
+
+  const [path, module] = matchingEntry;
+  return buildPost(path, module);
+}
+
+export function getPosts(): BlogPostSummary[] {
+  return Object.entries(postModules).map(([path, module]) => {
+    return buildPostSummary(path, module);
   }).sort((a, b) => {
     // Sort by date descending
     if (!a.date) return 1;

@@ -33,6 +33,18 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
     
     // Focus mode state - can be exited by user interaction
     const [focusMode, setFocusMode] = useState(initialFocusMode);
+
+    const rewriteUrlWithoutNavigation = useCallback((path: string) => {
+        if (typeof window === 'undefined' || window.location.pathname === path) {
+            return;
+        }
+
+        try {
+            History.prototype.replaceState.call(window.history, window.history.state, '', path);
+        } catch {
+            window.history.replaceState(window.history.state, '', path);
+        }
+    }, []);
     
     // Exit focus mode and enable animations
     const exitFocusMode = useCallback(() => {
@@ -60,6 +72,18 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
     useEffect(() => {
         syncTaskbarMetrics();
     }, [syncTaskbarMetrics, taskbarStyle, immersiveMode]);
+
+    useEffect(() => {
+        const value = immersiveMode ? 'true' : 'false';
+
+        document.documentElement.setAttribute('data-blog-fullscreen', value);
+        document.body.setAttribute('data-blog-fullscreen', value);
+
+        return () => {
+            document.documentElement.removeAttribute('data-blog-fullscreen');
+            document.body.removeAttribute('data-blog-fullscreen');
+        };
+    }, [immersiveMode]);
 
     useEffect(() => {
         const handleResize = () => syncTaskbarMetrics();
@@ -323,6 +347,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
         );
         if (shouldExitImmersive) {
             setImmersiveMode(false);
+            rewriteUrlWithoutNavigation('/');
         }
     }
 

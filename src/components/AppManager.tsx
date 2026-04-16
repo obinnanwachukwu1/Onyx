@@ -43,6 +43,18 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
     return maxZIndex + 1;
   });
 
+  useEffect(() => {
+    const value = blogFullscreen ? 'true' : 'false';
+
+    document.documentElement.setAttribute('data-blog-fullscreen', value);
+    document.body.setAttribute('data-blog-fullscreen', value);
+
+    return () => {
+      document.documentElement.removeAttribute('data-blog-fullscreen');
+      document.body.removeAttribute('data-blog-fullscreen');
+    };
+  }, [blogFullscreen]);
+
   const launchApp = (appId: string, props: Record<string, unknown> = {}) => {
     const desktop = document.querySelector<HTMLElement>('.mobile-desktop');
     // Navigation bar is fixed height (see NavigationBar.css)

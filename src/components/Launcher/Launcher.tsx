@@ -131,7 +131,7 @@ const Launcher = (): JSX.Element | null => {
         />
 
         <section
-          className="absolute inset-x-0 bottom-0 max-h-[84vh] rounded-t-3xl border-t border-white/15 bg-[#0f1015f2] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl transform-gpu"
+          className="absolute inset-x-0 bottom-0 flex max-h-[84vh] flex-col rounded-t-3xl border-t border-white/15 bg-[#0f1015f2] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl transform-gpu"
           style={{
             transform: launcherVisible ? 'translateY(0%)' : 'translateY(100%)',
             transition: 'transform 300ms cubic-bezier(0.22, 1, 0.36, 1)',
@@ -184,7 +184,10 @@ const Launcher = (): JSX.Element | null => {
             ) : null}
           </div>
 
-          <div className="overflow-y-auto px-4 pb-[calc(88px+env(safe-area-inset-bottom))] pt-4">
+          <div
+            className="min-h-0 overflow-y-auto px-4 pb-[calc(88px+env(safe-area-inset-bottom))] pt-4 overscroll-contain"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             {displayedLauncherView === 'running' ? (
               runningWindows.length ? (
                 <div className="space-y-2">

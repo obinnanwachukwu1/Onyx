@@ -1,0 +1,47 @@
+export const metadata = {
+  title: 'Your Coding Harness is Stuck in 2025',
+  subtitle: 'Why plan-first harness design may be holding back frontier models, and what we should try instead',
+  date: '2026-04-15',
+}
+
+That's a bold claim, after all, the AI space has changed drastically since early-2025. Back then, we had just gotten into reasoning-fever with models such as OpenAI o3, DeepSeek R1 and Claude Sonnet 3.7. Long running tasks were a pipe dream and a model picking the right tool for a given situation was a hope not a guarantee. But these models were relatively good at code and we wanted to automate our jobs even further, so naturally we, as engineers, let them run havoc on our codebases. That led to some... interesting slop being generated.
+
+### The harness1 era
+
+As "good" as those models were at producing code, they were terrible at maintaining coherence over a long thread, especially when asked to do the unfathomable of completing two tasks at once. So once again as good engineers, we saw this problem and figured we could solve it with more code. Introducing harness1, a coding harness for our dumb "agents" (think your Claude Codes, Cursors, Codexes, GitHub Copilots of the world). The agent doesn't have to worry about state, all it has to do is make a plan and try its best to follow it. If it goes off kilter? The harness is here to save the day by nudging the agent back towards the goal. We learn that the agent performs better when given a checklist? Let's have it generate a general plan, then local todos *within* that plan to keep it from wandering. Problem solved, right?
+
+Well actually, yes! For the most part, with a combination of intelligent design from dedicated harness engineers (truly impressive how you guys made Sonnet 3.5 and 4o produce competent outputs) and improvements in tool calling and long context reasoning, these model + harness combos went from tech demo to "wow this can code better than me." For me, this happened after the launch of GPT-5-Codex, for others it was the launch of Claude Opus 4.5. Finally, it seemed like these models were good *enough* to reliably maintain control of their coding harness, truly offering up their breadth of world knowledge to our heavily modded TUIs.
+
+But the models just kept improving, and here we are today with Opus 4.6 and GPT 5.4, two SOTA models that likely produce better code than ~80% of developers (me included). And you'd think with those improvements, the experience would be materially better, right? So why, when I was architecting the new Semantic Engine for TraceCode, was I so damn frustrated with GPT 5.4 despite it being objectively better in my codebase?
+
+There were so many instances of GPT 5.4 and I going down rabbit holes, implementing plans we had both agreed were solid. It would continue implementing until I said "wait this doesn't look right" or "are we sure this is scalable", to which the agent replied "Yes, you're right this won't work". Well, I wish you had used your breadth of knowledge to inform me of that before I wasted millions of tokens and hours of my life!
+
+### The cracks
+
+Here lies my issue. The most popular harnesses, what I consider the harness1 generation, are designed to be plan heavy. While we keep shoving things into them to make them flashier such as skills, MCPs, subagents, worktrees, we're still left with a fundamental design that assumes the harness is constraining a "dumb agent" that needs constant steering. And I'm of the belief that we're at the point where that's hurting more than it's helping.
+
+These models are smart, like *really* smart. They're much better at calling tools, adapting to their environment, and producing production code, but harness1 assumes the model is of its 2025-era kin, one that needed more assistance, one that barely grasped the concept of exploration. As a result, we have the best code ever implemented under a failed plan that the model would've rejected if it was asked to critically review it.
+
+So why don't we allow the model to do that? Why don't we build a harness that is plan-last, and questioning/experimentation first? A minimal coding harness that pushes back on failed ideas, narrows scope, and only continues once it's sure of its impact, like a true engineer? That's the angle [my version of harness2](https://github.com/obinnanwachukwu1/harness2) tries to explore.
+
+### What harness2 means
+
+The name "harness2" isn't meant to obsolete the current harnesses in use, it's to reflect the change in thinking many of us are having towards how we interact with these tools. The harness2 way of thinking should give the agent the autonomy we pretend to not let it have even though we do --dangerously-skip-permissions every time. And my version allows the agents to act less as code bots, but as researchers that try their best to validate their hypotheses before implementation.
+
+My implementation of harness2 is also not replacing anything anytime soon. It's a proof of concept TUI that has no proper sandboxing. If you want a proper CLI use Codex or OpenCode. It's merely a vehicle to showcase my version of this idea, a future, or rather present, of agents that are able to take more initiative and drive their own change. And we don't even need much to make it a reality.
+
+### My take on harness2
+
+I was inspired by [Theo](https://www.youtube.com/watch?v=I82j7AzMU80) when he shared an article on stream about how easy it is to make a basic harness for these advanced models. In less than 100 lines, Claude Opus can control your computer from the terminal. From this simple base I thought, what abilities would you need for an agent to behave more like a researcher?
+
+Well, really 2: The ability to open research questions and conduct studies (experiments) on them. That combined with a short system prompt designed to make the agent surface uncertainties nudges the agent toward spending more time on diagnosing and breaking down tricky problems before it ever touches implementation. The agent conducts studies by giving focused subagents pointed hypotheses and asking them to validate or invalidate them with reason. From this, the main agent can make informed decisions without getting lost in rabbit holes.
+
+But no, that's really it. No planning tool, no todo, no nudges to stay on track, none of that. And in my limited testing it worked pretty well. When I gave it vague prompts, it correctly opened up questions and experiments about gaps it saw and used that empirical knowledge to build a better product. But then we hit a harness engineer's worst nightmare, compaction. Compaction, like any form of lossy compression, is susceptible to catastrophic data loss if done incorrectly. And this loss is exacerbated with my harness as we don't enforce the creation of a plan to refer back to. So how do we make sure the agent's intent is carried through compaction? By using the agent to tell itself about its intent, obviously!
+
+I know it sounds foreign, but in my limited testing it actually works. Instead of compaction being this concept that looms over the agent, it's a routine action the agent has control over. It's a tool, like edit and read, that we keep from the agent until its context window is ~75% full, in which we politely nudge the agent to use the tool whenever next convenient. At ~85% context, we tell the agent to compact as soon as possible, and at ~93% full, we take away all other tools and force the agent to compact on the next turn.
+
+But the secret to this compaction tool is how we use it to encode a "pseudo-planning" interface in a harness that's designed to be plan-last. The tool asks the agent for the information about the current state, goals/considerations, what's been done and what's left to do. This is then used in the compaction context for the next run. It's also fed a recent snapshot of the research notebook and git tree. And in my limited testing, the agent behaves just fine with that information.
+
+But it's not just me, the harness2 way of thinking is starting to permeate across the industry. [mini-SWE-agent](https://github.com/SWE-agent/mini-swe-agent) showed us you only need bash to make a competitive harness. [Hermes Agent](https://hermes-agent.nousresearch.com/) focuses on learning about your behavior and understanding your intentions instead of trying to optimize our current assumptions. [Vercel removed 80% of its agents tools](https://vercel.com/blog/we-removed-80-percent-of-our-agents-tools) and got much better results out of it. These are all different bets on what the flagship implementation of harness2 should be. My bet is on experimentation, someone's bet could be on memory or even simple primitives and maximum agent autonomy. But the through line is clear, the current default needs to be questioned.
+
+ So, while my take on harness2 can just be "a skill", a lot of us should be spending our time on asking if we got the coding harness right, if simply just appending to our current assumptions will help us long term. And I think structures that help the agent think for itself, not just execute for us, is what we need. At the end of the day, inference is cheap for now, and we should burn our tokens trying to make the tool for tomorrow before we're stuck with the one from today. 

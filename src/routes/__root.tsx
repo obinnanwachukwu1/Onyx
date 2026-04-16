@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { HeadContent, Scripts, createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -108,6 +109,40 @@ function RootDocument({
   const shell = isBlogRoute ? 'blog' : 'desktop'
   const initialShellBg = isBlogRoute ? '#ffffff' : '#000000'
   const initialShellBgImage = isBlogRoute ? 'none' : `url("${desktopWallpaper}")`
+
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const theme = html.getAttribute('data-theme') || 'light'
+
+    html.setAttribute('data-shell', shell)
+    body.setAttribute('data-shell', shell)
+
+    if (shell === 'blog') {
+      html.style.backgroundColor = theme === 'dark' ? '#18181b' : '#ffffff'
+      html.style.backgroundImage = 'none'
+      html.style.backgroundSize = ''
+      html.style.backgroundPosition = ''
+      html.style.backgroundRepeat = ''
+      body.style.backgroundColor = theme === 'dark' ? '#18181b' : '#ffffff'
+      body.style.backgroundImage = 'none'
+      body.style.backgroundSize = ''
+      body.style.backgroundPosition = ''
+      body.style.backgroundRepeat = ''
+      return
+    }
+
+    html.style.backgroundColor = '#000000'
+    html.style.backgroundImage = `url("${desktopWallpaper}")`
+    html.style.backgroundSize = 'cover'
+    html.style.backgroundPosition = 'center'
+    html.style.backgroundRepeat = 'no-repeat'
+    body.style.backgroundColor = '#000000'
+    body.style.backgroundImage = `url("${desktopWallpaper}")`
+    body.style.backgroundSize = 'cover'
+    body.style.backgroundPosition = 'center'
+    body.style.backgroundRepeat = 'no-repeat'
+  }, [shell])
 
   return (
     // Start with light theme, inline script will correct it before paint

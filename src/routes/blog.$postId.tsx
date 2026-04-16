@@ -4,14 +4,10 @@ import ReaderView from '../components/ReaderView'
 import { useBlogWindowTitle } from '../utils/BlogWindowContext'
 
 export const Route = createFileRoute('/blog/$postId')({
-  loader: ({ params }) => {
-    const content = getPost(params.postId)
-    return { content, postId: params.postId }
-  },
-  head: ({ loaderData }) => ({
+  head: ({ params }) => ({
     meta: [
       {
-        title: loaderData?.content?.title || "Obinna's Library",
+        title: getPost(params.postId).title || "Obinna's Library",
       },
     ],
   }),
@@ -19,11 +15,12 @@ export const Route = createFileRoute('/blog/$postId')({
 })
 
 function BlogPage() {
-  const { content } = Route.useLoaderData()
-  const { title, subtitle, content: markdownContent } = content;
+  const { postId } = Route.useParams()
+  const content = getPost(postId)
+  const { title, subtitle, Content, readTime } = content;
 
   // Update the window title to the post title
   useBlogWindowTitle(title || 'Blog Post')
 
-  return <ReaderView title={title} subtitle={subtitle} content={markdownContent} />
+  return <ReaderView title={title} subtitle={subtitle} Content={Content} readTime={readTime} />
 }

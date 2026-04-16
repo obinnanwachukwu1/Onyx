@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import BlogList from '../../components/BlogList';
 import ReaderView from '../../components/ReaderView';
-import { getPosts, getPost, BlogPost } from '../../utils/posts';
+import { getPosts, getPost, BlogPostSummary } from '../../utils/posts';
 import './Blog.css';
 
 interface BlogAppProps {
@@ -14,7 +14,7 @@ interface BlogAppProps {
  */
 const BlogApp: React.FC<BlogAppProps> = ({ initialPostId }) => {
   const [currentPostId, setCurrentPostId] = useState<string | null>(initialPostId || null);
-  const [posts] = useState<BlogPost[]>(() => getPosts());
+  const [posts] = useState<BlogPostSummary[]>(() => getPosts());
 
   // Get current post data if viewing a post
   const currentPost = currentPostId ? getPost(currentPostId) : null;
@@ -32,7 +32,8 @@ const BlogApp: React.FC<BlogAppProps> = ({ initialPostId }) => {
       <ReaderView
         title={currentPost.title}
         subtitle={currentPost.subtitle}
-        content={currentPost.content}
+        Content={currentPost.Content}
+        readTime={currentPost.readTime}
         onBack={handleBack}
       />
     );
