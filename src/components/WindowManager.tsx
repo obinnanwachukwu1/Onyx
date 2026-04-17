@@ -134,6 +134,7 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
                 fullViewportWhenMaximized: immersiveMode,
                 sidebar: app.sidebar ? { items: app.sidebar.items, footer: app.sidebar.footer } : undefined,
                 sidebarActiveId: app.sidebar?.initialActiveId || (app.sidebar?.items?.[0]?.id ?? undefined),
+                deferInitialReveal: !!app.deferInitialReveal,
             };
             newWindow.position = app.initialPosition === WindowStartPosition.CENTERSCREEN ? { x: (windowSize.width - newWindow.size.width) / 2, y: (windowSize.height - newWindow.size.height) / 2 } : { x: 100, y: 100 },
                 newWindow.restorePosition = app.initialPosition === WindowStartPosition.CENTERSCREEN ? { x: (windowSize.width - newWindow.size.width) / 2, y: (windowSize.height - newWindow.size.height) / 2 } : { x: 100, y: 100 },

@@ -34,6 +34,7 @@ const Window = ({
   zIndex,
   sidebar,
   sidebarActiveId: sidebarActiveIdProp,
+  deferInitialReveal = false,
   focusMode = false,
   hideDesktopChrome = false,
   fullViewportWhenMaximized = false
@@ -52,6 +53,7 @@ const Window = ({
   const [sidebarActiveId, setSidebarActiveId] = useState(sidebarActiveIdFromProps());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [shouldAnimateOnLaunch, setShouldAnimateOnLaunch] = useState(true);
+  const [isInitialRevealPending, setIsInitialRevealPending] = useState(deferInitialReveal);
   const immersiveHideTimerRef = useRef(null);
   const isMobileViewport = !!renderMobile;
   const useImmersiveDesktopChrome = !isMobileViewport && !!hideDesktopChrome;
@@ -192,6 +194,10 @@ const Window = ({
 
   const consumeLaunchAnimation = useCallback(() => {
     setShouldAnimateOnLaunch((previous) => (previous ? false : previous));
+  }, []);
+
+  const markInitialRevealReady = useCallback(() => {
+    setIsInitialRevealPending(false);
   }, []);
 
   const handleClosing = (e) => {
@@ -523,6 +529,7 @@ const Window = ({
 
         {/* App content with chrome context */}
         <div
+          className={`window-app-frame ${isInitialRevealPending ? 'pending-initial-reveal' : 'initial-reveal-ready'}`}
           style={{
             flexGrow: 1,
             width: '100%',
@@ -581,11 +588,20 @@ const Window = ({
               isWindowActive: !!isActive,
               shouldAnimateOnLaunch,
               consumeLaunchAnimation,
+              isInitialRevealPending,
+              markInitialRevealReady,
             }}
           >
             {content}
           </WindowChromeProvider>
         </div>
+        {isInitialRevealPending ? (
+          <div className="window-launch-overlay" aria-hidden="true">
+            <div className="window-launch-overlay-inner">
+              {appIcon ? <img src={appIcon} className="window-launch-overlay-icon" alt="" /> : null}
+            </div>
+          </div>
+        ) : null}
       </div>
       <WindowModalHost />
       {/* Corner + edge resize handles */}

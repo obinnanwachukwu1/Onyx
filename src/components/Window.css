@@ -265,6 +265,46 @@
     overflow: hidden;
   }
 
+  .window-app-frame {
+    position: relative;
+    transition: opacity 180ms ease;
+  }
+
+  .window-app-frame.pending-initial-reveal {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .window-app-frame.initial-reveal-ready {
+    opacity: 1;
+  }
+
+  .window-launch-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--header-bg-active);
+    pointer-events: none;
+  }
+
+  .window-launch-overlay-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+  }
+
+  .window-launch-overlay-icon {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.14));
+  }
+
   .resize-handle {
     position: absolute;
     width: 10px;

@@ -6,11 +6,14 @@ type WindowChromeContextValue = {
   isWindowActive: boolean;
   shouldAnimateOnLaunch: boolean;
   consumeLaunchAnimation?: () => void;
+  isInitialRevealPending: boolean;
+  markInitialRevealReady?: () => void;
 };
 
 const WindowChromeContext = createContext<WindowChromeContextValue>({
   isWindowActive: true,
   shouldAnimateOnLaunch: false,
+  isInitialRevealPending: false,
 });
 
 export const useWindowChrome = () => useContext(WindowChromeContext);
@@ -28,6 +31,15 @@ export const useWindowLaunchAnimation = () => {
   }, [consumeLaunchAnimation, playLaunchAnimation]);
 
   return playLaunchAnimation;
+};
+
+export const useWindowInitialReveal = () => {
+  const { isInitialRevealPending, markInitialRevealReady } = useWindowChrome();
+
+  return {
+    isInitialRevealPending,
+    markInitialRevealReady,
+  };
 };
 
 export const WindowChromeProvider = WindowChromeContext.Provider;

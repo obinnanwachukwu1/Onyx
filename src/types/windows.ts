@@ -51,6 +51,7 @@ export interface WindowData {
     footer?: ReactNode;
   };
   sidebarActiveId?: string;
+  deferInitialReveal?: boolean;
 }
 
 export interface AppDefinition {
@@ -72,6 +73,7 @@ export interface AppDefinition {
     initialActiveId?: string;
     footer?: ReactNode;
   };
+  deferInitialReveal?: boolean;
 }
 
 export type LauncherView = 'apps' | 'running';

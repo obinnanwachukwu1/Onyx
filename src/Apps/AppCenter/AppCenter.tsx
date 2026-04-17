@@ -4,7 +4,7 @@ import "./AppCenter.animations.css";
 import "./AppCenter.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFaceFrown, faSearch, faRefresh } from "@fortawesome/free-solid-svg-icons";
-import { useWindowChrome, useWindowLaunchAnimation } from "../../components/WindowChromeContext";
+import { useWindowChrome, useWindowInitialReveal, useWindowLaunchAnimation } from "../../components/WindowChromeContext";
 import FeaturedCarousel from "./components/FeaturedCarousel";
 import AppGrid from "./components/AppGrid";
 import AppDetail from "./components/AppDetail";
@@ -66,6 +66,7 @@ const AppCenter = () => {
   const [tabAnimationNonce, setTabAnimationNonce] = useState(0);
   const previousSidebarIdRef = useRef<string | undefined>(undefined);
   const playLaunchAnimation = useWindowLaunchAnimation();
+  const { markInitialRevealReady } = useWindowInitialReveal();
 
   // Get sidebar state from Window context
   const { sidebarActiveId, setSidebarActiveId } = useWindowChrome();
@@ -98,6 +99,12 @@ const AppCenter = () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      markInitialRevealReady?.();
+    }
+  }, [loading, markInitialRevealReady]);
 
   // Reset view when sidebar tab changes
   useEffect(() => {

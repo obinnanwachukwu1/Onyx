@@ -68,6 +68,7 @@ const appList: AppDefinition[] = [
     initialSize: { width: 640, height: 600 },
     showOnDesktop: true,
     showInLauncher: true,
+    deferInitialReveal: true,
     sidebar: {
       items: [
         { id: 'home', label: 'Home', icon: Home },

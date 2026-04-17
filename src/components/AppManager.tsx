@@ -134,6 +134,7 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
       fullViewportWhenMaximized: immersiveMode,
       sidebar: app.sidebar ? { items: app.sidebar.items, footer: app.sidebar.footer } : undefined,
       sidebarActiveId: app.sidebar?.initialActiveId || (app.sidebar?.items?.[0]?.id ?? undefined),
+      deferInitialReveal: !!app.deferInitialReveal,
     };
 
     setZIndexCounter((previous) => previous + 1);
