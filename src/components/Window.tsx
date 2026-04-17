@@ -25,6 +25,7 @@ const Window = ({
   position,
   size,
   isMaximized,
+  isMinimized,
   minimizing = false,
   showInTaskbar,
   isActive,
@@ -74,25 +75,39 @@ const Window = ({
   }
 
   useEffect(() => {
-    if (isOpening) {
-      setTimeout(() => {
-        setIsOpening(false);
-      }, 250);
-    } else if (isActive && isRestoringFromTaskbar) {
-      getTaskbarTransformPos(id);
-      setTimeout(() => {
-        afterRestoreFromTaskbar(id);
-        isRestoringFromTaskbar = false;
-      }, 250);
+    if (!isOpening) {
+      return;
     }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsOpening(false);
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
   }, [isOpening]);
+
+  useEffect(() => {
+    if (!isActive || !isRestoringFromTaskbar) {
+      return;
+    }
+
+    getTaskbarTransformPos(id);
+
+    const timeoutId = window.setTimeout(() => {
+      afterRestoreFromTaskbar(id);
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [afterRestoreFromTaskbar, getTaskbarTransformPos, id, isActive, isRestoringFromTaskbar]);
 
   useEffect(() => {
     if (closingWindowID === id) {
       setIsClosing(true);
-      setTimeout(() => {
+      const timeoutId = window.setTimeout(() => {
         notifyClose(id);
       }, 250);
+
+      return () => window.clearTimeout(timeoutId);
     }
   }, [closingWindowID])
 
@@ -429,7 +444,7 @@ const Window = ({
   return (
     <WindowModalProvider>
       <div
-      className={`window ${renderMobile && isOpening ? 'window-mobile window-mobile-opening' : renderMobile && isClosing ? 'window-mobile window-mobile-closing' : renderMobile ? 'window-mobile' : isOpening ? 'window-opening' : isClosing ? 'window-closing' : isRestoringFromTaskbar ? 'window-restoring-from-taskbar' : (isMinimizing || minimizing) ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : ''} ${isMaximized || isMaximizing ? 'maximized' : ''} ${renderMobile ? '' : isActive ? 'active' : 'inactive'} ${fullViewportWhenMaximized ? 'full-viewport' : ''} ${useImmersiveDesktopChrome ? 'immersive-window' : ''}`}
+      className={`window ${renderMobile && isOpening ? 'window-mobile window-mobile-opening' : renderMobile && isClosing ? 'window-mobile window-mobile-closing' : renderMobile ? 'window-mobile' : isOpening ? 'window-opening' : isClosing ? 'window-closing' : isRestoringFromTaskbar ? 'window-restoring-from-taskbar' : (isMinimizing || minimizing) ? 'window-minimizing' : isMaximizing ? 'window-maximizing' : isRestoring ? 'window-restoring' : ''} ${isMaximized || isMaximizing ? 'maximized' : ''} ${renderMobile ? '' : isActive ? 'active' : 'inactive'} ${fullViewportWhenMaximized ? 'full-viewport' : ''} ${useImmersiveDesktopChrome ? 'immersive-window' : ''} ${isMinimized && !(isMinimizing || minimizing) ? 'window-minimized-hidden' : ''}`}
       style={{
         top: position.y,
         left: position.x,

@@ -352,7 +352,7 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
       <MobileDesktop disableAutoStart={initialWindows.length > 0} />
       {[...windows]
         .sort((a, b) => a.zIndex - b.zIndex)
-        .map((window) => (!window.isMinimized ? <Window key={window.id} {...window} renderMobile={true} /> : null))}
+        .map((window) => (<Window key={window.id} {...window} renderMobile={true} />))}
       <NavigationBar
         ref={navigationBarRef}
         minimal={immersiveMode}

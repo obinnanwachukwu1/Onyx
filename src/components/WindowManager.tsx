@@ -182,16 +182,19 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
     const activateWindow = (id) => {
         setLauncherVisible(false);
         setActiveWindowId(id);
-        setZIndexCounter(prev => prev + 1);
-        setWindows((prevWindows) =>
-            prevWindows.map((window) =>
-                window.id === id ? (window.isMinimized ?
-                    { ...window, isRestoringFromTaskbar: true, isMinimized: false, minimizing: false, isActive: true, zIndex: zIndexCounter }
-                    : { ...window, minimizing: false, isActive: true, zIndex: zIndexCounter }
+        setZIndexCounter((previous) => {
+            const nextZIndex = previous + 1;
+            setWindows((prevWindows) =>
+                prevWindows.map((window) =>
+                    window.id === id ? (window.isMinimized ?
+                        { ...window, isRestoringFromTaskbar: true, isMinimized: false, minimizing: false, isActive: true, zIndex: nextZIndex }
+                        : { ...window, minimizing: false, isActive: true, zIndex: nextZIndex }
+                    )
+                        : { ...window, isActive: false }
                 )
-                    : { ...window, isActive: false }
-            )
-        );
+            );
+            return nextZIndex;
+        });
     };
 
 
@@ -420,17 +423,15 @@ const WindowManager = ({ windowSize, initialWindows = [], focusMode: initialFocu
             {!immersiveMode ? <Desktop focusMode={focusMode} disableAutoStart={initialWindows.length > 0} /> : null}
             {[...windows] // Create a copy of windows array
                 .sort((a, b) => a.zIndex - b.zIndex) // Sort by zIndex
-                .map((window) =>
-                    !window.isMinimized ? (
-                        <Window
-                            key={window.id}
-                            {...window}
-                            focusMode={focusMode}
-                            hideDesktopChrome={window.hideDesktopChrome || immersiveMode}
-                            fullViewportWhenMaximized={window.fullViewportWhenMaximized || immersiveMode}
-                        />
-                    ) : null
-                )}
+                .map((window) => (
+                    <Window
+                        key={window.id}
+                        {...window}
+                        focusMode={focusMode}
+                        hideDesktopChrome={window.hideDesktopChrome || immersiveMode}
+                        fullViewportWhenMaximized={window.fullViewportWhenMaximized || immersiveMode}
+                    />
+                ))}
             {!immersiveMode ? <Taskbar ref={taskbarRef} windows={windows} setButtonPosition={setButtonPosition} /> : null}
             {!immersiveMode ? <Launcher /> : null}
         </WindowManagerContext.Provider>
