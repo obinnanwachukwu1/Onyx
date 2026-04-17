@@ -107,25 +107,24 @@ function RootDocument({
   isBlogRoute: boolean
 }) {
   const shell = isBlogRoute ? 'blog' : 'desktop'
-  const initialShellBg = isBlogRoute ? '#ffffff' : '#000000'
+  const initialShellBg = isBlogRoute ? '#18181b' : '#000000'
   const initialShellBgImage = isBlogRoute ? 'none' : `url("${desktopWallpaper}")`
 
   useEffect(() => {
     const html = document.documentElement
     const body = document.body
-    const theme = html.getAttribute('data-theme') || 'light'
 
     html.setAttribute('data-shell', shell)
     body.setAttribute('data-shell', shell)
 
     if (shell === 'blog') {
-      html.style.backgroundColor = theme === 'dark' ? '#18181b' : '#ffffff'
-      html.style.backgroundImage = 'none'
+      html.style.backgroundColor = ''
+      html.style.backgroundImage = ''
       html.style.backgroundSize = ''
       html.style.backgroundPosition = ''
       html.style.backgroundRepeat = ''
-      body.style.backgroundColor = theme === 'dark' ? '#18181b' : '#ffffff'
-      body.style.backgroundImage = 'none'
+      body.style.backgroundColor = ''
+      body.style.backgroundImage = ''
       body.style.backgroundSize = ''
       body.style.backgroundPosition = ''
       body.style.backgroundRepeat = ''
@@ -190,8 +189,11 @@ function RootDocument({
                   }
 
                   if (isBlogRoute) {
-                    document.documentElement.style.backgroundColor = theme === 'dark' ? '#18181b' : '#ffffff';
-                    document.documentElement.style.backgroundImage = 'none';
+                    document.documentElement.style.backgroundColor = '';
+                    document.documentElement.style.backgroundImage = '';
+                    document.documentElement.style.backgroundSize = '';
+                    document.documentElement.style.backgroundPosition = '';
+                    document.documentElement.style.backgroundRepeat = '';
                   } else {
                     document.documentElement.style.backgroundColor = '#000000';
                     document.documentElement.style.backgroundImage = 'url("${desktopWallpaper}")';

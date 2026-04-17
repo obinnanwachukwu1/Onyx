@@ -19,6 +19,8 @@ html[data-shell="blog"][data-blog-fullscreen="true"],
 html[data-shell="blog"][data-blog-fullscreen="true"] body,
 html[data-shell="blog"][data-blog-fullscreen="true"] #root {
   overscroll-behavior-x: auto;
+  background-color: #18181b;
+  background-image: none;
 }
 
 html[data-shell="desktop"],
