@@ -7,14 +7,16 @@ import { Layers3 } from 'lucide-react';
 
 interface NavigationBarProps {
   minimal?: boolean;
+  animateIn?: boolean;
   windows?: WindowData[];
   activeWindowId?: number | null;
   onActivateWindow?: (windowId: number) => void;
   onCloseWindow?: (windowId: number) => void;
   onMinimizeWindow?: (windowId: number) => void;
+  onExitImmersive?: () => void;
 }
 
-const NavigationBar = forwardRef<HTMLDivElement, NavigationBarProps>(({ minimal = false, windows = [] }, ref) => {
+const NavigationBar = forwardRef<HTMLDivElement, NavigationBarProps>(({ minimal = false, animateIn = false, windows = [], onExitImmersive }, ref) => {
   const { openLauncher, closeLauncher, launcherVisible, launcherView } = useWindowContext();
 
   const runningWindows = useMemo(() => {
@@ -28,10 +30,29 @@ const NavigationBar = forwardRef<HTMLDivElement, NavigationBarProps>(({ minimal 
     event.preventDefault();
   };
 
+  if (minimal && onExitImmersive) {
+    return (
+      <div
+        ref={ref}
+        className="navigation-bar navigation-bar-overlay-control navigation-bar-minimal"
+        onContextMenu={handleContextMenu}
+      >
+        <button
+          className="navigation-immersive-handle"
+          type="button"
+          onClick={onExitImmersive}
+          aria-label="Exit immersive mode and show taskbar"
+        >
+          <span className="navigation-immersive-line" aria-hidden="true" />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={ref}
-      className={`navigation-bar ${minimal ? 'navigation-bar-overlay-control' : ''}`}
+      className={`navigation-bar ${minimal ? 'navigation-bar-overlay-control' : ''} ${animateIn ? 'navigation-bar-animate-in' : ''}`}
       onContextMenu={handleContextMenu}
     >
       <div className="navigation-dock-shell">

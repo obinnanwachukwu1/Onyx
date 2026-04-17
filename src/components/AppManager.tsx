@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement, useEffect, useRef, useState } from 'react';
+import { cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from 'react';
 import NavigationBar from './NavigationBar/NavigationBar';
 import MobileDesktop from './MobileDesktop/MobileDesktop';
 import appList from '../Apps/AppList';
@@ -14,6 +14,9 @@ interface AppManagerProps {
 
 const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerProps): JSX.Element => {
   const navigationBarRef = useRef<HTMLDivElement | null>(null);
+  const [immersiveMode, setImmersiveMode] = useState<boolean>(() =>
+    blogFullscreen || initialWindows.some((window) => window.hideDesktopChrome || window.fullViewportWhenMaximized)
+  );
   const [windows, setWindows] = useState<WindowData[]>(() => {
     const hydrated = initialWindows.map((window) => ({ ...window, renderMobile: true }));
     if (hydrated.some((window) => window.isActive)) {
@@ -38,13 +41,26 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
   const [closingWindowID, setClosingWindowID] = useState<number>(-1);
   const [launcherVisible, setLauncherVisible] = useState<boolean>(false);
   const [launcherView, setLauncherView] = useState<LauncherView>('apps');
+  const [animateTaskbarIn, setAnimateTaskbarIn] = useState<boolean>(false);
   const [zIndexCounter, setZIndexCounter] = useState<number>(() => {
     const maxZIndex = initialWindows.reduce((max, window) => Math.max(max, window.zIndex), 0);
     return maxZIndex + 1;
   });
 
+  const rewriteUrlWithoutNavigation = useCallback((path: string) => {
+    if (typeof window === 'undefined' || window.location.pathname === path) {
+      return;
+    }
+
+    try {
+      History.prototype.replaceState.call(window.history, window.history.state, '', path);
+    } catch {
+      window.history.replaceState(window.history.state, '', path);
+    }
+  }, []);
+
   useEffect(() => {
-    const value = blogFullscreen ? 'true' : 'false';
+    const value = immersiveMode ? 'true' : 'false';
 
     document.documentElement.setAttribute('data-blog-fullscreen', value);
     document.body.setAttribute('data-blog-fullscreen', value);
@@ -53,13 +69,13 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
       document.documentElement.removeAttribute('data-blog-fullscreen');
       document.body.removeAttribute('data-blog-fullscreen');
     };
-  }, [blogFullscreen]);
+  }, [immersiveMode]);
 
   const launchApp = (appId: string, props: Record<string, unknown> = {}) => {
     const desktop = document.querySelector<HTMLElement>('.mobile-desktop');
     // Navigation bar is fixed height (see NavigationBar.css)
     const FALLBACK_NAV_HEIGHT = 50;
-    const navigationBarHeight = blogFullscreen ? 0 : (navigationBarRef.current?.clientHeight ?? FALLBACK_NAV_HEIGHT);
+    const navigationBarHeight = immersiveMode ? 0 : (navigationBarRef.current?.clientHeight ?? FALLBACK_NAV_HEIGHT);
 
     if (!desktop) {
       return;
@@ -114,6 +130,8 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
       isActive: true,
       renderMobile: true,
       zIndex: zIndexCounter,
+      hideDesktopChrome: immersiveMode,
+      fullViewportWhenMaximized: immersiveMode,
       sidebar: app.sidebar ? { items: app.sidebar.items, footer: app.sidebar.footer } : undefined,
       sidebarActiveId: app.sidebar?.initialActiveId || (app.sidebar?.items?.[0]?.id ?? undefined),
     };
@@ -250,6 +268,36 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
     // Mobile view does not support taskbar restore animations
   };
 
+  const exitImmersiveMode = () => {
+    setLauncherVisible(false);
+    setAnimateTaskbarIn(true);
+    setImmersiveMode(false);
+    setWindows((previousWindows) =>
+      previousWindows.map((window) =>
+        window.hideDesktopChrome || window.fullViewportWhenMaximized
+          ? {
+            ...window,
+            hideDesktopChrome: false,
+            fullViewportWhenMaximized: false,
+          }
+          : window
+      )
+    );
+    rewriteUrlWithoutNavigation('/');
+  };
+
+  useEffect(() => {
+    if (!animateTaskbarIn) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setAnimateTaskbarIn(false);
+    }, 320);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [animateTaskbarIn]);
+
   useEffect(() => {
     const desktop = document.querySelector<HTMLElement>('.mobile-desktop');
     if (!desktop || windows.length === 0) {
@@ -257,7 +305,7 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
     }
 
     const FALLBACK_NAV_HEIGHT = 50;
-    const navigationBarHeight = blogFullscreen ? 0 : (navigationBarRef.current?.clientHeight ?? FALLBACK_NAV_HEIGHT);
+    const navigationBarHeight = immersiveMode ? 0 : (navigationBarRef.current?.clientHeight ?? FALLBACK_NAV_HEIGHT);
     const desktopBounds = desktop.getBoundingClientRect();
 
     setWindows((previousWindows) =>
@@ -270,7 +318,7 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
         restoreSize: { width: desktopBounds.width, height: desktopBounds.height - navigationBarHeight },
       }))
     );
-  }, [blogFullscreen]);
+  }, [immersiveMode, windows.length]);
 
   return (
     <AppManagerContext.Provider
@@ -306,12 +354,14 @@ const AppManager = ({ initialWindows = [], blogFullscreen = false }: AppManagerP
         .map((window) => (!window.isMinimized ? <Window key={window.id} {...window} renderMobile={true} /> : null))}
       <NavigationBar
         ref={navigationBarRef}
-        minimal={blogFullscreen}
+        minimal={immersiveMode}
+        animateIn={animateTaskbarIn && !immersiveMode}
         windows={windows}
         activeWindowId={activeWindowId}
         onActivateWindow={activateWindow}
         onCloseWindow={sendIntentToClose}
         onMinimizeWindow={notifyMinimize}
+        onExitImmersive={exitImmersiveMode}
       />
       <Launcher />
     </AppManagerContext.Provider>

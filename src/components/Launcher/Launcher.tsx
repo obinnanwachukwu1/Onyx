@@ -387,35 +387,34 @@ const Launcher = (): JSX.Element | null => {
     <img src={result.iconSrc} alt={result.title} className="h-9 w-9 shrink-0 object-contain drop-shadow-sm" />
   );
 
+  const sharedSearchInputClassName = 'w-full bg-[var(--taskbar-item-bg)] border border-[var(--window-border-active)] rounded-xl py-3 pl-10 pr-4 text-[var(--text-color)] placeholder:text-[var(--text-color)] placeholder:opacity-30 focus:outline-none focus:bg-[var(--taskbar-item-hover-bg)] focus:border-blue-500/30 transition-all';
+  const sharedSearchResultsHeadingClassName = 'text-xs font-bold text-[var(--text-color)] opacity-40 uppercase tracking-wider mb-4 px-1';
+
   const renderSearchResultsList = (mobile: boolean) => {
     if (!searchResults.length) {
       return (
-        <p className={`py-8 text-center text-sm ${mobile ? 'text-white/55' : 'text-[var(--text-color)] opacity-40'}`}>
+        <p className="py-8 text-center text-sm text-[var(--text-color)] opacity-40">
           No apps, files, or settings match your search.
         </p>
       );
     }
 
     return (
-      <div className={mobile ? 'mt-2 space-y-1.5' : 'mt-2 space-y-1'}>
+      <div className="mt-2 space-y-1">
         {searchResults.map((result, index) => (
           <button
             key={result.id}
             type="button"
             onClick={result.onSelect}
             style={mobile ? mobileStaggerStyle(index) : undefined}
-            className={
-              mobile
-                ? 'flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-left transition-colors hover:bg-white/10'
-                : 'flex w-full items-center gap-3 rounded-lg bg-transparent px-2 py-2 text-left transition-colors hover:bg-[var(--sidebar-item-hover-bg)]'
-            }
+            className="flex w-full items-center gap-3 rounded-lg bg-transparent px-2 py-2 text-left transition-colors hover:bg-[var(--sidebar-item-hover-bg)]"
           >
             {renderSearchResultIcon(result)}
             <div className="min-w-0 flex-1">
-              <div className={mobile ? 'truncate text-sm font-medium text-white/92' : 'truncate text-sm font-medium text-[var(--text-color)]/90'}>
+              <div className="truncate text-sm font-medium text-[var(--text-color)]/90">
                 {result.title}
               </div>
-              <div className={mobile ? 'truncate text-xs text-white/55' : 'truncate text-xs text-[var(--text-color)]/50'}>
+              <div className="truncate text-xs text-[var(--text-color)]/50">
                 {result.subtitle}
               </div>
             </div>
@@ -459,14 +458,14 @@ const Launcher = (): JSX.Element | null => {
 
             {displayedLauncherView !== 'running' ? (
               <>
-                <div className="relative mt-3">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/45" size={16} />
+                <div className="relative mt-3 group">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-color)] opacity-40 group-focus-within:text-blue-400 transition-colors" size={18} />
                   <input
                     type="text"
-                    placeholder="Search apps, files, settings..."
+                    placeholder="Search apps, files, and settings..."
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    className="h-10 w-full rounded-xl border border-white/15 bg-white/8 pl-10 pr-3 text-sm text-white placeholder:text-white/45 focus:border-white/35 focus:outline-none"
+                    className={sharedSearchInputClassName}
                   />
                 </div>
 
@@ -541,7 +540,10 @@ const Launcher = (): JSX.Element | null => {
                 <p className="py-8 text-center text-sm text-white/55">No running apps.</p>
               )
             ) : searchTerm ? (
-              renderSearchResultsList(true)
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <h3 className={sharedSearchResultsHeadingClassName}>Search Results</h3>
+                {renderSearchResultsList(true)}
+              </div>
             ) : activeTab === 'home' ? (
               <div className="space-y-5">
                 <section>
@@ -647,7 +649,7 @@ const Launcher = (): JSX.Element | null => {
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           {searchTerm ? (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <h3 className="text-xs font-bold text-[var(--text-color)] opacity-40 uppercase tracking-wider mb-4 px-1">Search Results</h3>
+              <h3 className={sharedSearchResultsHeadingClassName}>Search Results</h3>
               {renderSearchResultsList(false)}
             </div>
           ) : activeTab === 'home' ? (
